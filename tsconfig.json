@@ -101,7 +101,9 @@
 
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
-    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
+    "declaration": true,
+    "outDir": "./distr"
   },
   "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", "next.config.js"],
   "exclude": ["node_modules"]

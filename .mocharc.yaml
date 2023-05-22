@@ -1,0 +1,10 @@
+recursive: true
+extension: ['ts', 'mjs', 'js', 'cjs']
+ui: bdd
+colors: true
+loader:
+  - ts-node/esm
+require:
+  - ts-node/register
+  - ./test/main.js
+spec: ./test/**/*.spec.js
