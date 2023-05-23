@@ -1,5 +1,5 @@
 import {omitObj, mergeDeepObjects, cloneDeepObject} from 'squidlet-lib';
-import {sprogFuncs} from './allFuncs.js';
+import {sprogFuncs} from './sprogFuncs.js';
 import {EXP_MARKER} from './constants.js';
 
 

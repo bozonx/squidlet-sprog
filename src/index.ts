@@ -1,5 +1,5 @@
 export * from './scope.js'
-export * from './allFuncs.js'
+export * from './sprogFuncs.js'
 // types
 export * from './lib/SuperPromise.js'
 export * from './lib/SuperStruct.js'
