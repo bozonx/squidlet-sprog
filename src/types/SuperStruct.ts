@@ -127,7 +127,9 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
 
     for (const key of Object.keys(this.values as any)) {
       const keyName = key as keyof T
-      if (isSuperValue(this.values[keyName])) (this.values[keyName] as SuperValueBase).destroy()
+      if (isSuperValue(this.values[keyName])) {
+        (this.values[keyName] as SuperValueBase).destroy()
+      }
     }
   }
 
@@ -153,6 +155,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
    * You can change the clone but changes will not affect the struct.
    */
   clone = (): T => {
+    // TODO: поидее можно убрать в base
     return cloneDeepObject(this.values as any)
   }
 
@@ -171,7 +174,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
   }
 
   /**
-   * Set value for my self of deeply.
+   * Set value for my self or deeply.
    * It emits an event only if the deep value isn't a super type
    */
   private smartSetValue(pathTo: string, value: AllTypes) {

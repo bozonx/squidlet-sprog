@@ -1,6 +1,8 @@
-import {SuperValueBase} from '../lib/SuperValueBase.js';
+import {cloneDeepArray} from 'squidlet-lib';
+import {isSuperValue, SuperValueBase} from '../lib/SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-import {AllTypes} from './valueTypes.js';
+import {All_TYPES, AllTypes} from './valueTypes.js';
+import {isCorrespondingType} from '../lib/isCorrespondingType.js';
 
 
 export function proxyArray(arr: SuperArray): any[] {
@@ -69,12 +71,16 @@ export function proxyArray(arr: SuperArray): any[] {
 
 
 export class SuperArray<T = any> extends SuperValueBase {
-  readonly values: any[] = []
-  readonly itemType: AllTypes
+  readonly values: T[] = []
+  readonly itemType: keyof typeof All_TYPES
   readonly readOnly: boolean
 
 
-  constructor(scope: SuperScope, itemType: AllTypes = 'any', readOnly: boolean = false) {
+  constructor(
+    scope: SuperScope,
+    itemType: keyof typeof All_TYPES = 'any',
+    readOnly: boolean = false
+  ) {
     super(scope)
 
     this.itemType = itemType
@@ -100,7 +106,11 @@ export class SuperArray<T = any> extends SuperValueBase {
   destroy = () => {
     super.destroy()
 
-    // TODO: destroy children
+    const values: any[] = this.values
+
+    for (const indexStr of values) {
+      if (isSuperValue(values[indexStr])) (values[indexStr] as SuperValueBase).destroy()
+    }
   }
 
 
@@ -114,8 +124,13 @@ export class SuperArray<T = any> extends SuperValueBase {
     // TODO: use readonly
   }
 
-  clone = (): T => {
-    return [] as T
+  /**
+   * It makes full deep clone.
+   * You can change the clone but changes will not affect the array
+   */
+  clone = (): T[] => {
+    // TODO: поидее можно убрать в base
+    return cloneDeepArray(this.values)
   }
 
   link = () => {
@@ -128,6 +143,33 @@ export class SuperArray<T = any> extends SuperValueBase {
    */
   protected myRoSetter = (index: number, item: AllTypes) => {
     // TODO: add
+  }
+
+  private smartSetValue(pathTo: string, value: AllTypes) {
+    // TODO: ???
+  }
+
+  private safeSetOwnValue(index: number, value: T, ignoreRo: boolean = false) {
+    if (!ignoreRo && this.readOnly) {
+      throw new Error(`Can't set a value to readonly array`)
+    }
+    else if (!isCorrespondingType(value, this.itemType)) {
+      throw new Error(
+        `The value of index ${index} is not corresponding to array type ${this.itemType}`
+      )
+    }
+
+    this.values[index] = value
+  }
+
+  private handleChildChange = (target: SuperValueBase, childPath?: string) => {
+    // const fullPath = (this.myPath) ? this.myPath + '.' + childPath : childPath
+    //
+    // // TODO: что должно происходить если изменился потомок ???
+    // // TODO: наверное поднять событие у себя но с данными от потомка?
+    // // TODO: или поднять событие у себя как будто сам изменился?
+    //
+    // this.changeEvent.emit(target, fullPath)
   }
 
   ////// Standart methods
