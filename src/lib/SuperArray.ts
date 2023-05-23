@@ -81,10 +81,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   }
 
 
-  constructor(
-    scope: SuperScope,
-    itemDefinition: SuperItemInitDefinition
-  ) {
+  constructor(scope: SuperScope, itemDefinition: SuperItemInitDefinition) {
     super(scope)
 
     this.itemDefinition = {
@@ -149,7 +146,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     }
     else if (!isCorrespondingType(value, this.itemDefinition.type)) {
       throw new Error(
-        `The value of index ${index} is not corresponding to array type ${this.itemType}`
+        `The value of index ${index} is not corresponding to array type ${this.itemDefinition.type}`
       )
     }
 
