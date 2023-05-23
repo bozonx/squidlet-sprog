@@ -1,5 +1,6 @@
-import {IndexedEvents, trimCharStart} from 'squidlet-lib';
+import {IndexedEvents, trimCharStart, deepGet} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
+import {AllTypes} from '../types/valueTypes.js';
 
 
 export type SuperChangeHandler = (
@@ -18,6 +19,7 @@ export function isSuperValue(val: any): boolean {
 
 export abstract class SuperValueBase {
   readonly superValue = true
+  readonly abstract values: any | any[]
   protected parent?: SuperValueBase
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
@@ -40,7 +42,7 @@ export abstract class SuperValueBase {
     // means that array is completely initiated
     this.inited = true
     // rise an event any way if any values was set or not
-    this.riseMyChangeEvent()
+    this.changeEvent.emit(this, this.myPath)
     // return setter for read only props
     return this.myRoSetter
   }
@@ -58,6 +60,25 @@ export abstract class SuperValueBase {
     this.changeEvent.removeListener(handlerIndex)
   }
 
+  has = (pathTo: string): boolean => {
+    return Boolean(this.getValue(pathTo))
+  }
+
+  /**
+   * You cat deeply get some primitive or other struct or super array.
+   * If it is a primitive you can't change its value.
+   * To change its value get its parent and set value via parent like: parent.value = 5
+   */
+  getValue = (pathTo: string): AllTypes | undefined => {
+    return deepGet(this.values as any, pathTo)
+  }
+
+
+  /**
+   * This method will be returned after initializing to update readonly values
+   * @protected
+   */
+  protected abstract myRoSetter: Function
 
   protected makeChildPath(childKeyOrIndex: string | number): string {
     const childKeyStr: string = (typeof childKeyOrIndex === 'number')

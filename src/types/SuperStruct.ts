@@ -1,4 +1,4 @@
-import {cloneDeepObject, deepGet, deepSet} from 'squidlet-lib';
+import {cloneDeepObject, deepSet} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {All_TYPES, AllTypes} from './valueTypes.js';
 import {SuperValueBase, isSuperValue} from '../lib/SuperValueBase.js';
@@ -131,19 +131,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
   }
 
 
-  has = (pathTo: string): boolean => {
-    return Boolean(this.getValue(pathTo))
-  }
-
-  /**
-   * You cat deeply get some primitive or other struct or super array.
-   * If it is a primitive you can't change its value.
-   * To change its value get its parent and set value via parent like: parent.value = 5
-   */
-  getValue = (pathTo: string): AllTypes | undefined => {
-    return deepGet(this.values as any, pathTo)
-  }
-
   /**
    * Set value deeply.
    * You can set own value or value of some deep object.
@@ -177,7 +164,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
   /**
    * Set value of self readonly value and rise an event
    */
-  private myRoSetter = (name: keyof T, newValue: any) => {
+  protected myRoSetter = (name: keyof T, newValue: any) => {
     this.safeSetOwnValue(name, newValue, true)
     this.riseMyChangeEvent(name)
   }
