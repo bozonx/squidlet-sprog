@@ -98,6 +98,8 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     }
 
     // TODO: link all the super children
+    // start listen for child changes
+    //superVal.subscribe(this.handleChildChange)
 
     return super.init()
   }

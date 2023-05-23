@@ -177,9 +177,6 @@ export abstract class SuperValueBase<T = any | any[]> {
         const superVal: SuperValueBase<T> = result
 
         superVal.$$setParent(this, this.makeChildPath(childKeyOrIndex))
-
-        // start listen for child changes
-        superVal.subscribe(this.handleChildChange)
       }
     }
 
