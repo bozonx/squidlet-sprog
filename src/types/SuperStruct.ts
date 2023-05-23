@@ -82,6 +82,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
     this.definition = this.prepareDefinition(definition, defaultRo)
   }
 
+
   /**
    * Init with initial values.
    * It returns setter for readonly params
@@ -176,6 +177,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
   private smartSetValue(pathTo: string, value: AllTypes) {
 
     // TODO: нужно ставить значение примитива через родителя
+    // TODO: use readonly
 
     if (pathTo.indexOf('.') === -1) {
       // own value

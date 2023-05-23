@@ -104,21 +104,14 @@ export class SuperArray<T = any> extends SuperValueBase {
   }
 
 
-  has = () => {
-    // TODO: deeply
-  }
-
-  getValue = (pathTo: string | number): any => {
-    // TODO: deeply
-    return this.arr[Number(pathTo)]
-  }
-
   setValue = () => {
     // TODO: deeply
+    // TODO: use readonlu
   }
 
   resetValue = () => {
     // TODO: deeply
+    // TODO: use readonly
   }
 
   clone = (): T => {
@@ -126,15 +119,15 @@ export class SuperArray<T = any> extends SuperValueBase {
   }
 
   link = () => {
-
+    // TODO: add
   }
 
 
   /**
    * Set value of self readonly value and rise an event
    */
-  private myRoSetter = (index: number, item: AllTypes) => {
-
+  protected myRoSetter = (index: number, item: AllTypes) => {
+    // TODO: add
   }
 
   ////// Standart methods
