@@ -93,36 +93,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     }
     // set initial values
     for (const keyStr of Object.keys(this.definition)) {
-      const keyName = keyStr as keyof T
-      const newValue: any | undefined = initialValues?.[keyName]
-
-      if (typeof newValue === 'undefined') {
-        // if no new value then set default value if exist
-        this.values[keyName] = this.definition[keyName].default
-      }
-      else {
-        // set a new value. It doesn't mean is it readonly or not
-        if (isCorrespondingType(newValue, this.definition[keyName].type)) {
-          this.values[keyName] = newValue
-        }
-        else {
-          throw new Error(
-            `The initial value ${newValue} with key ${keyStr} ` +
-            `is not corresponding type ${this.definition[keyName].type}`
-          )
-        }
-      }
-
-      if (isSuperValue(this.values[keyName])) {
-        // this means the super struct or array has already initialized
-        // so now we are linking it as my child
-        const superVal: SuperValueBase<T> = this.values[keyName] as any
-
-        superVal.$$setParent(this, this.makeChildPath(keyStr))
-
-        // start listen for child changes
-        superVal.subscribe(this.handleChildChange)
-      }
+      this.initChild(keyStr, initialValues?.[keyStr as keyof T])
     }
 
     // check required values
@@ -132,6 +103,8 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
         throw new Error(`The value ${keyStr} is required, but it wasn't initiated`)
       }
     }
+
+    // TODO: link all the super children
 
     return super.init()
   }
@@ -238,6 +211,41 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     }
 
     return res
+  }
+
+  private initChild(keyStr: string, initialValue?: any) {
+    const keyName = keyStr as keyof T
+
+    if (typeof initialValue === 'undefined') {
+      // if no new value then set default value if exist
+      this.values[keyName] = this.definition[keyName].default
+
+      // TODO: if definition of child is super struct or array
+      //       and not initial value - then make a new super instance
+    }
+    else {
+      // set a new value. It doesn't mean is it readonly or not
+      if (isCorrespondingType(initialValue, this.definition[keyName].type)) {
+        this.values[keyName] = initialValue
+      }
+      else {
+        throw new Error(
+          `The initial value ${initialValue} with key ${keyStr} ` +
+          `is not corresponding type ${this.definition[keyName].type}`
+        )
+      }
+
+      if (isSuperValue(this.values[keyName])) {
+        // this means the super struct or array has already initialized,
+        // so now we are linking it as my child
+        const superVal: SuperValueBase<T> = this.values[keyName] as any
+
+        superVal.$$setParent(this, this.makeChildPath(keyStr))
+
+        // start listen for child changes
+        superVal.subscribe(this.handleChildChange)
+      }
+    }
   }
 
 }

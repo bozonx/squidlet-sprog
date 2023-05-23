@@ -73,7 +73,7 @@ export function proxyArray(arr: SuperArray): any[] {
 export class SuperArray<T = any> extends SuperValueBase<T[]> {
   readonly values: T[] = []
   readonly itemType: keyof typeof All_TYPES
-  readonly readOnly: boolean
+  //readonly readOnly: boolean
 
 
   constructor(
@@ -97,9 +97,14 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       throw new Error(`The array has been already initialized`)
     }
     // set initial values
-    if (initialArr) fullWithArray(this.values, initialArr, true)
+    if (initialArr) {
+      // TODO: проверка типа
+      // TODO: default array
+      fullWithArray(this.values, initialArr, true)
+    }
 
     // TODO: init super children
+    // TODO: link all the super children
 
     return super.init()
   }
