@@ -3,6 +3,7 @@ import {isSuperValue, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {All_TYPES, AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
+import {SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 
 
 export function proxyArray(arr: SuperArray): any[] {
@@ -72,19 +73,25 @@ export function proxyArray(arr: SuperArray): any[] {
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> {
   readonly values: T[] = []
-  readonly itemType: keyof typeof All_TYPES
-  //readonly readOnly: boolean
+  readonly itemDefinition: SuperItemInitDefinition
+
+
+  get readOnly(): boolean {
+    return Boolean(this.itemDefinition.readonly)
+  }
 
 
   constructor(
     scope: SuperScope,
-    itemType: keyof typeof All_TYPES = 'any',
-    readOnly: boolean = false
+    itemDefinition: SuperItemInitDefinition
   ) {
     super(scope)
 
-    this.itemType = itemType
-    this.readOnly = readOnly
+    this.itemDefinition = {
+      ...itemDefinition,
+      required: Boolean(itemDefinition.required),
+      readonly: Boolean(itemDefinition.readonly),
+    }
   }
 
 
@@ -140,7 +147,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     if (!ignoreRo && this.readOnly) {
       throw new Error(`Can't set a value to readonly array`)
     }
-    else if (!isCorrespondingType(value, this.itemType)) {
+    else if (!isCorrespondingType(value, this.itemDefinition.type)) {
       throw new Error(
         `The value of index ${index} is not corresponding to array type ${this.itemType}`
       )
