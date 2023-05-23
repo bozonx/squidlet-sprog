@@ -91,9 +91,6 @@ export abstract class SuperValueBase<T = any | any[]> {
    * To change its value get its parent and set value via parent like: parent.value = 5
    */
   getValue = (pathTo: string): AllTypes | undefined => {
-
-    console.log('---- getValue', this.values, pathTo)
-
     return deepGet(this.values as any, pathTo)
   }
 

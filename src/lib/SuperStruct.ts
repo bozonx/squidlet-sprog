@@ -11,25 +11,39 @@ import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDe
  */
 export function proxyStruct(struct: SuperStruct): SuperStruct {
   const handler: ProxyHandler<Record<any, any>> = {
-    get(target: SuperStruct, p: string) {
-      return struct.getValue(p)
+    get(target: any, p: string) {
+      if (p === SUPER_VALUE_PROP) {
+        return struct
+      }
+      else if (Object.keys(struct.values).includes(p)) {
+        return struct.getValue(p)
+      }
+
+      return target[p]
     },
 
-    has(target: SuperStruct, p: string): boolean {
-      return struct.has(p)
+    has(target: any, p: string): boolean {
+      if (p === SUPER_VALUE_PROP) {
+        return true
+      }
+      else if (Object.keys(struct.values).includes(p)) {
+        return struct.has(p)
+      }
+
+      return target[p]
     },
 
-    set(target: SuperStruct, p: string, newValue: any): boolean {
+    set(target: any, p: string, newValue: any): boolean {
       struct.setValue(p, newValue)
 
       return true
     },
 
-    deleteProperty(target: SuperStruct, p: string): boolean {
+    deleteProperty(target: any, p: string): boolean {
       throw new Error(`It isn't possible to delete struct value`)
     },
 
-    ownKeys(target: SuperStruct): ArrayLike<string | symbol> {
+    ownKeys(target: any): ArrayLike<string | symbol> {
       return Object.keys(omitObj(struct.values, SUPER_VALUE_PROP))
     },
 

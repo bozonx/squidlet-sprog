@@ -21,6 +21,8 @@ describe('Full test. Super struct', () => {
 
     assert.deepEqual(ss.$super.clone(), {a1: 'init'})
 
+    ss.$super.setValue('a1', 'new str')
 
+    assert.equal(ss.$super.getValue('a1'), 'new str')
   })
 })
