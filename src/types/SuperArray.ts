@@ -71,12 +71,14 @@ export function proxyArray(arr: SuperArray): any[] {
 export class SuperArray<T = any> extends SuperValueBase {
   readonly values: any[] = []
   readonly itemType: AllTypes
+  readonly readOnly: boolean
 
 
-  constructor(scope: SuperScope, itemType: AllTypes = 'any') {
+  constructor(scope: SuperScope, itemType: AllTypes = 'any', readOnly: boolean = false) {
     super(scope)
 
     this.itemType = itemType
+    this.readOnly = readOnly
   }
 
 
