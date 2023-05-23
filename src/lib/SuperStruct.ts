@@ -1,22 +1,9 @@
 import {deepSet} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {All_TYPES, AllTypes} from '../types/valueTypes.js';
+import {AllTypes} from '../types/valueTypes.js';
 import {SuperValueBase, isSuperValue} from './SuperValueBase.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-
-
-interface SuperStrucDefinitionBase {
-  type: keyof typeof All_TYPES
-  default?: any
-}
-
-interface SuperStrucDefinitionExtra {
-  required: boolean
-  readonly: boolean
-}
-
-export type SuperStructInitDefinition = SuperStrucDefinitionBase & Partial<SuperStrucDefinitionExtra>
-export type SuperStructDefinition = SuperStrucDefinitionBase & SuperStrucDefinitionExtra
+import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 
 
 /**
@@ -67,14 +54,14 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
 
 export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T> {
   // It assumes that you will not change it after initialization
-  readonly definition: Record<keyof T, SuperStructDefinition> = {} as any
+  readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
   // current values
   readonly values = {} as T
 
 
   constructor(
     scope: SuperScope,
-    definition: Record<keyof T, SuperStructInitDefinition>,
+    definition: Record<keyof T, SuperItemInitDefinition>,
     defaultRo: boolean = false
   ) {
     super(scope)
@@ -194,10 +181,10 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
   }
 
   private prepareDefinition(
-    definition: Record<keyof T, SuperStructInitDefinition>,
+    definition: Record<keyof T, SuperItemInitDefinition>,
     defaultRo: boolean
-  ): Record<keyof T, SuperStructDefinition> {
-    const res: Record<keyof T, SuperStructDefinition> = {} as any
+  ): Record<keyof T, SuperItemDefinition> {
+    const res: Record<keyof T, SuperItemDefinition> = {} as any
 
     for (const keyStr of Object.keys(definition)) {
       const keyName = keyStr as keyof T
