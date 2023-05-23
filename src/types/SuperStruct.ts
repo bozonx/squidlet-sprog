@@ -117,12 +117,8 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
         throw new Error(`The value ${keyStr} is required, but it wasn't initiated`)
       }
     }
-    // means that struct is completely initiated
-    this.inited = true
-    // rise an event any way if any values was set or not
-    this.riseMyChangeEvent()
 
-    return this.myRoSetter
+    return super.init()
   }
 
   destroy = () => {
@@ -231,19 +227,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
     }
 
     this.values[name] = value as any
-  }
-
-  private riseMyChangeEvent(key?: keyof T) {
-    let fullPath: string | undefined = key as string
-
-    if (this.myPath && key) {
-      fullPath = this.myPath + '.' + String(key)
-    }
-    else if (this.myPath) {
-      fullPath = this.myPath
-    }
-
-    this.changeEvent.emit(this, fullPath)
   }
 
   private handleChildChange = (target: SuperValueBase, childPath?: string) => {

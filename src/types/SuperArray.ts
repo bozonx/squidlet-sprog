@@ -68,7 +68,7 @@ export function proxyArray(arr: SuperArray): any[] {
  */
 
 
-export class SuperArray<T = any[]> extends SuperValueBase {
+export class SuperArray<T = any> extends SuperValueBase {
   readonly values: any[] = []
   readonly itemType: AllTypes
 
@@ -80,8 +80,19 @@ export class SuperArray<T = any[]> extends SuperValueBase {
   }
 
 
-  init = () => {
+  /**
+   * Init with initial values.
+   * It returns setter for readonly params
+   */
+  init = (initialArr?: T[]): ((index: number, item: AllTypes) => void) => {
     // TODO: return setter for ro array
+
+    if (this.inited) {
+      throw new Error(`The array has been already initialized`)
+    }
+
+
+    return super.init()
   }
 
   destroy = () => {
@@ -113,6 +124,14 @@ export class SuperArray<T = any[]> extends SuperValueBase {
   }
 
   link = () => {
+
+  }
+
+
+  /**
+   * Set value of self readonly value and rise an event
+   */
+  private myRoSetter = (index: number, item: AllTypes) => {
 
   }
 

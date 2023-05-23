@@ -1,4 +1,4 @@
-import {IndexedEvents} from 'squidlet-lib';
+import {IndexedEvents, trimCharStart} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 
 
@@ -16,7 +16,7 @@ export function isSuperValue(val: any): boolean {
 }
 
 
-export class SuperValueBase {
+export abstract class SuperValueBase {
   readonly superValue = true
   protected parent?: SuperValueBase
   // Path to myself in upper tree. The last part is my name
@@ -36,6 +36,15 @@ export class SuperValueBase {
   }
 
 
+  init(): any {
+    // means that array is completely initiated
+    this.inited = true
+    // rise an event any way if any values was set or not
+    this.riseMyChangeEvent()
+    // return setter for read only props
+    return this.myRoSetter
+  }
+
   destroy() {
     this.changeEvent.destroy()
   }
@@ -48,5 +57,34 @@ export class SuperValueBase {
   unsubscribe(handlerIndex: number) {
     this.changeEvent.removeListener(handlerIndex)
   }
+
+
+  protected makeChildPath(childKeyOrIndex: string | number): string {
+    const childKeyStr: string = (typeof childKeyOrIndex === 'number')
+      ? `[${childKeyOrIndex}]`
+      : `.${childKeyOrIndex}`
+
+    if (this.myPath) {
+      return this.myPath + '.' + childKeyStr
+    }
+    else {
+      return trimCharStart(childKeyStr, '.')
+    }
+  }
+
+  // TODO: change event of child
+  protected riseMyChangeEvent(key?: keyof T) {
+    // let fullPath: string | undefined = key as string
+    //
+    // if (this.myPath && key) {
+    //   fullPath = this.myPath + '.' + String(key)
+    // }
+    // else if (this.myPath) {
+    //   fullPath = this.myPath
+    // }
+
+    this.changeEvent.emit(this, fullPath)
+  }
+
 
 }
