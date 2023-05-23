@@ -1,13 +1,13 @@
 import {SuperScope} from '../scope.js';
 import {proxyArray, SuperArray} from '../lib/SuperArray.js';
 import {All_TYPES} from '../types/valueTypes.js';
+import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 
 
 export function newSuperArray(scope: SuperScope) {
-  return async (p: {itemType?: keyof typeof All_TYPES, readOnly?: boolean}): Promise<any[]> => {
-    const itemType = await scope.$resolve(p.itemType)
-    const readOnly = await scope.$resolve(p.readOnly)
-    const inner = new SuperArray(scope, itemType, readOnly)
+  return async (p: {item?: SuperItemDefinition}): Promise<any[]> => {
+    const item = await scope.$resolve(p.item)
+    const inner = new SuperArray(scope, item)
 
     return proxyArray(inner)
   }

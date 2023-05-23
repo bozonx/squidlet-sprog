@@ -13,3 +13,8 @@ interface SuperItemDefinitionExtra {
 
 export type SuperItemInitDefinition = SuperItemDefinitionBase & Partial<SuperItemDefinitionExtra>
 export type SuperItemDefinition = SuperItemDefinitionBase & SuperItemDefinitionExtra
+
+
+export const DEFAULT_INIT_SUPER_DEFINITION: SuperItemInitDefinition = {
+  type: 'any',
+}

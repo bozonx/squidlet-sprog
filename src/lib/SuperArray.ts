@@ -3,7 +3,10 @@ import {isSuperValue, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {All_TYPES, AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {
+  DEFAULT_INIT_SUPER_DEFINITION,
+  SuperItemInitDefinition
+} from '../types/SuperItemDefinition.js';
 
 
 export function proxyArray(arr: SuperArray): any[] {
@@ -81,14 +84,16 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   }
 
 
-  constructor(scope: SuperScope, itemDefinition: SuperItemInitDefinition) {
+  constructor(scope: SuperScope, itemDefinition?: SuperItemInitDefinition) {
     super(scope)
 
-    this.itemDefinition = {
-      ...itemDefinition,
-      required: Boolean(itemDefinition.required),
-      readonly: Boolean(itemDefinition.readonly),
-    }
+    this.itemDefinition = (itemDefinition)
+      ? {
+        ...itemDefinition,
+        required: Boolean(itemDefinition.required),
+        readonly: Boolean(itemDefinition.readonly),
+      }
+      : DEFAULT_INIT_SUPER_DEFINITION
   }
 
 
