@@ -22,7 +22,7 @@ export type SuperStructDefinition = SuperStrucDefinitionBase & SuperStrucDefinit
 /**
  * Wrapper for SuperStruct which allows to manipulate it as common object
  */
-export function proxyStruct(struct: SuperStruct): Record<any, any> {
+export function proxyStruct(struct: SuperStruct): SuperStruct {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: SuperStruct, p: string) {
       return struct.getValue(p)
@@ -61,7 +61,7 @@ export function proxyStruct(struct: SuperStruct): Record<any, any> {
   a.__proto__.clone = struct.clone
   a.__proto__.link = struct.link
 
-  return new Proxy(struct.values, handler)
+  return new Proxy(struct.values, handler) as SuperStruct
 }
 
 

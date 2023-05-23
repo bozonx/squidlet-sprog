@@ -1,10 +1,6 @@
 import {SuperValueBase} from '../lib/SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-
-
-export interface SuperArrayItemDefinition {
-  // TODO: add
-}
+import {AllTypes} from './valueTypes.js';
 
 
 export function proxyArray(arr: SuperArray): any[] {
@@ -46,7 +42,7 @@ export function proxyArray(arr: SuperArray): any[] {
     },
   }
 
-  const a = (arr.arr as any)
+  const a = (arr.values as any)
 
   a.__proto__.init = arr.init
   a.__proto__.destroy = arr.destroy
@@ -73,14 +69,14 @@ export function proxyArray(arr: SuperArray): any[] {
 
 
 export class SuperArray<T = any[]> extends SuperValueBase {
-  arr: any[] = []
-  private readonly item: SuperArrayItemDefinition
+  readonly values: any[] = []
+  readonly itemType: AllTypes
 
 
-  constructor(scope: SuperScope, item: SuperArrayItemDefinition) {
+  constructor(scope: SuperScope, itemType: AllTypes = 'any') {
     super(scope)
 
-    this.item = item
+    this.itemType = itemType
   }
 
 

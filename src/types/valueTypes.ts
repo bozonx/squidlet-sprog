@@ -13,7 +13,7 @@ export type SuperTypes = SuperStruct
   | SuperArray
   | SuperPromise
   | SuperFunc
-export type AllTypes = SimpleType | SuperTypes
+export type AllTypes = SimpleType | SuperTypes | Promise<any>
 
 export const PRIMITIVE_TYPES = {
   string: 'string',

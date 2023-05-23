@@ -9,8 +9,8 @@ export function newSuperStruct(scope: SuperScope) {
   }): Promise<SuperStruct> => {
     const definition = await scope.$resolve(p.definition)
     const defaultRo = await scope.$resolve(p.defaultRo)
-    const structInner = new SuperStruct(scope, definition, defaultRo)
+    const inner = new SuperStruct(scope, definition, defaultRo)
 
-    return proxyStruct(structInner)
+    return proxyStruct(inner)
   }
 }
