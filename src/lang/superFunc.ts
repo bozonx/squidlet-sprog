@@ -1,6 +1,6 @@
 import {deepGet} from 'squidlet-lib'
 import {SprogFn, SuperScope} from '../scope.js'
-import {SuperFunc, SuperFuncParams} from '../types/SuperFunc.js'
+import {SuperFunc, SuperFuncParams} from '../lib/SuperFunc.js'
 import {makeFuncProxy} from '../lib/functionProxy.js';
 
 

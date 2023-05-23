@@ -1,7 +1,7 @@
 import {mergeDeepObjects, collectObjValues} from 'squidlet-lib'
-import {AllTypes} from './valueTypes.js'
+import {AllTypes} from '../types/valueTypes.js'
 import {newScope, SprogItemDefinition, SuperScope} from '../scope.js'
-import {makeFuncProxy} from '../lib/functionProxy.js';
+import {makeFuncProxy} from './functionProxy.js';
 
 
 export interface SuperFuncProp {

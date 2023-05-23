@@ -1,5 +1,5 @@
 import {SuperScope} from '../scope.js';
-import {proxyArray, SuperArray} from '../types/SuperArray.js';
+import {proxyArray, SuperArray} from '../lib/SuperArray.js';
 import {All_TYPES} from '../types/valueTypes.js';
 
 

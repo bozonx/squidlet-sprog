@@ -1,5 +1,5 @@
 import {SuperScope} from '../scope.js';
-import {SuperStruct, SuperStructDefinition, proxyStruct} from '../types/SuperStruct.js';
+import {SuperStruct, SuperStructDefinition, proxyStruct} from '../lib/SuperStruct.js';
 
 
 export function newSuperStruct(scope: SuperScope) {

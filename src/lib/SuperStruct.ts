@@ -1,8 +1,8 @@
 import {deepSet} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {All_TYPES, AllTypes} from './valueTypes.js';
-import {SuperValueBase, isSuperValue} from '../lib/SuperValueBase.js';
-import {isCorrespondingType} from '../lib/isCorrespondingType.js';
+import {All_TYPES, AllTypes} from '../types/valueTypes.js';
+import {SuperValueBase, isSuperValue} from './SuperValueBase.js';
+import {isCorrespondingType} from './isCorrespondingType.js';
 
 
 interface SuperStrucDefinitionBase {

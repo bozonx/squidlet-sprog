@@ -1,7 +1,7 @@
-import {SuperStruct} from './SuperStruct.js';
-import {SuperArray} from './SuperArray.js';
-import {SuperPromise} from './SuperPromise.js';
-import {SuperFunc} from './SuperFunc.js';
+import {SuperStruct} from '../lib/SuperStruct.js';
+import {SuperArray} from '../lib/SuperArray.js';
+import {SuperPromise} from '../lib/SuperPromise.js';
+import {SuperFunc} from '../lib/SuperFunc.js';
 
 
 export type PrimitiveType = string | number | boolean | null

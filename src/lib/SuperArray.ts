@@ -1,8 +1,8 @@
 import {fullWithArray} from 'squidlet-lib';
-import {isSuperValue, SuperValueBase} from '../lib/SuperValueBase.js';
+import {isSuperValue, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-import {All_TYPES, AllTypes} from './valueTypes.js';
-import {isCorrespondingType} from '../lib/isCorrespondingType.js';
+import {All_TYPES, AllTypes} from '../types/valueTypes.js';
+import {isCorrespondingType} from './isCorrespondingType.js';
 
 
 export function proxyArray(arr: SuperArray): any[] {

@@ -1,10 +1,10 @@
 export * from './scope.js'
 export * from './allFuncs.js'
 // types
-export * from './types/SuperPromise.js'
-export * from './types/SuperStruct.js'
-export * from './types/SuperArray.js'
-export * from './types/SuperFunc.js'
+export * from './lib/SuperPromise.js'
+export * from './lib/SuperStruct.js'
+export * from './lib/SuperArray.js'
+export * from './lib/SuperFunc.js'
 
 
 
