@@ -1,7 +1,7 @@
 import {fullWithArray} from 'squidlet-lib';
 import {isSuperValue, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-import {All_TYPES, AllTypes} from '../types/valueTypes.js';
+import {AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
@@ -108,8 +108,15 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     // set initial values
     if (initialArr) {
       // TODO: проверка типа
+
+      //fullWithArray(this.values, initialArr, true)
+
+      // TODO: set length
+      // TODO: если в остатке есть super - то отвязать их
+
+    }
+    else {
       // TODO: default array
-      fullWithArray(this.values, initialArr, true)
     }
 
     // TODO: init super children

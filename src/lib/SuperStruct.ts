@@ -80,7 +80,13 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     }
     // set initial values
     for (const keyStr of Object.keys(this.definition)) {
-      this.initChild(keyStr, initialValues?.[keyStr as keyof T])
+      const keyName = keyStr as keyof T
+
+      this.values[keyName] = this.initChild(
+        this.definition[keyName],
+        keyStr,
+        initialValues?.[keyName]
+      )
     }
 
     // check required values
@@ -200,32 +206,34 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     return res
   }
 
-  private initChild(keyStr: string, initialValue?: any) {
-    const keyName = keyStr as keyof T
+  private initChild(definition: SuperItemDefinition, keyStr: string, initialValue?: any): any {
+    let result: any | undefined
 
     if (typeof initialValue === 'undefined') {
       // if no new value then set default value if exist
-      this.values[keyName] = this.definition[keyName].default
+      result = definition.default
+
+      // TODO: тут тоже проверить тип, он может быть не верный
 
       // TODO: if definition of child is super struct or array
       //       and not initial value - then make a new super instance
     }
     else {
       // set a new value. It doesn't mean is it readonly or not
-      if (isCorrespondingType(initialValue, this.definition[keyName].type)) {
-        this.values[keyName] = initialValue
+      if (isCorrespondingType(initialValue, definition.type)) {
+        result = initialValue
       }
       else {
         throw new Error(
           `The initial value ${initialValue} with key ${keyStr} ` +
-          `is not corresponding type ${this.definition[keyName].type}`
+          `is not corresponding type ${definition.type}`
         )
       }
 
-      if (isSuperValue(this.values[keyName])) {
+      if (isSuperValue(result)) {
         // this means the super struct or array has already initialized,
         // so now we are linking it as my child
-        const superVal: SuperValueBase<T> = this.values[keyName] as any
+        const superVal: SuperValueBase<T> = result
 
         superVal.$$setParent(this, this.makeChildPath(keyStr))
 
