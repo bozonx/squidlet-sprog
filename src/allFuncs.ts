@@ -10,13 +10,14 @@ import {newSuperStruct} from './lang/superStruct.js';
 import {newSuperArray} from './lang/superArray.js';
 
 
-// TODO: доделать SuperStruct
-// TODO: доделать SuperArray
+// TODO: доделать SuperStruct & SuperArray
 // TODO: add switch into isElse
 // TODO: SuperFunc - add return
 // TODO: review forEach - add support of return, break, continue, inner cycles and ifElse
 
 // TODO: simple function вообще нужен тогда???
+// TODO: add SuperPromise
+// TODO: add SuperError - объект. И вообще продумать поднятие ошибок
 // TODO: add module
 // TODO: add simpleClass
 // TODO: add SuperClass
