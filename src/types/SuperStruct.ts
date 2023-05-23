@@ -94,17 +94,34 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     // set initial values
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
+      const newValue: any | undefined = initialValues?.[keyName]
 
-      this.safeSetOwnValue(keyName, initialValues[keyStr])
-      // start listen for child changes
-      // TODO: может проверить это в definition ???
+      if (typeof newValue === 'undefined') {
+        // if no new value then set default value if exist
+        this.values[keyName] = this.definition[keyName].default
+      }
+      else {
+        // set a new value. It doesn't mean is it readonly or not
+        if (isCorrespondingType(newValue, this.definition[keyName].type)) {
+          this.values[keyName] = newValue
+        }
+        else {
+          throw new Error(
+            `The initial value ${newValue} with key ${keyStr} ` +
+            `is not corresponding type ${this.definition[keyName].type}`
+          )
+        }
+      }
+
       if (isSuperValue(this.values[keyName])) {
+        const superVal: SuperValueBase = this.values[keyName] as any
 
-        // TODO: надо получить key от родителя
+        superVal.$$setParent(this, this.makeChildPath(keyStr))
 
         // TODO: надо установить parent
         // TODO: надо инициализировать - передать значения
 
+        // start listen for child changes
         (this.values[keyName] as SuperValueBase<T>).subscribe(this.handleChildChange)
       }
     }

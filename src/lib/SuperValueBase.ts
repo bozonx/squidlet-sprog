@@ -20,6 +20,7 @@ export function isSuperValue(val: any): boolean {
 export abstract class SuperValueBase<T = any | any[]> {
   readonly superValue = true
   readonly abstract values: T
+  // parent super struct or array who owns me
   protected parent?: SuperValueBase
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
@@ -49,6 +50,16 @@ export abstract class SuperValueBase<T = any | any[]> {
 
   destroy() {
     this.changeEvent.destroy()
+  }
+
+  /**
+   * It is called only when parent set this item as its child
+   * @parent - parent super struct or super array
+   * @myPath - full path to me in tree where im is
+   */
+  $$setParent(parent: SuperValueBase, myPath: string) {
+    this.parent = parent
+    this.myPath = myPath
   }
 
 

@@ -99,6 +99,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     // set initial values
     if (initialArr) fullWithArray(this.values, initialArr, true)
 
+    // TODO: init super children
+
     return super.init()
   }
 
