@@ -74,7 +74,7 @@ export class SuperFunc {
 
     const execScope: SuperScope = newScope(finalValues, this.scope)
 
-    console.log(111, values, finalValues, this.lines, this.props)
+    //console.log(111, values, finalValues, this.lines, this.props)
 
     for (const line of this.lines) {
       await execScope.$run(line)

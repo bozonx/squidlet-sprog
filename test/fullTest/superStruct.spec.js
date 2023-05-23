@@ -17,10 +17,12 @@ describe('Full test. Super struct', () => {
       definition,
     })
 
+    console.log(333, ss)
+
     ss.init({a1: 'init'})
 
     assert.deepEqual(ss.clone(), {a1: 'init'})
 
-    console.log(111, ss)
+
   })
 })

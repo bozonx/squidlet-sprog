@@ -90,7 +90,7 @@ export abstract class SuperValueBase<T = any | any[]> {
    */
   getValue = (pathTo: string): AllTypes | undefined => {
 
-    console.log(111, this.values, pathTo)
+    console.log('---- getValue', this.values, pathTo)
 
     return deepGet(this.values as any, pathTo)
   }
