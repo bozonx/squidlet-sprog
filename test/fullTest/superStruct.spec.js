@@ -1,4 +1,5 @@
 import {
+  // TODO: а оно надо??? может плоской сделать?
   sprogFuncs,
   newScope
 } from "../../src/index.js"
