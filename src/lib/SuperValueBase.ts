@@ -74,6 +74,15 @@ export abstract class SuperValueBase<T = any | any[]> {
   }
 
   /**
+   * Set value deeply.
+   * You can set own value or value of some deep object.
+   * Even you can set value to the deepest primitive like: struct.struct.num = 5
+   */
+  setValue = (pathTo: string, newValue: AllTypes) => {
+    this.smartSetValue(pathTo, newValue)
+  }
+
+  /**
    * The same as setValue but it sets null
    */
   resetValue = (pathTo: string) => {

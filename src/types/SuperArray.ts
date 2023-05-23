@@ -114,20 +114,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   }
 
 
-  setValue = () => {
-    // TODO: deeply
-    // TODO: use readonlu
-  }
-
-  /**
-   * It makes full deep clone.
-   * You can change the clone but changes will not affect the array
-   */
-  clone = (): T[] => {
-    // TODO: поидее можно убрать в base
-    return cloneDeepArray(this.values)
-  }
-
   link = () => {
     // TODO: add
   }

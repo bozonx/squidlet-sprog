@@ -134,15 +134,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
   }
 
 
-  /**
-   * Set value deeply.
-   * You can set own value or value of some deep object.
-   * Even you can set value to the deepest primitive like: struct.struct.num = 5
-   */
-  setValue = (pathTo: string, newValue: AllTypes) => {
-    this.smartSetValue(pathTo, newValue)
-  }
-
   link = () => {
     // TODO: прилинковать значения разных struct, array или primitive
     //       чтобы эти значения менялись одновременно
