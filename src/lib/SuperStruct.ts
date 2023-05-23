@@ -206,43 +206,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     return res
   }
 
-  private initChild(definition: SuperItemDefinition, keyStr: string, initialValue?: any): any {
-    let result: any | undefined
-
-    if (typeof initialValue === 'undefined') {
-      // if no new value then set default value if exist
-      result = definition.default
-
-      // TODO: тут тоже проверить тип, он может быть не верный
-
-      // TODO: if definition of child is super struct or array
-      //       and not initial value - then make a new super instance
-    }
-    else {
-      // set a new value. It doesn't mean is it readonly or not
-      if (isCorrespondingType(initialValue, definition.type)) {
-        result = initialValue
-      }
-      else {
-        throw new Error(
-          `The initial value ${initialValue} with key ${keyStr} ` +
-          `is not corresponding type ${definition.type}`
-        )
-      }
-
-      if (isSuperValue(result)) {
-        // this means the super struct or array has already initialized,
-        // so now we are linking it as my child
-        const superVal: SuperValueBase<T> = result
-
-        superVal.$$setParent(this, this.makeChildPath(keyStr))
-
-        // start listen for child changes
-        superVal.subscribe(this.handleChildChange)
-      }
-    }
-  }
-
 }
 
 

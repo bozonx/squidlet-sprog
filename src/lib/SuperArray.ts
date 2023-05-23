@@ -4,7 +4,7 @@ import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
-  DEFAULT_INIT_SUPER_DEFINITION,
+  DEFAULT_INIT_SUPER_DEFINITION, SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 
@@ -76,7 +76,7 @@ export function proxyArray(arr: SuperArray): any[] {
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> {
   readonly values: T[] = []
-  readonly itemDefinition: SuperItemInitDefinition
+  readonly itemDefinition: SuperItemDefinition
 
 
   get readOnly(): boolean {
@@ -87,13 +87,11 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   constructor(scope: SuperScope, itemDefinition?: SuperItemInitDefinition) {
     super(scope)
 
-    this.itemDefinition = (itemDefinition)
-      ? {
-        ...itemDefinition,
-        required: Boolean(itemDefinition.required),
-        readonly: Boolean(itemDefinition.readonly),
-      }
-      : DEFAULT_INIT_SUPER_DEFINITION
+    this.itemDefinition = {
+      ...(itemDefinition || DEFAULT_INIT_SUPER_DEFINITION),
+      required: Boolean(itemDefinition?.required),
+      readonly: Boolean(itemDefinition?.readonly),
+    }
   }
 
 
@@ -106,20 +104,21 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       throw new Error(`The array has been already initialized`)
     }
     // set initial values
-    if (initialArr) {
-      // TODO: проверка типа
+    // TODO: get keys from default array too
+    const allKeys: number[] = (initialArr || []).map((el, i) => i)
 
-      //fullWithArray(this.values, initialArr, true)
+    for (const index of allKeys) {
+      this.values[index] = this.initChild(
+        this.itemDefinition,
+        index,
+        // TODO: или значение из массива по умолчанию
+        initialArr?.[index]
+      )
 
-      // TODO: set length
       // TODO: если в остатке есть super - то отвязать их
-
-    }
-    else {
-      // TODO: default array
+      // TODO: set length to remove odd items
     }
 
-    // TODO: init super children
     // TODO: link all the super children
 
     return super.init()
