@@ -3,7 +3,8 @@ import {
   trimCharStart,
   deepGet,
   deepClone,
-  isPlainObject
+  isPlainObject,
+  omitObj
 } from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -19,6 +20,7 @@ export type SuperChangeHandler = (
   path?: string
 ) => void
 
+export const SUPER_VALUE_PROP = '$super'
 
 export function isSuperValue(val: any): boolean {
   return typeof val === 'object' && val.superValue
@@ -117,10 +119,7 @@ export abstract class SuperValueBase<T = any | any[]> {
    * You can change the clone but changes will not affect the struct.
    */
   clone = (): T => {
-
-    console.log(2222, 'a1' in (this.values as any), this.values, deepClone(this.values))
-
-    return deepClone(this.values)
+    return deepClone(omitObj(this.values as any, SUPER_VALUE_PROP))
   }
 
   detachedCopy() {

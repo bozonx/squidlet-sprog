@@ -1,7 +1,7 @@
-import {deepSet} from 'squidlet-lib';
+import {deepSet, omitObj} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
-import {SuperValueBase, isSuperValue} from './SuperValueBase.js';
+import {SuperValueBase, isSuperValue, SUPER_VALUE_PROP} from './SuperValueBase.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 
@@ -30,7 +30,7 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
     },
 
     ownKeys(target: SuperStruct): ArrayLike<string | symbol> {
-      return Object.keys(struct.values)
+      return Object.keys(omitObj(struct.values, SUPER_VALUE_PROP))
     },
 
     // defineProperty?(target: T, property: string | symbol, attributes: PropertyDescriptor): boolean;
@@ -39,14 +39,16 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
 
   const a = struct.values as any
 
-  a.__proto__.init = struct.init
-  a.__proto__.destroy = struct.destroy
-  a.__proto__.has = struct.has
-  a.__proto__.getValue = struct.getValue
-  a.__proto__.setValue = struct.setValue
-  a.__proto__.resetValue = struct.resetValue
-  a.__proto__.clone = struct.clone
-  a.__proto__.link = struct.link
+  a[SUPER_VALUE_PROP] = struct
+
+  // a.__proto__.init = struct.init
+  // a.__proto__.destroy = struct.destroy
+  // a.__proto__.has = struct.has
+  // a.__proto__.getValue = struct.getValue
+  // a.__proto__.setValue = struct.setValue
+  // a.__proto__.resetValue = struct.resetValue
+  // a.__proto__.clone = struct.clone
+  // a.__proto__.link = struct.link
 
   return new Proxy(struct.values, handler) as SuperStruct
 }
