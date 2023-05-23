@@ -1,4 +1,4 @@
-import {IndexedEvents, trimCharStart, deepGet} from 'squidlet-lib';
+import {IndexedEvents, trimCharStart, deepGet, deepClone} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 
@@ -17,9 +17,9 @@ export function isSuperValue(val: any): boolean {
 }
 
 
-export abstract class SuperValueBase {
+export abstract class SuperValueBase<T = any | any[]> {
   readonly superValue = true
-  readonly abstract values: any | any[]
+  readonly abstract values: T
   protected parent?: SuperValueBase
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
@@ -73,6 +73,20 @@ export abstract class SuperValueBase {
     return deepGet(this.values as any, pathTo)
   }
 
+  /**
+   * The same as setValue but it sets null
+   */
+  resetValue = (pathTo: string) => {
+    this.setValue(pathTo, null)
+  }
+
+  /**
+   * It makes full deep clone.
+   * You can change the clone but changes will not affect the struct.
+   */
+  clone = (): T => {
+    return deepClone(this.values)
+  }
 
   /**
    * This method will be returned after initializing to update readonly values
@@ -93,19 +107,10 @@ export abstract class SuperValueBase {
     }
   }
 
-  // TODO: change event of child
-  protected riseMyChangeEvent(key?: keyof T) {
-    // let fullPath: string | undefined = key as string
-    //
-    // if (this.myPath && key) {
-    //   fullPath = this.myPath + '.' + String(key)
-    // }
-    // else if (this.myPath) {
-    //   fullPath = this.myPath
-    // }
+  protected riseChildrenChangeEvent(childKeyOrIndex: string | number) {
+    const fullPath = this.makeChildPath(childKeyOrIndex)
 
     this.changeEvent.emit(this, fullPath)
   }
-
 
 }

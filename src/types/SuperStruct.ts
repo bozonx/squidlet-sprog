@@ -1,4 +1,4 @@
-import {cloneDeepObject, deepSet} from 'squidlet-lib';
+import {deepSet} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {All_TYPES, AllTypes} from './valueTypes.js';
 import {SuperValueBase, isSuperValue} from '../lib/SuperValueBase.js';
@@ -65,7 +65,7 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
 }
 
 
-export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
+export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T> {
   // It assumes that you will not change it after initialization
   readonly definition: Record<keyof T, SuperStructDefinition> = {} as any
   // current values
@@ -107,7 +107,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
           // TODO: надо установить parent
           // TODO: надо инициализировать - передать значения
 
-          (this.values[keyName] as SuperValueBase).subscribe(this.handleChildChange)
+          (this.values[keyName] as SuperValueBase<T>).subscribe(this.handleChildChange)
         }
       }
     }
@@ -128,7 +128,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
     for (const key of Object.keys(this.values as any)) {
       const keyName = key as keyof T
       if (isSuperValue(this.values[keyName])) {
-        (this.values[keyName] as SuperValueBase).destroy()
+        (this.values[keyName] as SuperValueBase<T>).destroy()
       }
     }
   }
@@ -143,22 +143,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
     this.smartSetValue(pathTo, newValue)
   }
 
-  /**
-   * The same as setValue but it sets null
-   */
-  resetValue = (pathTo: string) => {
-    this.smartSetValue(pathTo, null)
-  }
-
-  /**
-   * It makes full deep clone.
-   * You can change the clone but changes will not affect the struct.
-   */
-  clone = (): T => {
-    // TODO: поидее можно убрать в base
-    return cloneDeepObject(this.values as any)
-  }
-
   link = () => {
     // TODO: прилинковать значения разных struct, array или primitive
     //       чтобы эти значения менялись одновременно
@@ -170,7 +154,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
    */
   protected myRoSetter = (name: keyof T, newValue: any) => {
     this.safeSetOwnValue(name, newValue, true)
-    this.riseMyChangeEvent(name)
+    this.riseChildrenChangeEvent(name as string)
   }
 
   /**
@@ -199,7 +183,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase {
     //   typeof this.definition[pathTo] === 'undefined'
     //   && !isSuperValue(this.values[pathTo])
     // ) {
-    //   this.riseMyChangeEvent(pathTo as keyof T)
+    //   this.riseChildrenChangeEvent(pathTo as keyof T)
     // }
   }
 

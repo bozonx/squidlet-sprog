@@ -70,7 +70,7 @@ export function proxyArray(arr: SuperArray): any[] {
  */
 
 
-export class SuperArray<T = any> extends SuperValueBase {
+export class SuperArray<T = any> extends SuperValueBase<T[]> {
   readonly values: T[] = []
   readonly itemType: keyof typeof All_TYPES
   readonly readOnly: boolean
@@ -117,11 +117,6 @@ export class SuperArray<T = any> extends SuperValueBase {
   setValue = () => {
     // TODO: deeply
     // TODO: use readonlu
-  }
-
-  resetValue = () => {
-    // TODO: deeply
-    // TODO: use readonly
   }
 
   /**
