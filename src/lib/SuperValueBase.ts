@@ -90,7 +90,8 @@ export abstract class SuperValueBase<T = any | any[]> {
    * Even you can set value to the deepest primitive like: struct.struct.num = 5
    */
   setValue = (pathTo: string, newValue: AllTypes) => {
-    this.smartSetValue(pathTo, newValue)
+    // TODO: add
+    //this.smartSetValue(pathTo, newValue)
   }
 
   /**

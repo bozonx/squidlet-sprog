@@ -114,15 +114,14 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
       }
 
       if (isSuperValue(this.values[keyName])) {
-        const superVal: SuperValueBase = this.values[keyName] as any
+        // this means the super struct or array has already initialized
+        // so now we are linking it as my child
+        const superVal: SuperValueBase<T> = this.values[keyName] as any
 
         superVal.$$setParent(this, this.makeChildPath(keyStr))
 
-        // TODO: надо установить parent
-        // TODO: надо инициализировать - передать значения
-
         // start listen for child changes
-        (this.values[keyName] as SuperValueBase<T>).subscribe(this.handleChildChange)
+        superVal.subscribe(this.handleChildChange)
       }
     }
 
