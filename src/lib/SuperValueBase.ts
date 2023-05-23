@@ -111,6 +111,13 @@ export abstract class SuperValueBase<T = any | any[]> {
     return deepClone(this.values)
   }
 
+  detachedCopy() {
+    // TODO: копирование себя, но без родителя и его пути
+    //  и со сброшенными обработчиками событий
+    //  поидее потомков надо тоже отсоединить от дерева и присоединить к себе
+    // TODO: add to proxy
+  }
+
   /**
    * This method will be returned after initializing to update readonly values
    * @protected
