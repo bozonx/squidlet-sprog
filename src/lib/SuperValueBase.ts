@@ -1,4 +1,10 @@
-import {IndexedEvents, trimCharStart, deepGet, deepClone} from 'squidlet-lib';
+import {
+  IndexedEvents,
+  trimCharStart,
+  deepGet,
+  deepClone,
+  isPlainObject
+} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
@@ -83,6 +89,9 @@ export abstract class SuperValueBase<T = any | any[]> {
    * To change its value get its parent and set value via parent like: parent.value = 5
    */
   getValue = (pathTo: string): AllTypes | undefined => {
+
+    console.log(111, this.values, pathTo)
+
     return deepGet(this.values as any, pathTo)
   }
 
@@ -108,6 +117,9 @@ export abstract class SuperValueBase<T = any | any[]> {
    * You can change the clone but changes will not affect the struct.
    */
   clone = (): T => {
+
+    console.log(2222, 'a1' in (this.values as any), this.values, deepClone(this.values))
+
     return deepClone(this.values)
   }
 
