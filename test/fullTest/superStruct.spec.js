@@ -17,8 +17,6 @@ describe('Full test. Super struct', () => {
       definition,
     })
 
-    console.log(333, ss)
-
     ss.$super.init({a1: 'init'})
 
     assert.deepEqual(ss.$super.clone(), {a1: 'init'})
