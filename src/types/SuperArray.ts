@@ -1,4 +1,4 @@
-import {cloneDeepArray} from 'squidlet-lib';
+import {fullWithArray} from 'squidlet-lib';
 import {isSuperValue, SuperValueBase} from '../lib/SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {All_TYPES, AllTypes} from './valueTypes.js';
@@ -93,12 +93,11 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
    * It returns setter for readonly params
    */
   init = (initialArr?: T[]): ((index: number, item: AllTypes) => void) => {
-    // TODO: return setter for ro array
-
     if (this.inited) {
       throw new Error(`The array has been already initialized`)
     }
-
+    // set initial values
+    if (initialArr) fullWithArray(this.values, initialArr, true)
 
     return super.init()
   }

@@ -88,29 +88,27 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
    * It returns setter for readonly params
    */
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
-
-    // TODO: установка default value не сработала
-    // TODO: надо получить key от родителя
-
     if (this.inited) {
       throw new Error(`The struct has been already initialized`)
     }
+    // set initial values
+    for (const keyStr of Object.keys(this.definition)) {
+      const keyName = keyStr as keyof T
 
-    if (initialValues) {
-      for (const key of Object.keys(initialValues)) {
-        const keyName = key as keyof T
-        this.safeSetOwnValue(keyName, initialValues[keyName] as any)
-        // start listen for child changes
-        // TODO: может проверить это в definition ???
-        if (isSuperValue(this.values[keyName])) {
+      this.safeSetOwnValue(keyName, initialValues[keyStr])
+      // start listen for child changes
+      // TODO: может проверить это в definition ???
+      if (isSuperValue(this.values[keyName])) {
 
-          // TODO: надо установить parent
-          // TODO: надо инициализировать - передать значения
+        // TODO: надо получить key от родителя
 
-          (this.values[keyName] as SuperValueBase<T>).subscribe(this.handleChildChange)
-        }
+        // TODO: надо установить parent
+        // TODO: надо инициализировать - передать значения
+
+        (this.values[keyName] as SuperValueBase<T>).subscribe(this.handleChildChange)
       }
     }
+
     // check required values
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
