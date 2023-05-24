@@ -34,7 +34,7 @@ export abstract class SuperValueBase<T = any | any[]> {
   readonly superValue = true
   readonly abstract values: T
   // parent super struct or array who owns me
-  protected parent?: SuperValueBase
+  protected myParent?: SuperValueBase
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
   protected changeEvent = new IndexedEvents<SuperChangeHandler>()
@@ -44,6 +44,14 @@ export abstract class SuperValueBase<T = any | any[]> {
 
   get isInitialized(): boolean {
     return this.inited
+  }
+
+  get parent(): SuperValueBase | undefined {
+    return this.myParent
+  }
+
+  get pathToMe(): string | undefined {
+    return this.myPath
   }
 
 
@@ -56,7 +64,7 @@ export abstract class SuperValueBase<T = any | any[]> {
     // means that array is completely initiated
     this.inited = true
     // rise an event any way if any values was set or not
-    this.changeEvent.emit(this, this.myPath)
+    this.changeEvent.emit(this, this.pathToMe)
     // listen to children to bubble their events
     this.startListenChildren()
     // return setter for read only props
@@ -73,7 +81,7 @@ export abstract class SuperValueBase<T = any | any[]> {
    * @myPath - full path to me in tree where im is
    */
   $$setParent(parent: SuperValueBase, myPath: string) {
-    this.parent = parent
+    this.myParent = parent
     this.myPath = myPath
   }
 
@@ -176,8 +184,8 @@ export abstract class SuperValueBase<T = any | any[]> {
       ? `[${childKeyOrIndex}]`
       : `.${childKeyOrIndex}`
 
-    if (this.myPath) {
-      return this.myPath + '.' + childKeyStr
+    if (this.pathToMe) {
+      return this.pathToMe + '.' + childKeyStr
     }
     else {
       return trimCharStart(childKeyStr, '.')
@@ -195,7 +203,7 @@ export abstract class SuperValueBase<T = any | any[]> {
    * @protected
    */
   protected riseMyEvent() {
-    this.changeEvent.emit(this, this.myPath)
+    this.changeEvent.emit(this, this.pathToMe)
   }
 
   // TODO: review
@@ -258,7 +266,7 @@ export abstract class SuperValueBase<T = any | any[]> {
 
       value.subscribe((target: SuperValueBase, path?: string) => {
         // if not path then it's some wierd
-        if (!path) console.warn(`Bubble event without path. Root is "${this.myPath}", child is "${key}"`)
+        if (!path) console.warn(`Bubble event without path. Root is "${this.pathToMe}", child is "${key}"`)
         // just bubble children's event
         this.changeEvent.emit(target, path)
       })

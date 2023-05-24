@@ -9,9 +9,32 @@ import {
 } from '../types/SuperItemDefinition.js';
 
 
+// const ARR_PUBLIC_METHODS = [
+//
+// ]
+
+
 export function proxyArray(arr: SuperArray): any[] {
+  const publicMembers: string[] = removeSomeItemsFromArray(
+    Object.keys(arr),
+    [
+      // TODO: а чо всмысле???
+      'length',
+      // TODO: надо переименовать
+      'keys',
+    ]
+  )
+
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: any) {
+      console.log(222, prop, prop in publicMembers)
+      if (prop in publicMembers) {
+
+      }
+      else {
+
+      }
+
       //console.log('get', prop)
       // Intercept array element access
       const index = Number(prop);
@@ -60,15 +83,15 @@ export function proxyArray(arr: SuperArray): any[] {
   //   чтобы поднимать события
 
 
-  const publicMembers: string[] = removeSomeItemsFromArray(
-    getClassPublicMembers(arr),
-    [
-    // TODO: а чо всмысле???
-    'length',
-    // TODO: надо переименовать
-    'keys',
-      ]
-  )
+  // const publicMembers: string[] = removeSomeItemsFromArray(
+  //   getClassPublicMembers(arr),
+  //   [
+  //   // TODO: а чо всмысле???
+  //   'length',
+  //   // TODO: надо переименовать
+  //   'keys',
+  //     ]
+  // )
 
   console.log(1111, publicMembers)
 
