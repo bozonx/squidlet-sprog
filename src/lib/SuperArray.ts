@@ -1,5 +1,5 @@
 import {fullWithArray} from 'squidlet-lib';
-import {isSuperValue, SuperValueBase} from './SuperValueBase.js';
+import {isSuperValue, SUPER_VALUE_PROP, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
@@ -50,28 +50,22 @@ export function proxyArray(arr: SuperArray): any[] {
 
   const a = (arr.values as any)
 
-  a.__proto__.init = arr.init
-  a.__proto__.destroy = arr.destroy
-  a.__proto__.has = arr.has
-  a.__proto__.getValue = arr.getValue
-  a.__proto__.setValue = arr.setValue
-  a.__proto__.resetValue = arr.resetValue
-  a.__proto__.clone = arr.clone
-  a.__proto__.link = arr.link
+  a[SUPER_VALUE_PROP] = arr
+
+  // TODO: поидее надо заменить вообще все методы, особенно мутирующие
+  //   чтобы поднимать события
+
+  // a.__proto__.init = arr.init
+  // a.__proto__.destroy = arr.destroy
+  // a.__proto__.has = arr.has
+  // a.__proto__.getValue = arr.getValue
+  // a.__proto__.setValue = arr.setValue
+  // a.__proto__.resetValue = arr.resetValue
+  // a.__proto__.clone = arr.clone
+  // a.__proto__.link = arr.link
 
   return new Proxy(a, handler)
 }
-
-
-/*
- * Not mutate array methods: length (only prop), concat, copyWithin, entries, every, filter,
- *   find, findIndex, findLast, findLastIndex, flat, flatMap, forEach,
- *   includes, indexOf, join, keys, lastIndexOf, map, slice, toLocaleString,
- *   toString, values, valueOf, some, reduce, reduceRight
- *
- * Methods which are mutate an array: push, pop, shift, unshift, fill, splice, reverse, sort
- *
- */
 
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> {
@@ -84,6 +78,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
 
   get readOnly(): boolean {
     return Boolean(this.itemDefinition.readonly)
+  }
+
+  get length(): number {
+    return this.values.length
   }
 
 
@@ -162,8 +160,145 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     this.values[index] = value as T
   }
 
-  // TODO: add delete item from array
+  /**
+   * Clear item in array but not remove index
+   * clearItem(1) [0,1,2] will be [0, empty, 2]
+   * getting of arr[1] will return undefined
+   * @param index
+   * @param ignoreRo
+   */
+  clearItem(index: number, ignoreRo: boolean = false) {
+    if (!ignoreRo && this.readOnly) {
+      throw new Error(`Can't delete item from readonly array`)
+    }
 
+    delete this.values[index]
+
+    this.riseChildrenChangeEvent(index)
+  }
+
+  /**
+   * Delete item and splice an array
+   * deleteItem(1) [0,1,2] will be [0,2]
+   * @param index
+   * @param ignoreRo
+   */
+  deleteItem(index: number, ignoreRo: boolean = false) {
+    if (!ignoreRo && this.readOnly) {
+      throw new Error(`Can't delete item from readonly array`)
+    }
+    // TODO: test
+    this.values.splice(index)
+    this.riseChildrenChangeEvent(index)
+  }
+
+  ////// Standard methods
+  // Methods which are mutate an array: push, pop, shift, unshift, fill, splice, reverse, sort
+
+  push = (...items: any[]): number => {
+    //const prevLength = this.values.length
+    const newLength = this.values.push(...items)
+    // const arr = (new Array(newLength - prevLength)).fill(true)
+    //
+    // // TODO: test
+    // // rise events for all the new children
+    // arr.forEach((el: true, index: number) => this.riseChildrenChangeEvent(index))
+    //
+
+    // TODO: наверное надо инициализировать super value и проверить значения
+
+    // emit event for whole array
+    this.riseMyEvent()
+
+    return newLength
+  }
+
+  pop() {
+    //const lastIndex = this.values.length - 1
+    const res = this.values.pop()
+
+    //this.riseChildrenChangeEvent(lastIndex)
+    // emit event for whole array
+    this.riseMyEvent()
+
+    // TODO: нужно овязять super элемент и дестроить его
+
+    return res
+  }
+
+  shift() {
+    const res = this.values.shift()
+
+    //this.riseChildrenChangeEvent(0)
+    // emit event for whole array
+    this.riseMyEvent()
+
+    // TODO: нужно овязять super элемент и дестроить его
+
+    return res
+  }
+
+  unshift(...items: any[]) {
+    const res = this.values.unshift(...items)
+    // emit event for whole array
+    this.riseMyEvent()
+
+    // const arr = (new Array(items.length)).fill(true)
+    //
+    // // TODO: test
+    // // rise events for all the new children
+    // arr.forEach((el: true, index: number) => this.riseChildrenChangeEvent(index))
+
+    // TODO: наверное надо инициализировать super value и проверить значения
+
+    return res
+  }
+
+  fill(value: any, start?: number, end?: number) {
+    this.values.fill(value, start, end)
+    // emit event for whole array
+    this.riseMyEvent()
+
+    // TODO: наверное надо проверить значения
+
+    return this
+  }
+
+  splice(start: number, deleteCount: number, ...items: T[]) {
+    const res = this.values.splice(start, deleteCount, ...items)
+    // emit event for whole array
+    this.riseMyEvent()
+
+    // TODO: нужно овязять super элемент и дестроить его
+
+    return res
+  }
+
+  reverse() {
+    const res = this.values.reverse()
+    // emit event for whole array
+    this.riseMyEvent()
+
+    return res
+  }
+
+  sort(compareFn?: (a: T, b: T) => number) {
+    this.values.sort()
+    // emit event for whole array
+    this.riseMyEvent()
+
+    return this
+  }
+
+  // TODO: not mutable methods just copy
+/*
+ * Not mutate array methods: concat, copyWithin, entries, every, filter,
+ *   find, findIndex, findLast, findLastIndex, flat, flatMap, forEach,
+ *   includes, indexOf, join, keys, lastIndexOf, map, slice, toLocaleString,
+ *   toString, values, valueOf, some, reduce, reduceRight
+ */
+
+  ///// PRIVATE
 
   /**
    * Set value of self readonly value and rise an event
@@ -183,51 +318,4 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     // this.changeEvent.emit(target, fullPath)
   }
 
-  ////// Standart methods
-  // push = (item: any): number => {
-  //   console.log(4444)
-  //   return this.arr.push(item)
-  // }
-  //
-  // pop() {
-  //
-  // }
-  //
-  // shift() {
-  //
-  // }
-  //
-  // unshift() {
-  //
-  // }
-  //
-  // fill() {
-  //
-  // }
-  //
-  // splice() {
-  //
-  // }
-  //
-  // reverse() {
-  //
-  // }
-  //
-  // sort() {
-  //
-  // }
-
-  ////// PRIVATE
-
 }
-
-
-// const a = new SuperArray({} as any, {} as any)
-//
-// const b = proxyArray(a)
-//
-// b[0] = 5
-//
-// console.log(444, (b as any).getValue(0))
-//
-// b.push(6)

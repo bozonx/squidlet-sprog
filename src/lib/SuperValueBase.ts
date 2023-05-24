@@ -186,6 +186,14 @@ export abstract class SuperValueBase<T = any | any[]> {
     this.changeEvent.emit(this, fullPath)
   }
 
+  /**
+   * Rise an event of whole my instance
+   * @protected
+   */
+  protected riseMyEvent() {
+    this.changeEvent.emit(this, this.myPath)
+  }
+
   // TODO: review
   protected initChild(
     definition: SuperItemDefinition,
