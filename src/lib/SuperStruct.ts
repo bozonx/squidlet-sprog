@@ -69,6 +69,7 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
 
 
 export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T> {
+  readonly isStruct = true
   // It assumes that you will not change it after initialization
   readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
   // current values
@@ -132,12 +133,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
   }
 
 
-  link = () => {
-    // TODO: прилинковать значения разных struct, array или primitive
-    //       чтобы эти значения менялись одновременно
-  }
-
-
   /**
    * Set value of self readonly value and rise an event
    */
@@ -155,6 +150,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     // TODO: нужно ставить значение примитива через родителя
     // TODO: use readonly
 
+    // TODO: а если массив?
     if (pathTo.indexOf('.') === -1) {
       // own value
       this.safeSetOwnValue(pathTo as keyof T, value)

@@ -75,8 +75,11 @@ export function proxyArray(arr: SuperArray): any[] {
 
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> {
-  readonly values: T[] = []
+  readonly isArray = true
+  // definition for all the items of array
   readonly itemDefinition: SuperItemDefinition
+  readonly values: T[] = []
+  private readonly defaultArray?: any[]
 
 
   get readOnly(): boolean {
@@ -84,7 +87,11 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   }
 
 
-  constructor(scope: SuperScope, itemDefinition?: SuperItemInitDefinition) {
+  constructor(
+    scope: SuperScope,
+    itemDefinition?: SuperItemInitDefinition,
+    defaultArray?: any[]
+  ) {
     super(scope)
 
     this.itemDefinition = {
@@ -92,6 +99,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       required: Boolean(itemDefinition?.required),
       readonly: Boolean(itemDefinition?.readonly),
     }
+    this.defaultArray = defaultArray
   }
 
 
@@ -111,7 +119,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       this.values[index] = this.initChild(
         this.itemDefinition,
         index,
-        // TODO: или значение из массива по умолчанию
+        // TODO: or defaultArray
         initialArr?.[index]
       )
 
@@ -132,11 +140,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     for (const indexStr of values) {
       if (isSuperValue(values[indexStr])) (values[indexStr] as SuperValueBase).destroy()
     }
-  }
-
-
-  link = () => {
-    // TODO: add
   }
 
 

@@ -111,6 +111,11 @@ export abstract class SuperValueBase<T = any | any[]> {
     this.setValue(pathTo, null)
   }
 
+  link = () => {
+    // TODO: прилинковать значения разных struct, array или primitive
+    //       чтобы эти значения менялись одновременно
+  }
+
   /**
    * It makes full deep clone.
    * You can change the clone but changes will not affect the struct.
