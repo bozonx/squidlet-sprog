@@ -164,6 +164,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     }
 
     this.values[index] = value as T
+
+    this.riseChildrenChangeEvent(index)
   }
 
   /**

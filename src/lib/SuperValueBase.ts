@@ -75,10 +75,14 @@ export abstract class SuperValueBase<T = any | any[]> {
   }
 
 
+  /**
+   * Get own keys or indexes
+   */
   abstract keys(): string[] | number[]
 
   /**
-   * Set value to own child, not deeper
+   * Set value to own child, not deeper.
+   * And rise an event of it child
    * @param key
    * @param value
    * @param ignoreRo
@@ -93,7 +97,11 @@ export abstract class SuperValueBase<T = any | any[]> {
     this.changeEvent.removeListener(handlerIndex)
   }
 
-  has = (pathTo: string): boolean => {
+  /**
+   * It checks does the last parent or myself has key
+   * @param pathTo
+   */
+  hasKey = (pathTo: string): boolean => {
     return deepHas(this.values as any, pathTo)
   }
 
@@ -117,14 +125,9 @@ export abstract class SuperValueBase<T = any | any[]> {
     if (splat.length === 1) {
       // own value - there splat[0] is number or string
       this.setOwnValue(splat[0], newValue)
-      // TODO: может это надо сделать в setOwnValue?
-      this.riseChildrenChangeEvent(pathTo)
     }
     else {
       // deep value
-
-      // TODO: а как оно дойдёт до setOwnValue???
-      // TODO: а событие поднимется?
       deepSet(this.values as any, pathTo, newValue)
     }
   }
@@ -163,6 +166,9 @@ export abstract class SuperValueBase<T = any | any[]> {
   protected abstract myRoSetter: Function
 
   protected makeChildPath(childKeyOrIndex: string | number): string {
+
+    // TODO: move it to squidlet-lib
+
     const childKeyStr: string = (typeof childKeyOrIndex === 'number')
       ? `[${childKeyOrIndex}]`
       : `.${childKeyOrIndex}`
@@ -197,6 +203,10 @@ export abstract class SuperValueBase<T = any | any[]> {
   ): any {
 
     // TODO: read only должно наследоваться потомками если оно стоит у родителя
+
+    // TODO: если потомок super value то надо делать его через proxy
+    //       потому что иначе не сработает deepGet, deepSet etc
+    //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
 
     let result: any | undefined
 

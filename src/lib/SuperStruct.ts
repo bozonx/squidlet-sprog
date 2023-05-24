@@ -27,7 +27,7 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
         return true
       }
       else if (Object.keys(struct.values).includes(p)) {
-        return struct.has(p)
+        return struct.hasKey(p)
       }
 
       return target[p]
@@ -155,6 +155,8 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     }
 
     this.values[name] = value as any
+
+    this.riseChildrenChangeEvent(key)
   }
 
   toDefaultValue(key: keyof T) {
