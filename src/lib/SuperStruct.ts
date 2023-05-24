@@ -114,10 +114,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
       }
     }
 
-    // TODO: link all the super children
-    //   start listen for child changes
-    //   superVal.subscribe(this.handleChildChange)
-
     return super.init()
   }
 
@@ -170,17 +166,6 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
   protected myRoSetter = (name: keyof T, newValue: AllTypes) => {
     this.setOwnValue(name as any, newValue, true)
     this.riseChildrenChangeEvent(name as string)
-  }
-
-
-  private handleChildChange = (target: SuperValueBase, childPath?: string) => {
-    const fullPath = (this.myPath) ? this.myPath + '.' + childPath : childPath
-
-    // TODO: что должно происходить если изменился потомок ???
-    // TODO: наверное поднять событие у себя но с данными от потомка?
-    // TODO: или поднять событие у себя как будто сам изменился?
-
-    this.changeEvent.emit(target, fullPath)
   }
 
   private prepareDefinition(

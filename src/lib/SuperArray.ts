@@ -131,8 +131,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       )
     })
 
-    // TODO: link all the super children
-
     return super.init()
   }
 
@@ -321,16 +319,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
 
     this.setOwnValue(index, newValue, true)
     this.riseChildrenChangeEvent(index)
-  }
-
-  private handleChildChange = (target: SuperValueBase, childPath?: string) => {
-    // const fullPath = (this.myPath) ? this.myPath + '.' + childPath : childPath
-    //
-    // // TODO: что должно происходить если изменился потомок ???
-    // // TODO: наверное поднять событие у себя но с данными от потомка?
-    // // TODO: или поднять событие у себя как будто сам изменился?
-    //
-    // this.changeEvent.emit(target, fullPath)
   }
 
 }

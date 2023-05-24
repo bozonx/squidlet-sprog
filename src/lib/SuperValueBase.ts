@@ -12,6 +12,7 @@ import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
+import {SuperStruct} from './SuperStruct.js';
 
 
 export type SuperChangeHandler = (
@@ -56,6 +57,8 @@ export abstract class SuperValueBase<T = any | any[]> {
     this.inited = true
     // rise an event any way if any values was set or not
     this.changeEvent.emit(this, this.myPath)
+    // listen to children to bubble their events
+    this.startListenChildren()
     // return setter for read only props
     return this.myRoSetter
   }
@@ -241,6 +244,25 @@ export abstract class SuperValueBase<T = any | any[]> {
     }
 
     return result
+  }
+
+  /**
+   * listen to children to bubble their events
+   * @protected
+   */
+  protected startListenChildren() {
+    for (const key of this.keys()) {
+      const value: SuperValueBase = (this.values as any)[key]
+
+      if (typeof value !== 'object' || value.superValue) continue
+
+      value.subscribe((target: SuperValueBase, path?: string) => {
+        // if not path then it's some wierd
+        if (!path) console.warn(`Bubble event without path. Root is "${this.myPath}", child is "${key}"`)
+        // just bubble children's event
+        this.changeEvent.emit(target, path)
+      })
+    }
   }
 
 }
