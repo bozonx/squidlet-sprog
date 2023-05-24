@@ -49,7 +49,14 @@ const ARR_PUBLIC_MEMBERS = [
 export function proxyArray(arr: SuperArray): any[] {
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: any) {
-      if (ARR_PUBLIC_MEMBERS.indexOf(prop) === -1) {
+      if (prop === SUPER_VALUE_PROP) {
+        return arr
+      }
+      else if (ARR_PUBLIC_MEMBERS.indexOf(prop) >= 0) {
+        // public SuperArray prop
+        return (arr as any)[prop]
+      }
+      else {
         // some other prop
         const index = Number(prop)
 
@@ -63,10 +70,6 @@ export function proxyArray(arr: SuperArray): any[] {
         }
         // some other prop - get it from the array
         return arr.values[prop]
-      }
-      else {
-        // public SuperArray prop
-        return (arr as any)[prop]
       }
     },
     set(target: any[], prop, value) {

@@ -10,7 +10,7 @@ describe('SuperArray', () => {
     const arr = new SuperArray(scope, item)
     const proxyfied = proxyArray(arr)
 
-    proxyfied.setValue(0, 5)
+    proxyfied.setValue('[0]', 5)
 
     assert.equal(proxyfied[0], 5)
   })

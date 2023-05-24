@@ -12,7 +12,6 @@ import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {SuperStruct} from './SuperStruct.js';
 
 
 export type SuperChangeHandler = (
@@ -122,6 +121,8 @@ export abstract class SuperValueBase<T = any | any[]> {
    * To change its value get its parent and set value via parent like: parent.value = 5
    */
   getValue = (pathTo: string): AllTypes | undefined => {
+    if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
+
     return deepGet(this.values as any, pathTo)
   }
 
@@ -131,6 +132,10 @@ export abstract class SuperValueBase<T = any | any[]> {
    * Even you can set value to the deepest primitive like: struct.struct.num = 5
    */
   setValue = (pathTo: string, newValue: AllTypes) => {
+    if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
+
+    console.log(1111, pathTo, newValue)
+
     const splat = splitDeepPath(pathTo)
 
     if (splat.length === 1) {
