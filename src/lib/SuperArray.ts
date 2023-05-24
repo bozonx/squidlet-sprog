@@ -9,26 +9,64 @@ import {
 } from '../types/SuperItemDefinition.js';
 
 
-// const ARR_PUBLIC_METHODS = [
-//
-// ]
+const ARR_PUBLIC_MEMBERS = [
+  'superValue',
+  // 'scope',
+  // 'isInitialized',
+  // 'parent',
+  // 'pathToMe',
+  'myKeys',
+  'hasKey',
+  'getValue',
+  'setValue',
+  'resetValue',
+  // 'link',
+  // 'clone',
+  // 'detachedCopy',
+
+  'isArray',
+  //'itemDefinition',
+  //'defaultArray',
+  'readOnly',
+  //'length',
+  //'setOwnValue',
+  'clearItem',
+  'toDefaultValue',
+  'deleteItem',
+
+  // mutate array
+  'push',
+  'pop',
+  'shift',
+  'unshift',
+  'fill',
+  'splice',
+  'reverse',
+  'sort',
+]
 
 
 export function proxyArray(arr: SuperArray): any[] {
-  const publicMembers: string[] = removeSomeItemsFromArray(
-    Object.keys(arr),
-    [
-      // TODO: а чо всмысле???
-      'length',
-      // TODO: надо переименовать
-      'keys',
-    ]
-  )
+  // const publicMembers: string[] = removeSomeItemsFromArray(
+  //   Object.keys(arr),
+  //   [
+  //     // TODO: а чо всмысле???
+  //     'length',
+  //     // TODO: надо переименовать
+  //     'keys',
+  //     'myParent',
+  //     'myPath',
+  //     'inited',
+  //     'init',
+  //     'destroy',
+  //     '$$setParent',
+  //   ]
+  // )
 
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: any) {
-      console.log(222, prop, prop in publicMembers)
-      if (prop in publicMembers) {
+      console.log(222, prop, ARR_PUBLIC_MEMBERS.indexOf(prop))
+      if (prop in ARR_PUBLIC_MEMBERS) {
 
       }
       else {
@@ -93,9 +131,8 @@ export function proxyArray(arr: SuperArray): any[] {
   //     ]
   // )
 
-  console.log(1111, publicMembers)
 
-  for (const memberName of publicMembers) {
+  for (const memberName of ARR_PUBLIC_MEMBERS) {
     //a.__proto__[memberName] = (arr as any)[memberName]
   }
 
@@ -192,7 +229,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   }
 
 
-  keys(): number[] {
+  myKeys(): number[] {
     return arrayKeys(this.values)
   }
 

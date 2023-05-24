@@ -33,13 +33,13 @@ export function isSuperValue(val: any): boolean {
 export abstract class SuperValueBase<T = any | any[]> {
   readonly superValue = true
   readonly abstract values: T
+  changeEvent = new IndexedEvents<SuperChangeHandler>()
+  readonly scope: SuperScope
   // parent super struct or array who owns me
   protected myParent?: SuperValueBase
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
-  protected changeEvent = new IndexedEvents<SuperChangeHandler>()
   protected inited: boolean = false
-  protected scope: SuperScope
 
 
   get isInitialized(): boolean {
@@ -89,7 +89,7 @@ export abstract class SuperValueBase<T = any | any[]> {
   /**
    * Get own keys or indexes
    */
-  abstract keys(): string[] | number[]
+  abstract myKeys(): string[] | number[]
 
   /**
    * Set value to own child, not deeper.
@@ -259,7 +259,7 @@ export abstract class SuperValueBase<T = any | any[]> {
    * @protected
    */
   protected startListenChildren() {
-    for (const key of this.keys()) {
+    for (const key of this.myKeys()) {
       const value: SuperValueBase = (this.values as any)[key]
 
       if (typeof value !== 'object' || value.superValue) continue

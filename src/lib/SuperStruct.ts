@@ -129,7 +129,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
   }
 
 
-  keys(): string[] {
+  myKeys(): string[] {
     return Object.keys(this.values as any)
   }
 
