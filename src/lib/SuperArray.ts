@@ -55,6 +55,8 @@ export function proxyArray(arr: SuperArray): any[] {
   // TODO: поидее надо заменить вообще все методы, особенно мутирующие
   //   чтобы поднимать события
 
+  // TODO: так а чо apply не используешь ???
+
   // a.__proto__.init = arr.init
   // a.__proto__.destroy = arr.destroy
   // a.__proto__.has = arr.has
@@ -201,6 +203,13 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     this.riseChildrenChangeEvent(index)
   }
 
+  makeProxy(): T[] {
+    // TODO: add
+    // TODO: навеное пометить что получение значений должно тогда всегда выдаваться с proxy
+    return []
+  }
+
+
   ////// Standard methods
   // Methods which are mutate an array: push, pop, shift, unshift, fill, splice, reverse, sort
 
@@ -299,7 +308,25 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     return this
   }
 
-  // TODO: not mutable methods just copy
+  // TODO: not mutable methods just copy:
+  //  - filter
+  //  - find
+  //  - findIndex
+  //  - findLast
+  //  - findLastIndex
+  //  - forEach
+  //  - includes
+  //  - indexOf
+  //  - join
+  //  - map
+  //  - slice
+  //  - toLocaleString
+  //  - toString
+  //  - reduce
+  //  - reduceRight
+  //  ???? flat, flatMap, keys, values, some, valueOf
+  // not realize: concat, copyWithin, entries, every
+
 /*
  * Not mutate array methods: concat, copyWithin, entries, every, filter,
  *   find, findIndex, findLast, findLastIndex, flat, flatMap, forEach,

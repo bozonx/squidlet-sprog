@@ -159,6 +159,12 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     // TODO: add
   }
 
+  makeProxy(): T {
+    // TODO: add
+    // TODO: навеное пометить что получение значений должно тогда всегда выдаваться с proxy
+    return {} as T
+  }
+
 
   /**
    * Set value of self readonly value and rise an event
