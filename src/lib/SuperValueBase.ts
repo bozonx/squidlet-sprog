@@ -134,8 +134,6 @@ export abstract class SuperValueBase<T = any | any[]> {
   setValue = (pathTo: string, newValue: AllTypes) => {
     if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    console.log(1111, pathTo, newValue)
-
     const splat = splitDeepPath(pathTo)
 
     if (splat.length === 1) {

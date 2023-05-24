@@ -73,23 +73,19 @@ export function proxyArray(arr: SuperArray): any[] {
       }
     },
     set(target: any[], prop, value) {
-
-      // TODO: chech
       // Intercept array element assignment
-      console.log('----set', prop, value)
-
-      // TODO: push method set value and set length - do it need to catch length set???
-
       const index = Number(prop);
+
       if (Number.isInteger(index)) {
         if (index < 0) {
           // Support negative indices (e.g., -1 for last element)
-          prop = String(target.length + index);
+          prop = String(arr.length + index);
         }
-        target[index] = value;
+        // set value and rise an event
+        arr.setOwnValue(index, value)
       } else {
         // Set the usual array properties and methods
-        target[index] = value;
+        arr.values[index] = value
       }
 
       return true
