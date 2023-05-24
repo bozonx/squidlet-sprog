@@ -150,23 +150,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
 
 
   setOwnValue(index: number, value: AllTypes, ignoreRo: boolean = false) {
-
-  }
-
-
-  /**
-   * Set value of self readonly value and rise an event
-   */
-  protected myRoSetter = (index: number, newValue: AllTypes) => {
-    this.setOwnValue(index, newValue, true)
-    this.riseChildrenChangeEvent(index)
-  }
-
-  private smartSetValue(pathTo: string, value: AllTypes) {
-    // TODO: ???
-  }
-
-  private safeSetOwnValue(index: number, value: T, ignoreRo: boolean = false) {
     if (!ignoreRo && this.readOnly) {
       throw new Error(`Can't set a value to readonly array`)
     }
@@ -176,7 +159,18 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       )
     }
 
-    this.values[index] = value
+    this.values[index] = value as T
+  }
+
+  // TODO: add delete item from array
+
+
+  /**
+   * Set value of self readonly value and rise an event
+   */
+  protected myRoSetter = (index: number, newValue: AllTypes) => {
+    this.setOwnValue(index, newValue, true)
+    this.riseChildrenChangeEvent(index)
   }
 
   private handleChildChange = (target: SuperValueBase, childPath?: string) => {
