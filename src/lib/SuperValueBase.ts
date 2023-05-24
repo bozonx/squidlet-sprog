@@ -73,6 +73,16 @@ export abstract class SuperValueBase<T = any | any[]> {
   }
 
 
+  abstract keys(): string[] | number[]
+
+  /**
+   * Set value to own child, not deeper
+   * @param key
+   * @param value
+   * @param ignoreRo
+   */
+  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean): void
+
   subscribe(handler: SuperChangeHandler): number {
     return this.changeEvent.addListener(handler)
   }
@@ -80,8 +90,6 @@ export abstract class SuperValueBase<T = any | any[]> {
   unsubscribe(handlerIndex: number) {
     this.changeEvent.removeListener(handlerIndex)
   }
-
-  abstract keys(): string[] | number[]
 
   has = (pathTo: string): boolean => {
     return deepHas(this.values as any, pathTo)
@@ -154,14 +162,6 @@ export abstract class SuperValueBase<T = any | any[]> {
     //  поидее потомков надо тоже отсоединить от дерева и присоединить к себе
     // TODO: add to proxy
   }
-
-  /**
-   * Set value to own child, not deeper
-   * @param key
-   * @param value
-   * @param ignoreRo
-   */
-  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean): void
 
   /**
    * This method will be returned after initializing to update readonly values
