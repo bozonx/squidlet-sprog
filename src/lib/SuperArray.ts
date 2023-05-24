@@ -1,4 +1,4 @@
-import {arrayKeys} from 'squidlet-lib';
+import {arrayKeys, getClassPublicMembers, removeSomeItemsFromArray} from 'squidlet-lib';
 import {isSuperValue, SUPER_VALUE_PROP, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -46,25 +46,47 @@ export function proxyArray(arr: SuperArray): any[] {
 
       return true
     },
+    // apply(target: any[], thisArg: any, argArray: any[]): any {
+    //   console.log(111, target, thisArg, argArray)
+    // }
   }
 
-  const a = (arr.values as any)
-
-  a[SUPER_VALUE_PROP] = arr
+  const a: any = []
+  //const a: any = arr.values
+  //
+  // a[SUPER_VALUE_PROP] = arr
 
   // TODO: поидее надо заменить вообще все методы, особенно мутирующие
   //   чтобы поднимать события
 
-  // TODO: так а чо apply не используешь ???
+
+  const publicMembers: string[] = removeSomeItemsFromArray(
+    getClassPublicMembers(arr),
+    [
+    // TODO: а чо всмысле???
+    'length',
+    // TODO: надо переименовать
+    'keys',
+      ]
+  )
+
+  console.log(1111, publicMembers)
+
+  for (const memberName of publicMembers) {
+    //a.__proto__[memberName] = (arr as any)[memberName]
+  }
+
 
   // a.__proto__.init = arr.init
   // a.__proto__.destroy = arr.destroy
-  // a.__proto__.has = arr.has
+  // a.__proto__.hasKey = arr.hasKey
   // a.__proto__.getValue = arr.getValue
   // a.__proto__.setValue = arr.setValue
   // a.__proto__.resetValue = arr.resetValue
   // a.__proto__.clone = arr.clone
   // a.__proto__.link = arr.link
+
+  //return new Proxy(a, handler)
 
   return new Proxy(a, handler)
 }
@@ -75,7 +97,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   // definition for all the items of array
   readonly itemDefinition: SuperItemDefinition
   readonly values: T[] = []
-  private readonly defaultArray?: any[]
+  readonly defaultArray?: any[]
 
 
   get readOnly(): boolean {
