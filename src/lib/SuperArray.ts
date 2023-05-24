@@ -28,7 +28,7 @@ const ARR_PUBLIC_MEMBERS = [
   //'itemDefinition',
   //'defaultArray',
   'readOnly',
-  //'length',
+  'length',
   //'setOwnValue',
   'clearItem',
   'toDefaultValue',
@@ -47,45 +47,27 @@ const ARR_PUBLIC_MEMBERS = [
 
 
 export function proxyArray(arr: SuperArray): any[] {
-  // const publicMembers: string[] = removeSomeItemsFromArray(
-  //   Object.keys(arr),
-  //   [
-  //     // TODO: а чо всмысле???
-  //     'length',
-  //     // TODO: надо переименовать
-  //     'keys',
-  //     'myParent',
-  //     'myPath',
-  //     'inited',
-  //     'init',
-  //     'destroy',
-  //     '$$setParent',
-  //   ]
-  // )
-
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: any) {
-      console.log(222, prop, ARR_PUBLIC_MEMBERS.indexOf(prop))
-      if (prop in ARR_PUBLIC_MEMBERS) {
+      if (ARR_PUBLIC_MEMBERS.indexOf(prop) === -1) {
+        // some other prop
+        const index = Number(prop)
 
+        if (Number.isInteger(index)) {
+          if (index < 0) {
+            // Support negative indices (e.g., -1 for last element)
+            prop = String(arr.length + index)
+          }
+
+          return arr.values[prop]
+        }
+        // some other prop - get it from the array
+        return arr.values[prop]
       }
       else {
-
+        // public SuperArray prop
+        return (arr as any)[prop]
       }
-
-      //console.log('get', prop)
-      // Intercept array element access
-      const index = Number(prop);
-      if (Number.isInteger(index)) {
-        if (index < 0) {
-          // Support negative indices (e.g., -1 for last element)
-          prop = String(target.length + index);
-        }
-        return target[prop];
-      }
-
-      // Return the usual array properties and methods
-      return target[prop];
     },
     set(target: any[], prop, value) {
       // Intercept array element assignment
