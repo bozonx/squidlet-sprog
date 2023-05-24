@@ -151,7 +151,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     return arrayKeys(this.values)
   }
 
-  setOwnValue(index: number, value: AllTypes, ignoreRo: boolean = false) {
+  setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false) {
+    const index = Number(key)
+
     if (!ignoreRo && this.readOnly) {
       throw new Error(`Can't set a value to readonly array`)
     }

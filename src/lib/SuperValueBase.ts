@@ -3,8 +3,10 @@ import {
   trimCharStart,
   deepGet,
   deepHas,
+  deepSet,
   deepClone,
-  omitObj
+  omitObj,
+  splitDeepPath
 } from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -81,7 +83,7 @@ export abstract class SuperValueBase<T = any | any[]> {
    * @param value
    * @param ignoreRo
    */
-  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean): void
+  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): void
 
   subscribe(handler: SuperChangeHandler): number {
     return this.changeEvent.addListener(handler)
@@ -110,30 +112,21 @@ export abstract class SuperValueBase<T = any | any[]> {
    * Even you can set value to the deepest primitive like: struct.struct.num = 5
    */
   setValue = (pathTo: string, newValue: AllTypes) => {
-    // TODO: add
-    // TODO: нужно ставить значение примитива через родителя
-    // TODO: use readonly
+    const splat = splitDeepPath(pathTo)
 
-    // TODO: а если массив?
-    if (pathTo.indexOf('.') === -1) {
-      // own value
-      this.safeSetOwnValue(pathTo as keyof T, value)
+    if (splat.length === 1) {
+      // own value - there splat[0] is number or string
+      this.setOwnValue(splat[0], newValue)
+      // TODO: может это надо сделать в setOwnValue?
+      this.riseChildrenChangeEvent(pathTo)
     }
     else {
       // deep value
-      deepSet(this.values as any, pathTo, value)
-    }
 
-    // rise an event only if it is my children and it isn't a super value
-    // super value will rise an event by itself
-    // // TODO: простые типы могут быть deeply
-    // if (
-    //   pathTo.indexOf('.') === -1
-    //   typeof this.definition[pathTo] === 'undefined'
-    //   && !isSuperValue(this.values[pathTo])
-    // ) {
-    //   this.riseChildrenChangeEvent(pathTo as keyof T)
-    // }
+      // TODO: а как оно дойдёт до setOwnValue???
+      // TODO: а событие поднимется?
+      deepSet(this.values as any, pathTo, newValue)
+    }
   }
 
   /**
