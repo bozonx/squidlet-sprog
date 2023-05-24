@@ -112,20 +112,26 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       throw new Error(`The array has been already initialized`)
     }
     // set initial values
-    // TODO: get keys from default array too
-    const allKeys: number[] = (initialArr || []).map((el, i) => i)
+    const initArrLength = initialArr?.length || 0
+    const defaultArrLength = this.defaultArray?.length || 0
+    const maxLength: number = Math.max(initArrLength, defaultArrLength)
+    const indexArr = (new Array(maxLength)).fill(true)
 
-    for (const index of allKeys) {
+    indexArr.forEach((el: true, index: number) => {
+      // if index is in range of initalArr then get its item otherwise get from defaultArray
+      const value = (index < initArrLength)
+        ? initialArr?.[index]
+        : this.defaultArray?.[index]
+
       this.values[index] = this.initChild(
         this.itemDefinition,
         index,
-        // TODO: or defaultArray
-        initialArr?.[index]
+        value
       )
-
-      // TODO: если в остатке есть super - то отвязать их
-      // TODO: set length to remove odd items
-    }
+    })
+    // TODO: если в остатке есть super - то отвязать их
+    // set length to remove odd items
+    this.values.length = maxLength
 
     // TODO: link all the super children
 

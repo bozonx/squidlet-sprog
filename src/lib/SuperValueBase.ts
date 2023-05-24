@@ -156,6 +156,7 @@ export abstract class SuperValueBase<T = any | any[]> {
     this.changeEvent.emit(this, fullPath)
   }
 
+  // TODO: review
   protected initChild(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
