@@ -115,8 +115,8 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     }
 
     // TODO: link all the super children
-    // start listen for child changes
-    //superVal.subscribe(this.handleChildChange)
+    //   start listen for child changes
+    //   superVal.subscribe(this.handleChildChange)
 
     return super.init()
   }
@@ -127,52 +127,15 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     for (const key of Object.keys(this.values as any)) {
       const keyName = key as keyof T
       if (isSuperValue(this.values[keyName])) {
-        (this.values[keyName] as SuperValueBase<T>).destroy()
+        (this.values[keyName] as SuperValueBase).destroy()
       }
     }
   }
 
 
-  /**
-   * Set value of self readonly value and rise an event
-   */
-  protected myRoSetter = (name: keyof T, newValue: any) => {
-    this.safeSetOwnValue(name, newValue, true)
-    this.riseChildrenChangeEvent(name as string)
-  }
+  setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false) {
+    const name: keyof T = key as any
 
-  /**
-   * Set value for my self or deeply.
-   * It emits an event only if the deep value isn't a super type
-   */
-  private smartSetValue(pathTo: string, value: AllTypes) {
-
-    // TODO: нужно ставить значение примитива через родителя
-    // TODO: use readonly
-
-    // TODO: а если массив?
-    if (pathTo.indexOf('.') === -1) {
-      // own value
-      this.safeSetOwnValue(pathTo as keyof T, value)
-    }
-    else {
-      // deep value
-      deepSet(this.values as any, pathTo, value)
-    }
-
-    // rise an event only if it is my children and it isn't a super value
-    // super value will rise an event by itself
-    // // TODO: простые типы могут быть deeply
-    // if (
-    //   pathTo.indexOf('.') === -1
-    //   typeof this.definition[pathTo] === 'undefined'
-    //   && !isSuperValue(this.values[pathTo])
-    // ) {
-    //   this.riseChildrenChangeEvent(pathTo as keyof T)
-    // }
-  }
-
-  private safeSetOwnValue(name: keyof T, value: AllTypes, ignoreRo: boolean = false) {
     if (typeof this.definition[name] === 'undefined') {
       throw new Error(
         `Can't set value with name ${String(name)} which isn't defined in definition`
@@ -189,6 +152,16 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
 
     this.values[name] = value as any
   }
+
+
+  /**
+   * Set value of self readonly value and rise an event
+   */
+  protected myRoSetter = (name: keyof T, newValue: AllTypes) => {
+    this.setOwnValue(name as any, newValue, true)
+    this.riseChildrenChangeEvent(name as string)
+  }
+
 
   private handleChildChange = (target: SuperValueBase, childPath?: string) => {
     const fullPath = (this.myPath) ? this.myPath + '.' + childPath : childPath
@@ -221,15 +194,3 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
   }
 
 }
-
-
-// const a = new SuperStruct({} as any, {
-//   p1: {type: 'string', default: 'a'}
-// } as any)
-// const b = proxyStruct(a)
-//
-// a.init({p1: 'b'})
-//
-// console.log(1,b.getValue('p1'))
-// console.log(2,(b as any)['p1'])
-// console.log(3,Object.keys(b))

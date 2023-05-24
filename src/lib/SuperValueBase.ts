@@ -2,8 +2,8 @@ import {
   IndexedEvents,
   trimCharStart,
   deepGet,
+  deepHas,
   deepClone,
-  isPlainObject,
   omitObj
 } from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
@@ -82,7 +82,7 @@ export abstract class SuperValueBase<T = any | any[]> {
   }
 
   has = (pathTo: string): boolean => {
-    return Boolean(this.getValue(pathTo))
+    return deepHas(this.values as any, pathTo)
   }
 
   /**
@@ -101,7 +101,29 @@ export abstract class SuperValueBase<T = any | any[]> {
    */
   setValue = (pathTo: string, newValue: AllTypes) => {
     // TODO: add
-    //this.smartSetValue(pathTo, newValue)
+    // TODO: нужно ставить значение примитива через родителя
+    // TODO: use readonly
+
+    // TODO: а если массив?
+    if (pathTo.indexOf('.') === -1) {
+      // own value
+      this.safeSetOwnValue(pathTo as keyof T, value)
+    }
+    else {
+      // deep value
+      deepSet(this.values as any, pathTo, value)
+    }
+
+    // rise an event only if it is my children and it isn't a super value
+    // super value will rise an event by itself
+    // // TODO: простые типы могут быть deeply
+    // if (
+    //   pathTo.indexOf('.') === -1
+    //   typeof this.definition[pathTo] === 'undefined'
+    //   && !isSuperValue(this.values[pathTo])
+    // ) {
+    //   this.riseChildrenChangeEvent(pathTo as keyof T)
+    // }
   }
 
   /**
@@ -130,6 +152,14 @@ export abstract class SuperValueBase<T = any | any[]> {
     //  поидее потомков надо тоже отсоединить от дерева и присоединить к себе
     // TODO: add to proxy
   }
+
+  /**
+   * Set value to own child, not deeper
+   * @param key
+   * @param value
+   * @param ignoreRo
+   */
+  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean): void
 
   /**
    * This method will be returned after initializing to update readonly values

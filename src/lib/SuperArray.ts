@@ -149,11 +149,17 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   }
 
 
+  setOwnValue(index: number, value: AllTypes, ignoreRo: boolean = false) {
+
+  }
+
+
   /**
    * Set value of self readonly value and rise an event
    */
-  protected myRoSetter = (index: number, item: AllTypes) => {
-    // TODO: add
+  protected myRoSetter = (index: number, newValue: AllTypes) => {
+    this.setOwnValue(index, newValue, true)
+    this.riseChildrenChangeEvent(index)
   }
 
   private smartSetValue(pathTo: string, value: AllTypes) {
