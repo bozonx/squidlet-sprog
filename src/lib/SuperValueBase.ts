@@ -202,6 +202,9 @@ export abstract class SuperValueBase<T = any | any[]> {
     childKeyOrIndex: string | number,
     initialValue?: any
   ): any {
+
+    // TODO: read only должно наследоваться потомками если оно стоит у родителя
+
     let result: any | undefined
 
     if (typeof initialValue === 'undefined') {

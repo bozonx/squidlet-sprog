@@ -157,6 +157,10 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     this.values[name] = value as any
   }
 
+  toDefaultValue(key: keyof T) {
+    // TODO: add
+  }
+
 
   /**
    * Set value of self readonly value and rise an event

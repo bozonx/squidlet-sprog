@@ -169,16 +169,19 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
    * clearItem(1) [0,1,2] will be [0, empty, 2]
    * getting of arr[1] will return undefined
    * @param index
-   * @param ignoreRo
    */
-  clearItem(index: number, ignoreRo: boolean = false) {
-    if (!ignoreRo && this.readOnly) {
+  clearItem(index: number) {
+    if (this.readOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
 
     delete this.values[index]
 
     this.riseChildrenChangeEvent(index)
+  }
+
+  toDefaultValue(index: number) {
+    // TODO: add
   }
 
   /**
@@ -308,6 +311,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
    * Set value of self readonly value and rise an event
    */
   protected myRoSetter = (index: number, newValue: AllTypes) => {
+
+    // TODO: для массива то получается ro не полноценный
+    //       нужно не только менять потомка но и сам массив - push, splice etc
+
     this.setOwnValue(index, newValue, true)
     this.riseChildrenChangeEvent(index)
   }
