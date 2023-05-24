@@ -14,6 +14,16 @@ import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 
 
+export const SUPER_PROXY_PUBLIC_MEMBERS = [
+  'isSuperValue',
+  'hasKey',
+  'getValue',
+  'setValue',
+  'setNull',
+  'toDefaultValue',
+]
+
+
 export type SuperChangeHandler = (
   // link to element which is changed. It can be a parent or its child
   target: SuperValueBase,
@@ -25,12 +35,12 @@ export type SuperChangeHandler = (
 export const SUPER_VALUE_PROP = '$super'
 
 export function isSuperValue(val: any): boolean {
-  return typeof val === 'object' && val.superValue
+  return typeof val === 'object' && val.isSuperValue
 }
 
 
 export abstract class SuperValueBase<T = any | any[]> {
-  readonly superValue = true
+  readonly isSuperValue = true
   readonly abstract values: T
   changeEvent = new IndexedEvents<SuperChangeHandler>()
   readonly scope: SuperScope
@@ -99,6 +109,8 @@ export abstract class SuperValueBase<T = any | any[]> {
    */
   abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): void
 
+  abstract toDefaultValue(key: string | number): void
+
   subscribe(handler: SuperChangeHandler): number {
     return this.changeEvent.addListener(handler)
   }
@@ -149,7 +161,7 @@ export abstract class SuperValueBase<T = any | any[]> {
   /**
    * The same as setValue but it sets null
    */
-  resetValue = (pathTo: string) => {
+  setNull = (pathTo: string) => {
     this.setValue(pathTo, null)
   }
 
@@ -265,7 +277,7 @@ export abstract class SuperValueBase<T = any | any[]> {
     for (const key of this.myKeys()) {
       const value: SuperValueBase = (this.values as any)[key]
 
-      if (typeof value !== 'object' || value.superValue) continue
+      if (typeof value !== 'object' || value.isSuperValue) continue
 
       value.subscribe((target: SuperValueBase, path?: string) => {
         // if not path then it's some wierd

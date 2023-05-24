@@ -1,5 +1,5 @@
 import {arrayKeys} from 'squidlet-lib';
-import {isSuperValue, SUPER_VALUE_PROP, SuperValueBase} from './SuperValueBase.js';
+import {isSuperValue, SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_PROP, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
@@ -10,28 +10,11 @@ import {
 
 
 const ARR_PUBLIC_MEMBERS = [
-  'superValue',
-  // 'scope',
-  // 'isInitialized',
-  // 'parent',
-  // 'pathToMe',
-  // 'myKeys',
-  'hasKey',
-  'getValue',
-  'setValue',
-  'resetValue',
-  // 'link',
-  // 'clone',
-  // 'detachedCopy',
+  ...SUPER_PROXY_PUBLIC_MEMBERS,
 
   'isArray',
-  //'itemDefinition',
-  //'defaultArray',
-  'readOnly',
   'length',
-  //'setOwnValue',
   'clearItem',
-  'toDefaultValue',
   'deleteItem',
 
   /////// mutate array

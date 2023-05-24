@@ -1,9 +1,15 @@
 import {deepSet, omitObj} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
-import {SuperValueBase, isSuperValue, SUPER_VALUE_PROP} from './SuperValueBase.js';
+import {SuperValueBase, isSuperValue, SUPER_VALUE_PROP, SUPER_PROXY_PUBLIC_MEMBERS} from './SuperValueBase.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+
+
+export const STRUCT_PUBLIC_MEMBERS = [
+  ...SUPER_PROXY_PUBLIC_MEMBERS,
+  'isStruct',
+]
 
 
 /**
@@ -50,19 +56,6 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
     // defineProperty?(target: T, property: string | symbol, attributes: PropertyDescriptor): boolean;
     // getOwnPropertyDescriptor?(target: T, p: string | symbol): PropertyDescriptor | undefined;
   }
-
-  const a = struct.values as any
-
-  a[SUPER_VALUE_PROP] = struct
-
-  // a.__proto__.init = struct.init
-  // a.__proto__.destroy = struct.destroy
-  // a.__proto__.has = struct.has
-  // a.__proto__.getValue = struct.getValue
-  // a.__proto__.setValue = struct.setValue
-  // a.__proto__.resetValue = struct.resetValue
-  // a.__proto__.clone = struct.clone
-  // a.__proto__.link = struct.link
 
   return new Proxy(struct.values, handler) as SuperStruct
 }
@@ -155,7 +148,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
     this.riseChildrenChangeEvent(key)
   }
 
-  toDefaultValue(key: keyof T) {
+  toDefaultValue(key: string) {
     // TODO: add
   }
 
