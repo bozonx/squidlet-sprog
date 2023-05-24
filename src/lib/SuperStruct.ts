@@ -134,7 +134,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
 
 
   keys(): string[] {
-    return Object.keys(this.values)
+    return Object.keys(this.values as any)
   }
 
   setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false) {
