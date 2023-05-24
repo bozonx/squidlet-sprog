@@ -116,6 +116,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     const defaultArrLength = this.defaultArray?.length || 0
     const maxLength: number = Math.max(initArrLength, defaultArrLength)
     const indexArr = (new Array(maxLength)).fill(true)
+    // Any way set length to remove odd items. Actually init is allowed to run only once
+    // so there should aren't any initialized super values in the rest of array
+    this.values.length = maxLength
 
     indexArr.forEach((el: true, index: number) => {
       // if index is in range of initalArr then get its item otherwise get from defaultArray
@@ -129,9 +132,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
         value
       )
     })
-    // TODO: если в остатке есть super - то отвязать их
-    // set length to remove odd items
-    this.values.length = maxLength
 
     // TODO: link all the super children
 
