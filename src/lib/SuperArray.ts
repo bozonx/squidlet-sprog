@@ -1,4 +1,4 @@
-import {arrayKeys, getClassPublicMembers, removeSomeItemsFromArray} from 'squidlet-lib';
+import {arrayKeys} from 'squidlet-lib';
 import {isSuperValue, SUPER_VALUE_PROP, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -15,7 +15,7 @@ const ARR_PUBLIC_MEMBERS = [
   // 'isInitialized',
   // 'parent',
   // 'pathToMe',
-  'myKeys',
+  // 'myKeys',
   'hasKey',
   'getValue',
   'setValue',
@@ -34,7 +34,7 @@ const ARR_PUBLIC_MEMBERS = [
   'toDefaultValue',
   'deleteItem',
 
-  // mutate array
+  /////// mutate array
   'push',
   'pop',
   'shift',
@@ -73,8 +73,10 @@ export function proxyArray(arr: SuperArray): any[] {
       }
     },
     set(target: any[], prop, value) {
+
+      // TODO: chech
       // Intercept array element assignment
-      //console.log('set', prop, value)
+      console.log('----set', prop, value)
 
       // TODO: push method set value and set length - do it need to catch length set???
 
@@ -92,48 +94,9 @@ export function proxyArray(arr: SuperArray): any[] {
 
       return true
     },
-    // apply(target: any[], thisArg: any, argArray: any[]): any {
-    //   console.log(111, target, thisArg, argArray)
-    // }
   }
 
-  const a: any = []
-  //const a: any = arr.values
-  //
-  // a[SUPER_VALUE_PROP] = arr
-
-  // TODO: поидее надо заменить вообще все методы, особенно мутирующие
-  //   чтобы поднимать события
-
-
-  // const publicMembers: string[] = removeSomeItemsFromArray(
-  //   getClassPublicMembers(arr),
-  //   [
-  //   // TODO: а чо всмысле???
-  //   'length',
-  //   // TODO: надо переименовать
-  //   'keys',
-  //     ]
-  // )
-
-
-  for (const memberName of ARR_PUBLIC_MEMBERS) {
-    //a.__proto__[memberName] = (arr as any)[memberName]
-  }
-
-
-  // a.__proto__.init = arr.init
-  // a.__proto__.destroy = arr.destroy
-  // a.__proto__.hasKey = arr.hasKey
-  // a.__proto__.getValue = arr.getValue
-  // a.__proto__.setValue = arr.setValue
-  // a.__proto__.resetValue = arr.resetValue
-  // a.__proto__.clone = arr.clone
-  // a.__proto__.link = arr.link
-
-  //return new Proxy(a, handler)
-
-  return new Proxy(a, handler)
+  return new Proxy(arr.values, handler)
 }
 
 
