@@ -1,4 +1,4 @@
-import {fullWithArray} from 'squidlet-lib';
+import {arrayKeys} from 'squidlet-lib';
 import {isSuperValue, SUPER_VALUE_PROP, SuperValueBase} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -146,6 +146,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     }
   }
 
+
+  keys(): number[] {
+    return arrayKeys(this.values)
+  }
 
   setOwnValue(index: number, value: AllTypes, ignoreRo: boolean = false) {
     if (!ignoreRo && this.readOnly) {

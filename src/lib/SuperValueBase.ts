@@ -81,6 +81,8 @@ export abstract class SuperValueBase<T = any | any[]> {
     this.changeEvent.removeListener(handlerIndex)
   }
 
+  abstract keys(): string[] | number[]
+
   has = (pathTo: string): boolean => {
     return deepHas(this.values as any, pathTo)
   }

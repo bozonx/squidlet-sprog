@@ -133,6 +133,10 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
   }
 
 
+  keys(): string[] {
+    return Object.keys(this.values)
+  }
+
   setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false) {
     const name: keyof T = key as any
 
