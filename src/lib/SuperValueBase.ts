@@ -101,7 +101,12 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   destroy() {
     this.changeEvent.destroy()
 
-    // TODO: unlink
+    for (const linkId of this.links) {
+      // actually empty is also undefined
+      if (typeof linkId === 'undefined') continue
+
+      this.unlink(Number(linkId))
+    }
   }
 
   /**
@@ -207,7 +212,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     const linkId = this.links.length
     const externalKeyPath = joinDeepPath([externalSuperValue.pathToMe, externalKey])
     const myKeyPath = joinDeepPath([this.pathToMe, myKey])
-
     const link = {
       externalSuperValue,
       externalKey,
@@ -215,7 +219,11 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       externalHandlerIndex: -1,
       myHandlerIndex: -1,
     }
+    const externalVal = externalSuperValue.getOwnValue(externalKey)
 
+    // synchronize values wright now before subscribing to events
+    if (this.getOwnValue(myKey) !== externalVal) this.setOwnValue(myKey, externalVal)
+    // subscribe to external change event to set the same value to my
     if (!this.isKeyReadonly(myKey)) {
       link.externalHandlerIndex = externalSuperValue.subscribe((
         target: SuperValueBase,
@@ -226,7 +234,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
         this.setOwnValue(myKey, externalSuperValue.getOwnValue(externalKey))
       })
     }
-
+    // subscribe to my change event to set the same value to external struct or array
     if (!externalSuperValue.isKeyReadonly(externalKey)) {
       link.myHandlerIndex = this.subscribe((
         target: SuperValueBase,
