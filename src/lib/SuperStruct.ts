@@ -1,4 +1,4 @@
-import {deepSet, omitObj} from 'squidlet-lib';
+import {omitObj} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {SuperValueBase, isSuperValue, SUPER_VALUE_PROP, SUPER_PROXY_PUBLIC_MEMBERS} from './SuperValueBase.js';
@@ -13,34 +13,35 @@ export const STRUCT_PUBLIC_MEMBERS = [
 
 
 /**
- * Wrapper for SuperStruct which allows to manipulate it as common object
+ * Wrapper for SuperStruct which allows to manipulate it as common object.
+ * And it puts some methods to it:
+ * * arr.$super - instance of SuperStruct
+ * * arr... - see other methods in STRUCT_PUBLIC_MEMBERS
  */
 export function proxyStruct(struct: SuperStruct): SuperStruct {
   const handler: ProxyHandler<Record<any, any>> = {
-    get(target: any, p: string) {
-      if (p === SUPER_VALUE_PROP) {
+    get(target: any, prop: string) {
+      if (prop === SUPER_VALUE_PROP) {
         return struct
       }
-      else if (Object.keys(struct.values).includes(p)) {
-        return struct.getValue(p)
+      else if (STRUCT_PUBLIC_MEMBERS.includes(prop)) {
+        // public super struct prop
+        return (struct as any)[prop]
       }
-
-      return target[p]
+      // else prop or object itself
+      return struct.values[prop]
     },
 
-    has(target: any, p: string): boolean {
-      if (p === SUPER_VALUE_PROP) {
+    has(target: any, prop: string): boolean {
+      if (prop === SUPER_VALUE_PROP || STRUCT_PUBLIC_MEMBERS.includes(prop)) {
         return true
       }
-      else if (Object.keys(struct.values).includes(p)) {
-        return struct.hasKey(p)
-      }
 
-      return target[p]
+      return Object.keys(struct.values).includes(prop)
     },
 
-    set(target: any, p: string, newValue: any): boolean {
-      struct.setValue(p, newValue)
+    set(target: any, prop: string, newValue: any): boolean {
+      struct.setOwnValue(prop, newValue)
 
       return true
     },
@@ -53,6 +54,7 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
       return Object.keys(omitObj(struct.values, SUPER_VALUE_PROP))
     },
 
+    // TODO: запретить переопределять методы struct
     // defineProperty?(target: T, property: string | symbol, attributes: PropertyDescriptor): boolean;
     // getOwnPropertyDescriptor?(target: T, p: string | symbol): PropertyDescriptor | undefined;
   }

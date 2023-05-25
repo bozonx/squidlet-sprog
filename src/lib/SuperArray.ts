@@ -29,13 +29,20 @@ const ARR_PUBLIC_MEMBERS = [
 ]
 
 
+/**
+ * Wrapper for super array which allows to manipulate it as common array.
+ * And it puts some methods to it:
+ * * arr.$super - instance of SuperArray
+ * * arr... - see other methods in ARR_PUBLIC_MEMBERS
+ * @param arr
+ */
 export function proxyArray(arr: SuperArray): any[] {
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: any) {
       if (prop === SUPER_VALUE_PROP) {
         return arr
       }
-      else if (ARR_PUBLIC_MEMBERS.indexOf(prop) >= 0) {
+      else if (ARR_PUBLIC_MEMBERS.includes(prop)) {
         // public SuperArray prop
         return (arr as any)[prop]
       }
