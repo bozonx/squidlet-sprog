@@ -9,8 +9,8 @@ describe('SuperStruct', () => {
         type: 'number'
       }
     }
-    const arr = new SuperStruct(scope, def)
-    const proxyfied = proxyStruct(arr)
+    const struct = new SuperStruct(scope, def)
+    const proxyfied = struct.makeProxy()
 
     proxyfied.setValue('p1', 5)
 
