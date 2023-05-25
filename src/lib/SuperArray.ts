@@ -17,8 +17,19 @@ import {
 
 export interface SuperArrayPublic extends SuperValuePublic {
   isArray: boolean
+  isReadOnly: boolean
+  length: number
+  clearItem(index: number): void
+  deleteItem(index: number, ignoreRo?: boolean): void
 
-  // TODO: add
+  push(...items: any[]): number
+  pop(): any | undefined
+  shift(): any | undefined
+  unshift(...items: any[]): number
+  fill(value: any, start?: number, end?: number): ProxyfiedArray
+  splice(start: number, deleteCount: number, ...items: any[]): any[]
+  reverse(): any[]
+  sort(): ProxyfiedArray
 }
 
 export type ProxyfiedArray = SuperArrayPublic & Array<any>
@@ -212,14 +223,14 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return proxyArray(this)
   }
 
-
+  ///// Array specific methods
   /**
    * Clear item in array but not remove index
    * clearItem(1) [0,1,2] will be [0, empty, 2]
    * getting of arr[1] will return undefined
    * @param index
    */
-  clearItem(index: number) {
+  clearItem = (index: number) => {
     if (this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
@@ -235,7 +246,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    * @param index
    * @param ignoreRo
    */
-  deleteItem(index: number, ignoreRo: boolean = false) {
+  deleteItem = (index: number, ignoreRo: boolean = false) => {
     if (!ignoreRo && this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
@@ -266,7 +277,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return newLength
   }
 
-  pop() {
+  pop = () => {
     //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
@@ -279,7 +290,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return res
   }
 
-  shift() {
+  shift = () => {
     const res = this.values.shift()
 
     //this.riseChildrenChangeEvent(0)
@@ -291,7 +302,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return res
   }
 
-  unshift(...items: any[]) {
+  unshift = (...items: any[]) => {
     const res = this.values.unshift(...items)
     // emit event for whole array
     this.riseMyEvent()
@@ -307,17 +318,18 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return res
   }
 
-  fill(value: any, start?: number, end?: number) {
+  fill = (value: any, start?: number, end?: number) => {
     this.values.fill(value, start, end)
     // emit event for whole array
     this.riseMyEvent()
 
     // TODO: наверное надо проверить значения
+    // TODO: должен вернуться проксированный инстанс
 
     return this
   }
 
-  splice(start: number, deleteCount: number, ...items: T[]) {
+  splice = (start: number, deleteCount: number, ...items: T[]) => {
     const res = this.values.splice(start, deleteCount, ...items)
     // emit event for whole array
     this.riseMyEvent()
@@ -327,7 +339,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return res
   }
 
-  reverse() {
+  reverse = () => {
     const res = this.values.reverse()
     // emit event for whole array
     this.riseMyEvent()
@@ -335,10 +347,12 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return res
   }
 
-  sort(compareFn?: (a: T, b: T) => number) {
+  sort = (compareFn?: (a: T, b: T) => number) => {
     this.values.sort()
     // emit event for whole array
     this.riseMyEvent()
+
+    // TODO: должен вернуться проксированный инстанс
 
     return this
   }
