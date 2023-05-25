@@ -20,6 +20,8 @@ describe('SuperStruct', () => {
 
     assert.equal(proxyfied['p1'], 6)
     assert.deepEqual(proxyfied, {p1: 6})
+
+    assert.deepEqual({...proxyfied}, {p1: 6})
   })
 
 })

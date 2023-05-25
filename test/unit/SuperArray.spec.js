@@ -1,4 +1,4 @@
-import {newScope, proxyArray, SuperArray} from "../../src/index.js";
+import {newScope, SuperArray} from "../../src/index.js";
 
 
 describe('SuperArray', () => {
@@ -23,6 +23,9 @@ describe('SuperArray', () => {
 
     assert.equal(proxyfied[2], 7)
     assert.deepEqual(proxyfied, [5, 6, 7])
+
+    // TODO: не работает
+    //assert.deepEqual([...proxyfied], [5, 6, 7])
   })
 
   // it('SuperArray', () => {

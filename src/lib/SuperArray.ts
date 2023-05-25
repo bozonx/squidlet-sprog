@@ -56,6 +56,8 @@ const ARR_PUBLIC_MEMBERS = [
 ]
 
 
+// TODO: не работает [...proxyfied]
+
 /**
  * Wrapper for super array which allows to manipulate it as common array.
  * And it puts some methods to it:
