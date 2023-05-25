@@ -1,9 +1,22 @@
 import {omitObj} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
-import {SuperValueBase, isSuperValue, SUPER_VALUE_PROP, SUPER_PROXY_PUBLIC_MEMBERS} from './SuperValueBase.js';
+import {
+  SuperValueBase,
+  isSuperValue,
+  SUPER_VALUE_PROP,
+  SUPER_PROXY_PUBLIC_MEMBERS,
+  SuperValuePublic
+} from './SuperValueBase.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+
+
+export interface SuperStructPublic extends SuperValuePublic {
+  isStruct: boolean
+}
+
+export type ProxyfiedStruct = SuperStructPublic & Record<any, any>
 
 
 export const STRUCT_PUBLIC_MEMBERS = [
@@ -18,7 +31,7 @@ export const STRUCT_PUBLIC_MEMBERS = [
  * * arr.$super - instance of SuperStruct
  * * arr... - see other methods in STRUCT_PUBLIC_MEMBERS
  */
-export function proxyStruct(struct: SuperStruct): SuperStruct {
+export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
       if (prop === SUPER_VALUE_PROP) {
@@ -59,11 +72,14 @@ export function proxyStruct(struct: SuperStruct): SuperStruct {
     // getOwnPropertyDescriptor?(target: T, p: string | symbol): PropertyDescriptor | undefined;
   }
 
-  return new Proxy(struct.values, handler) as SuperStruct
+  return new Proxy(struct.values, handler) as ProxyfiedStruct
 }
 
 
-export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T> {
+export class SuperStruct<T = Record<string, AllTypes>>
+  extends SuperValueBase<T>
+  implements SuperStructPublic
+{
   readonly isStruct = true
   // It assumes that you will not change it after initialization
   readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
@@ -117,6 +133,7 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
 
     for (const key of Object.keys(this.values as any)) {
       const keyName = key as keyof T
+
       if (isSuperValue(this.values[keyName])) {
         (this.values[keyName] as SuperValueBase).destroy()
       }
@@ -145,19 +162,19 @@ export class SuperStruct<T = Record<string, AllTypes>> extends SuperValueBase<T>
       )
     }
 
+    // TODO: наверное проверить required чтобы не устанавливали undefined and null
+
     this.values[name] = value as any
 
     this.riseChildrenChangeEvent(key)
   }
 
-  toDefaultValue(key: string) {
+  toDefaultValue = (key: string) => {
     // TODO: add
   }
 
-  makeProxy(): T {
-    // TODO: add
-    // TODO: навеное пометить что получение значений должно тогда всегда выдаваться с proxy
-    return {} as T
+  makeProxy(): T & SuperStructPublic {
+    return proxyStruct(this as SuperStruct<any>)
   }
 
 

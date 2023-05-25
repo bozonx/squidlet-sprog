@@ -14,9 +14,16 @@ import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 
 
+export interface SuperValuePublic {
+  isSuperValue: boolean
+  getValue(pathTo: string): AllTypes | undefined
+  setValue(pathTo: string, newValue: AllTypes): void
+  setNull(pathTo: string): void
+  toDefaultValue(key: string | number): void
+}
+
 export const SUPER_PROXY_PUBLIC_MEMBERS = [
   'isSuperValue',
-  'hasKey',
   'getValue',
   'setValue',
   'setNull',
@@ -39,7 +46,7 @@ export function isSuperValue(val: any): boolean {
 }
 
 
-export abstract class SuperValueBase<T = any | any[]> {
+export abstract class SuperValueBase<T = any | any[]> implements SuperValuePublic {
   readonly isSuperValue = true
   readonly abstract values: T
   changeEvent = new IndexedEvents<SuperChangeHandler>()
@@ -110,6 +117,12 @@ export abstract class SuperValueBase<T = any | any[]> {
   abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): void
 
   abstract toDefaultValue(key: string | number): void
+
+  /**
+   * Make proxy of my self.
+   * Please run it only once just after creating of instance.
+   */
+  abstract makeProxy(): any | any[]
 
   subscribe(handler: SuperChangeHandler): number {
     return this.changeEvent.addListener(handler)
@@ -227,6 +240,8 @@ export abstract class SuperValueBase<T = any | any[]> {
     childKeyOrIndex: string | number,
     initialValue?: any
   ): any {
+
+    // TODO: создавать проксированный инстанс
 
     // TODO: read only должно наследоваться потомками если оно стоит у родителя
 

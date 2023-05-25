@@ -1,5 +1,11 @@
 import {arrayKeys} from 'squidlet-lib';
-import {isSuperValue, SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_PROP, SuperValueBase} from './SuperValueBase.js';
+import {
+  isSuperValue,
+  SUPER_PROXY_PUBLIC_MEMBERS,
+  SUPER_VALUE_PROP,
+  SuperValueBase,
+  SuperValuePublic
+} from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
@@ -7,6 +13,15 @@ import {
   DEFAULT_INIT_SUPER_DEFINITION, SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
+
+
+export interface SuperArrayPublic extends SuperValuePublic {
+  isArray: boolean
+
+  // TODO: add
+}
+
+export type ProxyfiedArray = SuperArrayPublic & Array<any>
 
 
 const ARR_PUBLIC_MEMBERS = [
@@ -37,7 +52,7 @@ const ARR_PUBLIC_MEMBERS = [
  * * arr... - see other methods in ARR_PUBLIC_MEMBERS
  * @param arr
  */
-export function proxyArray(arr: SuperArray): any[] {
+export function proxyArray(arr: SuperArray): ProxyfiedArray {
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: any) {
       if (prop === SUPER_VALUE_PROP) {
@@ -83,11 +98,11 @@ export function proxyArray(arr: SuperArray): any[] {
     },
   }
 
-  return new Proxy(arr.values, handler)
+  return new Proxy(arr.values, handler) as ProxyfiedArray
 }
 
 
-export class SuperArray<T = any> extends SuperValueBase<T[]> {
+export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
   readonly isArray = true
   // definition for all the items of array
   readonly itemDefinition: SuperItemDefinition
@@ -150,6 +165,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       )
     })
 
+    // TODO: а нужно ли проверять required???
+
     return super.init()
   }
 
@@ -180,10 +197,21 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
       )
     }
 
+    // TODO: наверное проверить required чтобы не устанавливали undefined and null
+
     this.values[index] = value as T
 
     this.riseChildrenChangeEvent(index)
   }
+
+  toDefaultValue = (index: number) => {
+    // TODO: add
+  }
+
+  makeProxy(): ProxyfiedArray {
+    return proxyArray(this)
+  }
+
 
   /**
    * Clear item in array but not remove index
@@ -201,10 +229,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     this.riseChildrenChangeEvent(index)
   }
 
-  toDefaultValue(index: number) {
-    // TODO: add
-  }
-
   /**
    * Delete item and splice an array
    * deleteItem(1) [0,1,2] will be [0,2]
@@ -218,12 +242,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
     // TODO: test
     this.values.splice(index)
     this.riseChildrenChangeEvent(index)
-  }
-
-  makeProxy(): T[] {
-    // TODO: add
-    // TODO: навеное пометить что получение значений должно тогда всегда выдаваться с proxy
-    return []
   }
 
 
