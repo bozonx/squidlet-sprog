@@ -22,6 +22,15 @@ export interface SuperValuePublic {
   toDefaultValue(key: string | number): void
 }
 
+export interface SuperLinkItem {
+  // not proxyfied struct or array
+  externalSuperValue: SuperValueBase
+  externalKey: string | number
+  myKey: string | number
+  externalHandlerIndex: number
+  myHandlerIndex: number
+}
+
 export const SUPER_PROXY_PUBLIC_MEMBERS = [
   'isSuperValue',
   'getValue',
@@ -56,6 +65,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
   protected inited: boolean = false
+  protected links: SuperLinkItem[] = []
 
 
   get isInitialized(): boolean {
@@ -179,19 +189,56 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
   /**
-   * Link key of some struct or array to key of this
+   * Link key of some struct or array to key of this.
+   * Both values of these keys will change at the same time and rise change events both
    */
   link = (
-    externalValue: SuperValueBase,
+    externalSuperValue: SuperValueBase,
     externalKey: string | number,
     myKey: string | number
   ): number => {
+    const linkId = this.links.length
+
+    this.links.push({
+      externalSuperValue,
+      externalKey,
+      myKey,
+      externalHandlerIndex: externalSuperValue.subscribe((
+        target: SuperValueBase,
+        path?: string
+      ) => {
+
+      }),
+      myHandlerIndex: this.subscribe((
+        target: SuperValueBase,
+        path?: string
+      ) => {
+
+      }),
+    })
+    /*
+      // link to element which is changed. It can be a parent or its child
+  target: SuperValueBase,
+  // path to child element which is changed. If '' then it is parent
+  // if it is undefined then means any element of root was changed
+  path?: string
+     */
+
     // TODO: прилинковать значения разных struct, array или primitive
     //       чтобы эти значения менялись одновременно
+
+    return linkId
   }
 
   unlink(linkId: number) {
-    // TODO: add
+    const link = this.links[linkId]
+
+    if (!link) return
+
+    link.externalSuperValue.unsubscribe(link.externalHandlerIndex)
+    this.unsubscribe(link.myHandlerIndex)
+
+    delete this.links[linkId]
   }
 
   /**
