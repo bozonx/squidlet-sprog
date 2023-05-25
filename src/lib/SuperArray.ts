@@ -215,8 +215,16 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     this.riseChildrenChangeEvent(index)
   }
 
+  /**
+   * Set default value of array or undefined if there isn't any default value
+   * @param index
+   */
   toDefaultValue = (index: number) => {
-    // TODO: add
+    const defaultValue = this.itemDefinition.default
+
+    // TODO: test что установиться undefined если нет значения по умолчанию
+
+    this.setOwnValue(index, defaultValue)
   }
 
   makeProxy(): ProxyfiedArray {

@@ -169,8 +169,14 @@ export class SuperStruct<T = Record<string, AllTypes>>
     this.riseChildrenChangeEvent(key)
   }
 
+  /**
+   * Set default value or null if the key doesn't have a default value
+   * @param key
+   */
   toDefaultValue = (key: string) => {
-    // TODO: add
+    const defaultValue = this.definition[key as keyof T]?.default || null
+
+    this.setOwnValue(key, defaultValue)
   }
 
   makeProxy(): T & SuperStructPublic {
