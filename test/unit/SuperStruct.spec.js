@@ -10,7 +10,7 @@ describe('SuperStruct', () => {
       }
     }
     const struct = new SuperStruct(scope, def)
-    const proxyfied = struct.makeProxy()
+    const proxyfied = struct.getProxy()
 
     proxyfied.setValue('p1', 5)
 

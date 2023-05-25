@@ -85,6 +85,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
   // current values
   readonly values = {} as T
+  protected proxyFn = proxyStruct
 
 
   constructor(
@@ -187,8 +188,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
     this.setOwnValue(key, defaultValue)
   }
 
-  makeProxy(): T & SuperStructPublic {
-    return proxyStruct(this as SuperStruct<any>)
+  getProxy(): T & SuperStructPublic {
+    return super.getProxy()
   }
 
 

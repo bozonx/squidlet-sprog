@@ -1,6 +1,5 @@
 import {
   IndexedEvents,
-  trimCharStart,
   deepGet,
   deepHas,
   deepSet,
@@ -61,12 +60,14 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   readonly abstract values: T
   changeEvent = new IndexedEvents<SuperChangeHandler>()
   readonly scope: SuperScope
+  protected proxyfiedInstance?: any
   // parent super struct or array who owns me
   protected myParent?: SuperValueBase
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
   protected inited: boolean = false
   protected links: SuperLinkItem[] = []
+  protected abstract proxyFn: (instance: any) => any
 
 
   get isInitialized(): boolean {
@@ -99,7 +100,10 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
   destroy() {
-    this.changeEvent.destroy()
+
+    // TODO: если задестроится external элемент то у нас ещё link останется - это плохо
+    //       тогда либо надо проверять в событии живой ли элемент
+    //       либо слушать событие дестроя
 
     for (const linkId of this.links) {
       // actually empty is also undefined
@@ -107,6 +111,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
       this.unlink(Number(linkId))
     }
+
+    this.changeEvent.destroy()
   }
 
   /**
@@ -144,7 +150,13 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * Make proxy of my self.
    * Please run it only once just after creating of instance.
    */
-  abstract makeProxy(): any | any[]
+  getProxy(): any | any[] {
+    if (!this.proxyfiedInstance) {
+      this.proxyfiedInstance = this.proxyFn(this)
+    }
+
+    return this.proxyfiedInstance
+  }
 
   subscribe(handler: SuperChangeHandler): number {
     return this.changeEvent.addListener(handler)
@@ -210,8 +222,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     myKey: string | number
   ): number => {
     const linkId = this.links.length
-    const externalKeyPath = joinDeepPath([externalSuperValue.pathToMe, externalKey])
-    const myKeyPath = joinDeepPath([this.pathToMe, myKey])
+    const externalKeyPath = externalSuperValue.makeChildPath(externalKey)
+    const myKeyPath = this.makeChildPath(myKey)
     const link = {
       externalSuperValue,
       externalKey,
@@ -286,27 +298,16 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     // TODO: add to proxy
   }
 
+  makeChildPath(childKeyOrIndex: string | number): string {
+    return joinDeepPath([this.pathToMe, childKeyOrIndex])
+  }
+
+
   /**
    * This method will be returned after initializing to update readonly values
    * @protected
    */
   protected abstract myRoSetter: Function
-
-  protected makeChildPath(childKeyOrIndex: string | number): string {
-
-    // TODO: move it to squidlet-lib
-
-    const childKeyStr: string = (typeof childKeyOrIndex === 'number')
-      ? `[${childKeyOrIndex}]`
-      : `.${childKeyOrIndex}`
-
-    if (this.pathToMe) {
-      return this.pathToMe + '.' + childKeyStr
-    }
-    else {
-      return trimCharStart(childKeyStr, '.')
-    }
-  }
 
   protected riseChildrenChangeEvent(childKeyOrIndex: string | number) {
     const fullPath = this.makeChildPath(childKeyOrIndex)

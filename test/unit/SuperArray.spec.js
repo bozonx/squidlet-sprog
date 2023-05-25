@@ -8,7 +8,7 @@ describe('SuperArray', () => {
       type: 'number'
     }
     const arr = new SuperArray(scope, item)
-    const proxyfied = arr.makeProxy()
+    const proxyfied = arr.getProxy()
 
     proxyfied.setValue('[0]', 5)
 

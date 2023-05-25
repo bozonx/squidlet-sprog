@@ -121,6 +121,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   readonly itemDefinition: SuperItemDefinition
   readonly values: T[] = []
   readonly defaultArray?: any[]
+  protected proxyFn = proxyArray
 
 
   get isReadOnly(): boolean {
@@ -237,8 +238,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     this.setOwnValue(index, defaultValue)
   }
 
-  makeProxy(): ProxyfiedArray {
-    return proxyArray(this)
+  getProxy(): ProxyfiedArray {
+    return super.getProxy()
   }
 
   ///// Array specific methods
@@ -336,15 +337,14 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return res
   }
 
-  fill = (value: any, start?: number, end?: number) => {
+  fill = (value: any, start?: number, end?: number): ProxyfiedArray => {
     this.values.fill(value, start, end)
     // emit event for whole array
     this.riseMyEvent()
 
     // TODO: наверное надо проверить значения
-    // TODO: должен вернуться проксированный инстанс
 
-    return this
+    return this.proxyfiedInstance
   }
 
   splice = (start: number, deleteCount: number, ...items: T[]) => {
@@ -365,14 +365,12 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return res
   }
 
-  sort = (compareFn?: (a: T, b: T) => number) => {
+  sort = (compareFn?: (a: T, b: T) => number): ProxyfiedArray => {
     this.values.sort()
     // emit event for whole array
     this.riseMyEvent()
 
-    // TODO: должен вернуться проксированный инстанс
-
-    return this
+    return this.proxyfiedInstance
   }
 
   // TODO: not mutable methods just copy:
