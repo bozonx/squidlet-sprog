@@ -178,9 +178,20 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     this.setValue(pathTo, null)
   }
 
-  link = () => {
+  /**
+   * Link key of some struct or array to key of this
+   */
+  link = (
+    externalValue: SuperValueBase,
+    externalKey: string | number,
+    myKey: string | number
+  ): number => {
     // TODO: прилинковать значения разных struct, array или primitive
     //       чтобы эти значения менялись одновременно
+  }
+
+  unlink(linkId: number) {
+    // TODO: add
   }
 
   /**

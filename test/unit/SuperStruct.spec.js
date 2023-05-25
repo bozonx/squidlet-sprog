@@ -1,4 +1,4 @@
-import {newScope, proxyStruct, SuperStruct} from "../../src/index.js";
+import {newScope, SuperStruct} from "../../src/index.js";
 
 
 describe('SuperStruct', () => {
