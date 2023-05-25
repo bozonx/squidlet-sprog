@@ -115,6 +115,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
 
+  abstract isKeyReadonly(key: string | number): boolean
+
   /**
    * Get own keys or indexes
    */
@@ -202,9 +204,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     externalKey: string | number,
     myKey: string | number
   ): number => {
-
-    // TODO: check ro - тогда в одностороннем порядке
-
     const linkId = this.links.length
     const externalKeyPath = joinDeepPath([externalSuperValue.pathToMe, externalKey])
     const myKeyPath = joinDeepPath([this.pathToMe, myKey])
@@ -213,28 +212,37 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       externalSuperValue,
       externalKey,
       myKey,
-      externalHandlerIndex: externalSuperValue.subscribe((
+      externalHandlerIndex: -1,
+      myHandlerIndex: -1,
+    }
+
+    if (!this.isKeyReadonly(myKey)) {
+      link.externalHandlerIndex = externalSuperValue.subscribe((
         target: SuperValueBase,
         path: string = ''
       ) => {
         if (externalKeyPath !== path) return
 
         this.setOwnValue(myKey, externalSuperValue.getOwnValue(externalKey))
-      }),
-      myHandlerIndex: this.subscribe((
+      })
+    }
+
+    if (!externalSuperValue.isKeyReadonly(externalKey)) {
+      link.myHandlerIndex = this.subscribe((
         target: SuperValueBase,
         path: string = ''
       ) => {
         if (myKeyPath !== path) return
 
         this.setOwnValue(externalKey, this.getOwnValue(myKey))
-      }),
+      })
+    }
+
+    if (link.externalHandlerIndex === -1 && link.myHandlerIndex === -1) {
+      console.warn(`Both linked keys are readonly: ${myKey}, ${externalKey}`)
     }
 
     this.links.push(link)
-
-    // TODO: прилинковать значения разных struct, array или primitive
-    //       чтобы эти значения менялись одновременно
 
     return linkId
   }
@@ -244,8 +252,13 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
     if (!link) return
 
-    link.externalSuperValue.unsubscribe(link.externalHandlerIndex)
-    this.unsubscribe(link.myHandlerIndex)
+    if (link.externalHandlerIndex >= 0) {
+      link.externalSuperValue.unsubscribe(link.externalHandlerIndex)
+    }
+
+    if (link.myHandlerIndex >= 0) {
+      this.unsubscribe(link.myHandlerIndex)
+    }
 
     delete this.links[linkId]
   }

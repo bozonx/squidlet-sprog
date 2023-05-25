@@ -141,6 +141,10 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
 
+  isKeyReadonly(key: string | number): boolean {
+    return Boolean(this.definition?.[key as keyof T].readonly)
+  }
+
   myKeys(): string[] {
     return Object.keys(this.values as any)
   }

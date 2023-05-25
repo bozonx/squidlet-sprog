@@ -194,6 +194,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
 
+  isKeyReadonly(key: string | number): boolean {
+    return this.isReadOnly
+  }
+
   myKeys(): number[] {
     return arrayKeys(this.values)
   }
