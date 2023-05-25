@@ -13,6 +13,7 @@ const ARR_PUBLIC_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
 
   'isArray',
+  'isReadOnly',
   'length',
   'clearItem',
   'deleteItem',
@@ -94,7 +95,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   readonly defaultArray?: any[]
 
 
-  get readOnly(): boolean {
+  get isReadOnly(): boolean {
     return Boolean(this.itemDefinition.readonly)
   }
 
@@ -170,7 +171,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false) {
     const index = Number(key)
 
-    if (!ignoreRo && this.readOnly) {
+    if (!ignoreRo && this.isReadOnly) {
       throw new Error(`Can't set a value to readonly array`)
     }
     else if (!isCorrespondingType(value, this.itemDefinition.type)) {
@@ -191,7 +192,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
    * @param index
    */
   clearItem(index: number) {
-    if (this.readOnly) {
+    if (this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
 
@@ -211,7 +212,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> {
    * @param ignoreRo
    */
   deleteItem(index: number, ignoreRo: boolean = false) {
-    if (!ignoreRo && this.readOnly) {
+    if (!ignoreRo && this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
     // TODO: test
