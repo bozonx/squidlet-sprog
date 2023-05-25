@@ -145,6 +145,10 @@ export class SuperStruct<T = Record<string, AllTypes>>
     return Object.keys(this.values as any)
   }
 
+  getOwnValue(key: string): AllTypes {
+    return this.values[key as keyof T] as any
+  }
+
   setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false) {
     const name: keyof T = key as any
 

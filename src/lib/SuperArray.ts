@@ -198,6 +198,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return arrayKeys(this.values)
   }
 
+  getOwnValue(key: number): AllTypes {
+    return this.values[key] as any
+  }
+
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false) {
     const index = Number(key)
 

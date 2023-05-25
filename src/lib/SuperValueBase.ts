@@ -6,7 +6,8 @@ import {
   deepSet,
   deepClone,
   omitObj,
-  splitDeepPath
+  splitDeepPath,
+  joinDeepPath
 } from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -99,6 +100,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
   destroy() {
     this.changeEvent.destroy()
+
+    // TODO: unlink
   }
 
   /**
@@ -116,6 +119,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * Get own keys or indexes
    */
   abstract myKeys(): string[] | number[]
+
+  abstract getOwnValue(key: string | number): AllTypes
 
   /**
    * Set value to own child, not deeper.
@@ -197,32 +202,36 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     externalKey: string | number,
     myKey: string | number
   ): number => {
-    const linkId = this.links.length
 
-    this.links.push({
+    // TODO: check ro - тогда в одностороннем порядке
+
+    const linkId = this.links.length
+    const externalKeyPath = joinDeepPath([externalSuperValue.pathToMe, externalKey])
+    const myKeyPath = joinDeepPath([this.pathToMe, myKey])
+
+    const link = {
       externalSuperValue,
       externalKey,
       myKey,
       externalHandlerIndex: externalSuperValue.subscribe((
         target: SuperValueBase,
-        path?: string
+        path: string = ''
       ) => {
+        if (externalKeyPath !== path) return
 
+        this.setOwnValue(myKey, externalSuperValue.getOwnValue(externalKey))
       }),
       myHandlerIndex: this.subscribe((
         target: SuperValueBase,
-        path?: string
+        path: string = ''
       ) => {
+        if (myKeyPath !== path) return
 
+        this.setOwnValue(externalKey, this.getOwnValue(myKey))
       }),
-    })
-    /*
-      // link to element which is changed. It can be a parent or its child
-  target: SuperValueBase,
-  // path to child element which is changed. If '' then it is parent
-  // if it is undefined then means any element of root was changed
-  path?: string
-     */
+    }
+
+    this.links.push(link)
 
     // TODO: прилинковать значения разных struct, array или primitive
     //       чтобы эти значения менялись одновременно
