@@ -52,7 +52,7 @@ export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements 
      * @param index
      */
     toDefaultValue: (index: number) => void;
-    getProxy(): ProxyfiedArray;
+    getProxy(): ProxyfiedArray<T>;
     /**
      * Clear item in array but not remove index
      * clearItem(1) [0,1,2] will be [0, empty, 2]

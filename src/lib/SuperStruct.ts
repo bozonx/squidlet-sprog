@@ -190,7 +190,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     this.setOwnValue(key, defaultValue)
   }
 
-  getProxy(): T & SuperStructPublic {
+  getProxy(): T & ProxyfiedStruct<T> {
     return super.getProxy()
   }
 

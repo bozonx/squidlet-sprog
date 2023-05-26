@@ -240,7 +240,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     this.setOwnValue(index, defaultValue)
   }
 
-  getProxy(): ProxyfiedArray {
+  getProxy(): ProxyfiedArray<T> {
     return super.getProxy()
   }
 

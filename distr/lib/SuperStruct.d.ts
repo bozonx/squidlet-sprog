@@ -37,7 +37,7 @@ export declare class SuperStruct<T = Record<string, AllTypes>> extends SuperValu
      * @param key
      */
     toDefaultValue: (key: string) => void;
-    getProxy(): T & SuperStructPublic;
+    getProxy(): T & ProxyfiedStruct<T>;
     /**
      * Set value of self readonly value and rise an event
      */
