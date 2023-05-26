@@ -16,7 +16,9 @@ export interface SuperStructPublic extends SuperValuePublic {
   isStruct: boolean
 }
 
-export type ProxyfiedStruct<T = Record<any, any>> = SuperStructPublic & T
+export type ProxyfiedStruct<T = Record<any, any>> = SuperStructPublic
+  & {$super: SuperStruct}
+  & T
 
 
 export const STRUCT_PUBLIC_MEMBERS = [
