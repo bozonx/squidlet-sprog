@@ -17,7 +17,7 @@ export interface SuperArrayPublic extends SuperValuePublic {
     reverse(): any[];
     sort(): ProxyfiedArray;
 }
-export type ProxyfiedArray = SuperArrayPublic & Array<any>;
+export type ProxyfiedArray<T = any> = SuperArrayPublic & Array<T>;
 /**
  * Wrapper for super array which allows to manipulate it as common array.
  * And it puts some methods to it:

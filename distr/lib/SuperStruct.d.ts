@@ -5,7 +5,7 @@ import { SuperItemDefinition, SuperItemInitDefinition } from '../types/SuperItem
 export interface SuperStructPublic extends SuperValuePublic {
     isStruct: boolean;
 }
-export type ProxyfiedStruct = SuperStructPublic & Record<any, any>;
+export type ProxyfiedStruct<T = Record<any, any>> = SuperStructPublic & T;
 export declare const STRUCT_PUBLIC_MEMBERS: string[];
 /**
  * Wrapper for SuperStruct which allows to manipulate it as common object.

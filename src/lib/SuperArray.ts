@@ -32,7 +32,7 @@ export interface SuperArrayPublic extends SuperValuePublic {
   sort(): ProxyfiedArray
 }
 
-export type ProxyfiedArray = SuperArrayPublic & Array<any>
+export type ProxyfiedArray<T = any> = SuperArrayPublic & Array<T>
 
 
 const ARR_PUBLIC_MEMBERS = [
