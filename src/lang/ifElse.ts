@@ -1,11 +1,11 @@
 import {isLastIndex} from 'squidlet-lib';
-import {SprogItemDefinition, SuperScope} from '../scope.js';
+import {SprogDefinition, SuperScope} from '../scope.js';
 import {logicAnd} from './booleanLogic.js';
 
 
 interface IfElseItem {
-  condition: SprogItemDefinition[]
-  block: SprogItemDefinition[]
+  condition: SprogDefinition[]
+  block: SprogDefinition[]
 }
 
 // TODO: add switch into isElse - можно даже смешивать

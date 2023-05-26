@@ -1,6 +1,7 @@
 import {omitObj, mergeDeepObjects, cloneDeepObject} from 'squidlet-lib';
 import {sprogFuncs} from './sprogFuncs.js';
 import {EXP_MARKER} from './constants.js';
+import {SprogDefinition} from './types/types.js';
 
 
 // TODO: всегда ли должно ли быть async???
@@ -22,7 +23,7 @@ export interface SuperScope {
    * Run sprog function in this scope
    * It accepts sprog definition
    */
-  $run(definition: SprogItemDefinition): Promise<any | void>
+  $run(definition: SprogDefinition): Promise<any | void>
 
   /**
    * If is is an expression then run it.
@@ -36,12 +37,6 @@ export interface SuperScope {
   //  */
   // run(funcName: string, params: Record<any, any>): Promise<any | void>
 
-  [index: string]: any
-}
-
-export interface SprogItemDefinition {
-  $exp: keyof typeof sprogFuncs,
-  // TODO: better to extend interfaces
   [index: string]: any
 }
 
@@ -68,7 +63,7 @@ export function newScope<T = any>(initialScope: T = {} as T, previousScope?: Sup
 
       return sprogFn(thisScope)
     },
-    $run(definition: SprogItemDefinition): Promise<any | void> {
+    $run(definition: SprogDefinition): Promise<any | void> {
       const sprogFn = sprogFuncs[definition.$exp]
       const params: any = omitObj(definition, '$exp')
       const thisScope = this as SuperScope

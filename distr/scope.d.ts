@@ -1,4 +1,5 @@
 import { sprogFuncs } from './sprogFuncs.js';
+import { SprogDefinition } from './types/types.js';
 export type SprogScopedFn = (p: any) => Promise<any | void>;
 export type SprogFn = (scope: SuperScope) => SprogScopedFn;
 export interface SuperScope {
@@ -14,17 +15,13 @@ export interface SuperScope {
      * Run sprog function in this scope
      * It accepts sprog definition
      */
-    $run(definition: SprogItemDefinition): Promise<any | void>;
+    $run(definition: SprogDefinition): Promise<any | void>;
     /**
      * If is is an expression then run it.
      * If not then return a value
      * @param defOrValue
      */
     $resolve(defOrValue: any): Promise<any>;
-    [index: string]: any;
-}
-export interface SprogItemDefinition {
-    $exp: keyof typeof sprogFuncs;
     [index: string]: any;
 }
 export declare const SCOPE_FUNCTIONS: string[];

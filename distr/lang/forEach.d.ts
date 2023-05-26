@@ -1,8 +1,8 @@
-import { SprogItemDefinition, SuperScope } from '../scope.js';
+import { SprogDefinition, SuperScope } from '../scope.js';
 interface ForEachParams {
     reverse?: boolean;
     src: any[] | Record<string, any>;
-    do: SprogItemDefinition[];
+    do: SprogDefinition[];
 }
 /**
  * Super for each cycle

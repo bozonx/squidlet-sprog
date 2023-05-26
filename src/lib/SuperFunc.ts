@@ -1,6 +1,6 @@
 import {mergeDeepObjects, collectObjValues} from 'squidlet-lib'
 import {AllTypes} from '../types/valueTypes.js'
-import {newScope, SprogItemDefinition, SuperScope} from '../scope.js'
+import {newScope, SuperScope} from '../scope.js'
 import {makeFuncProxy} from './functionProxy.js';
 import {SprogDefinition} from '../types/types.js';
 
@@ -17,7 +17,7 @@ export interface SuperFuncProp {
 
 export interface SuperFuncParams {
   props: Record<string, SuperFuncProp>
-  lines: SprogItemDefinition[]
+  lines: SprogDefinition[]
 }
 
 export type SuperFuncDefinition = SprogDefinition & SuperFuncParams
@@ -27,7 +27,7 @@ export class SuperFunc {
   scope: SuperScope
 
   private readonly props: Record<string, SuperFuncProp>
-  private readonly lines: SprogItemDefinition[]
+  private readonly lines: SprogDefinition[]
   private appliedValues: Record<string, any> = {}
 
 

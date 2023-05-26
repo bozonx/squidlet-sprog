@@ -1,23 +1,24 @@
-import { SprogItemDefinition, SuperScope } from '../scope.js';
+import { SuperScope } from '../scope.js';
 import { SimpleType } from '../types/valueTypes.js';
+import { SprogDefinition } from '../types/types.js';
 export declare function logicAnd(scope: SuperScope): (p: {
-    items: (SprogItemDefinition | SimpleType)[];
+    items: (SprogDefinition | SimpleType)[];
 }) => Promise<boolean>;
 export declare function logicOr(scope: SuperScope): (p: {
-    items: (SprogItemDefinition | SimpleType)[];
+    items: (SprogDefinition | SimpleType)[];
 }) => Promise<boolean>;
 export declare function logicNot(scope: SuperScope): (p: {
-    value: (SprogItemDefinition | SimpleType);
+    value: (SprogDefinition | SimpleType);
 }) => Promise<boolean>;
 export declare function isEqual(scope: SuperScope): (p: {
-    it: (SprogItemDefinition | SimpleType);
-    and: (SprogItemDefinition | SimpleType);
+    it: (SprogDefinition | SimpleType);
+    and: (SprogDefinition | SimpleType);
 }) => Promise<boolean>;
 export declare function isGreater(scope: SuperScope): (p: {
-    it: (SprogItemDefinition | SimpleType);
-    than: (SprogItemDefinition | SimpleType);
+    it: (SprogDefinition | SimpleType);
+    than: (SprogDefinition | SimpleType);
 }) => Promise<boolean>;
 export declare function isLess(scope: SuperScope): (p: {
-    it: (SprogItemDefinition | SimpleType);
-    than: (SprogItemDefinition | SimpleType);
+    it: (SprogDefinition | SimpleType);
+    than: (SprogDefinition | SimpleType);
 }) => Promise<boolean>;

@@ -1,5 +1,5 @@
 import {lastItem} from 'squidlet-lib';
-import {newScope, SprogItemDefinition, SuperScope} from '../scope.js';
+import {newScope, SprogDefinition, SuperScope} from '../scope.js';
 
 
 interface ForEachParams {
@@ -7,7 +7,7 @@ interface ForEachParams {
   src: any[] | Record<string, any>
   // default is 'item'
   //as?: string
-  do: SprogItemDefinition[]
+  do: SprogDefinition[]
 }
 
 interface ForEachLocalScope {

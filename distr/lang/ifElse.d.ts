@@ -1,7 +1,7 @@
-import { SprogItemDefinition, SuperScope } from '../scope.js';
+import { SprogDefinition, SuperScope } from '../scope.js';
 interface IfElseItem {
-    condition: SprogItemDefinition[];
-    block: SprogItemDefinition[];
+    condition: SprogDefinition[];
+    block: SprogDefinition[];
 }
 /**
  * If else conditions
