@@ -2,6 +2,7 @@ import {mergeDeepObjects, collectObjValues} from 'squidlet-lib'
 import {AllTypes} from '../types/valueTypes.js'
 import {newScope, SprogItemDefinition, SuperScope} from '../scope.js'
 import {makeFuncProxy} from './functionProxy.js';
+import {SprogDefinition} from '../types/types.js';
 
 
 export interface SuperFuncProp {
@@ -18,6 +19,8 @@ export interface SuperFuncParams {
   props: Record<string, SuperFuncProp>
   lines: SprogItemDefinition[]
 }
+
+export type SuperFuncDefinition = SprogDefinition & SuperFuncParams
 
 
 export class SuperFunc {
