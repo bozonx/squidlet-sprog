@@ -1,4 +1,4 @@
-import {SprogDefinition} from '../types/types.js';
+import {SprogDefinitionBase} from '../types/types.js';
 
 
 export interface SimpleFuncParams {
@@ -6,4 +6,4 @@ export interface SimpleFuncParams {
 }
 
 
-export type SimpleFuncDefinition = SprogDefinition & SimpleFuncParams
+export type SimpleFuncDefinition = SprogDefinitionBase & SimpleFuncParams
