@@ -1,4 +1,5 @@
-import { SprogDefinition, SuperScope } from '../scope.js';
+import { SuperScope } from '../scope.js';
+import { SprogDefinition } from '../types/types.js';
 interface IfElseItem {
     condition: SprogDefinition[];
     block: SprogDefinition[];

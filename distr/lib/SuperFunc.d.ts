@@ -1,6 +1,6 @@
 import { AllTypes } from '../types/valueTypes.js';
 import { SuperScope } from '../scope.js';
-import { SprogDefinition } from '../types/types.js';
+import { SprogDefinition, SprogDefinitionBase } from '../types/types.js';
 export interface SuperFuncProp {
     type: AllTypes;
     default?: any;
@@ -10,7 +10,7 @@ export interface SuperFuncParams {
     props: Record<string, SuperFuncProp>;
     lines: SprogDefinition[];
 }
-export type SuperFuncDefinition = SprogDefinition & SuperFuncParams;
+export type SuperFuncDefinition = SprogDefinitionBase & SuperFuncParams;
 export declare class SuperFunc {
     scope: SuperScope;
     private readonly props;

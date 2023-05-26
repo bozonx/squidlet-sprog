@@ -1,5 +1,6 @@
 import {lastItem} from 'squidlet-lib';
-import {newScope, SprogDefinition, SuperScope} from '../scope.js';
+import {newScope, SuperScope} from '../scope.js';
+import {SprogDefinition} from '../types/types.js';
 
 
 interface ForEachParams {

@@ -1,6 +1,7 @@
 import {isLastIndex} from 'squidlet-lib';
-import {SprogDefinition, SuperScope} from '../scope.js';
+import {SuperScope} from '../scope.js';
 import {logicAnd} from './booleanLogic.js';
+import {SprogDefinition} from '../types/types.js';
 
 
 interface IfElseItem {
