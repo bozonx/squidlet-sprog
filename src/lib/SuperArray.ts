@@ -117,6 +117,9 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
 }
 
 
+
+// TODO: add ability to reorder array
+
 export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
   readonly isArray = true
   // definition for all the items of array
@@ -196,6 +199,15 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     }
   }
 
+
+  /**
+   * Listen only to add, remove or reorder array changes
+   */
+  onArrayChange(handler: () => void): number {
+    return this.changeEvent.addListener((el: any) => {
+      if (el === this) handler()
+    })
+  }
 
   isKeyReadonly(key: string | number): boolean {
     return this.isReadOnly
