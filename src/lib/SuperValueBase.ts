@@ -37,6 +37,7 @@ export const SUPER_PROXY_PUBLIC_MEMBERS = [
   'setValue',
   'setNull',
   'toDefaultValue',
+  'subscribe',
 ]
 
 
@@ -396,7 +397,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     for (const key of this.myKeys()) {
       const value: SuperValueBase = (this.values as any)[key]
 
-      if (typeof value !== 'object' || value.isSuperValue) continue
+      if (typeof value !== 'object' || !value.isSuperValue) continue
 
       value.subscribe((target: SuperValueBase, path?: string) => {
         // if not path then it's some wierd

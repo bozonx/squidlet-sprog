@@ -6,6 +6,7 @@ export const SUPER_PROXY_PUBLIC_MEMBERS = [
     'setValue',
     'setNull',
     'toDefaultValue',
+    'subscribe',
 ];
 export const SUPER_VALUE_PROP = '$super';
 export function isSuperValue(val) {
@@ -254,7 +255,7 @@ export class SuperValueBase {
     startListenChildren() {
         for (const key of this.myKeys()) {
             const value = this.values[key];
-            if (typeof value !== 'object' || value.isSuperValue)
+            if (typeof value !== 'object' || !value.isSuperValue)
                 continue;
             value.subscribe((target, path) => {
                 // if not path then it's some wierd
