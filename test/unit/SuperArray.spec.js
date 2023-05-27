@@ -24,8 +24,17 @@ describe('SuperArray', () => {
     assert.equal(proxyfied[2], 7)
     assert.deepEqual(proxyfied, [5, 6, 7])
 
-    // TODO: не работает
-    //assert.deepEqual([...proxyfied], [5, 6, 7])
+    assert.deepEqual([...proxyfied], [5, 6, 7])
+
+    // for of
+    const checkArr = []
+    for (const item of proxyfied) checkArr.push(item)
+    assert.deepEqual(checkArr, [5, 6, 7])
+
+    // for in
+    const checkArr2 = []
+    for (const index in proxyfied) checkArr2.push(proxyfied[index])
+    assert.deepEqual(checkArr2, [5, 6, 7])
   })
 
   // it('SuperArray', () => {

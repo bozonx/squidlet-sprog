@@ -58,8 +58,6 @@ const ARR_PUBLIC_MEMBERS = [
 ]
 
 
-// TODO: не работает [...proxyfied]
-
 /**
  * Wrapper for super array which allows to manipulate it as common array.
  * And it puts some methods to it:
@@ -69,28 +67,34 @@ const ARR_PUBLIC_MEMBERS = [
  */
 export function proxyArray(arr: SuperArray): ProxyfiedArray {
   const handler: ProxyHandler<any[]> = {
-    get(target: any[], prop: any) {
+    get(target: any[], prop: string | symbol) {
       if (prop === SUPER_VALUE_PROP) {
         return arr
       }
-      else if (ARR_PUBLIC_MEMBERS.includes(prop)) {
+      else if (typeof prop === 'string' && ARR_PUBLIC_MEMBERS.includes(prop)) {
         // public SuperArray prop
         return (arr as any)[prop]
       }
       else {
         // some other prop
-        const index = Number(prop)
-
-        if (Number.isInteger(index)) {
-          if (index < 0) {
-            // Support negative indices (e.g., -1 for last element)
-            prop = String(arr.length + index)
-          }
-
-          return arr.values[prop]
+        if (typeof prop === 'symbol') {
+          return arr.values[prop as  any]
         }
-        // some other prop - get it from the array
-        return arr.values[prop]
+        else {
+          // means number as string
+          const index = Number(prop)
+
+          if (Number.isInteger(index)) {
+            if (index < 0) {
+              // Support negative indices (e.g., -1 for last element)
+              prop = String(arr.length + index)
+            }
+
+            return arr.values[index]
+          }
+          // some other prop - get it from the array
+          return arr.values[prop as any]
+        }
       }
     },
     set(target: any[], prop, value) {
@@ -117,8 +121,8 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
 }
 
 
-
 // TODO: add ability to reorder array
+
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
   readonly isArray = true
