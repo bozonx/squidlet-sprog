@@ -83,6 +83,9 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
 
+  // TODO: может добавить noInit - чтобы не забыть потом проинициализировать
+  // TODO: или на get и set проверять чтобы был проинициализирован
+
   protected constructor(scope: SuperScope) {
     this.scope = scope
   }
