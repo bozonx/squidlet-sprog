@@ -43,6 +43,10 @@ export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements 
      */
     init: (initialArr?: T[]) => (index: number, item: AllTypes) => void;
     destroy: () => void;
+    /**
+     * Listen only to add, remove or reorder array changes
+     */
+    onArrayChange(handler: () => void): number;
     isKeyReadonly(key: string | number): boolean;
     myKeys(): number[];
     getOwnValue(key: number): AllTypes;

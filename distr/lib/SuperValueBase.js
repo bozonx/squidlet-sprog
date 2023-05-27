@@ -14,7 +14,6 @@ export function isSuperValue(val) {
 export class SuperValueBase {
     isSuperValue = true;
     changeEvent = new IndexedEvents();
-    scope;
     proxyfiedInstance;
     // parent super struct or array who owns me
     myParent;
@@ -22,6 +21,10 @@ export class SuperValueBase {
     myPath;
     inited = false;
     links = [];
+    myScope;
+    get scope() {
+        return this.myScope;
+    }
     get isInitialized() {
         return this.inited;
     }
@@ -31,8 +34,10 @@ export class SuperValueBase {
     get pathToMe() {
         return this.myPath;
     }
+    // TODO: может добавить noInit - чтобы не забыть потом проинициализировать
+    // TODO: или на get и set проверять чтобы был проинициализирован
     constructor(scope) {
-        this.scope = scope;
+        this.myScope = scope;
     }
     init() {
         // means that array is completely initiated
@@ -64,6 +69,13 @@ export class SuperValueBase {
     $$setParent(parent, myPath) {
         this.myParent = parent;
         this.myPath = myPath;
+    }
+    /**
+     * Do it only if you are totally sure what you do.
+     * @param scope
+     */
+    $$replaceScope(scope) {
+        this.myScope = scope;
     }
     /**
      * Make proxy of my self.

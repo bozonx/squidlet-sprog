@@ -59,7 +59,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   readonly isSuperValue = true
   readonly abstract values: T
   changeEvent = new IndexedEvents<SuperChangeHandler>()
-  readonly scope: SuperScope
   protected proxyfiedInstance?: any
   // parent super struct or array who owns me
   protected myParent?: SuperValueBase
@@ -68,7 +67,12 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   protected inited: boolean = false
   protected links: SuperLinkItem[] = []
   protected abstract proxyFn: (instance: any) => any
+  private myScope: SuperScope
 
+
+  get scope(): SuperScope {
+    return this.myScope
+  }
 
   get isInitialized(): boolean {
     return this.inited
@@ -87,7 +91,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   // TODO: или на get и set проверять чтобы был проинициализирован
 
   protected constructor(scope: SuperScope) {
-    this.scope = scope
+    this.myScope = scope
   }
 
 
@@ -126,6 +130,14 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   $$setParent(parent: SuperValueBase, myPath: string) {
     this.myParent = parent
     this.myPath = myPath
+  }
+
+  /**
+   * Do it only if you are totally sure what you do.
+   * @param scope
+   */
+  $$replaceScope(scope: SuperScope) {
+    this.myScope = scope
   }
 
 

@@ -24,13 +24,14 @@ export declare abstract class SuperValueBase<T = any | any[]> implements SuperVa
     readonly isSuperValue = true;
     readonly abstract values: T;
     changeEvent: IndexedEvents<SuperChangeHandler>;
-    readonly scope: SuperScope;
     protected proxyfiedInstance?: any;
     protected myParent?: SuperValueBase;
     protected myPath?: string;
     protected inited: boolean;
     protected links: SuperLinkItem[];
     protected abstract proxyFn: (instance: any) => any;
+    private myScope;
+    get scope(): SuperScope;
     get isInitialized(): boolean;
     get parent(): SuperValueBase | undefined;
     get pathToMe(): string | undefined;
@@ -43,6 +44,11 @@ export declare abstract class SuperValueBase<T = any | any[]> implements SuperVa
      * @myPath - full path to me in tree where im is
      */
     $$setParent(parent: SuperValueBase, myPath: string): void;
+    /**
+     * Do it only if you are totally sure what you do.
+     * @param scope
+     */
+    $$replaceScope(scope: SuperScope): void;
     abstract isKeyReadonly(key: string | number): boolean;
     /**
      * Get own keys or indexes

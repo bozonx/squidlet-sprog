@@ -19,7 +19,6 @@ const ARR_PUBLIC_MEMBERS = [
     'reverse',
     'sort',
 ];
-// TODO: не работает [...proxyfied]
 /**
  * Wrapper for super array which allows to manipulate it as common array.
  * And it puts some methods to it:
@@ -33,22 +32,28 @@ export function proxyArray(arr) {
             if (prop === SUPER_VALUE_PROP) {
                 return arr;
             }
-            else if (ARR_PUBLIC_MEMBERS.includes(prop)) {
+            else if (typeof prop === 'string' && ARR_PUBLIC_MEMBERS.includes(prop)) {
                 // public SuperArray prop
                 return arr[prop];
             }
             else {
                 // some other prop
-                const index = Number(prop);
-                if (Number.isInteger(index)) {
-                    if (index < 0) {
-                        // Support negative indices (e.g., -1 for last element)
-                        prop = String(arr.length + index);
-                    }
+                if (typeof prop === 'symbol') {
                     return arr.values[prop];
                 }
-                // some other prop - get it from the array
-                return arr.values[prop];
+                else {
+                    // means number as string
+                    const index = Number(prop);
+                    if (Number.isInteger(index)) {
+                        if (index < 0) {
+                            // Support negative indices (e.g., -1 for last element)
+                            prop = String(arr.length + index);
+                        }
+                        return arr.values[index];
+                    }
+                    // some other prop - get it from the array
+                    return arr.values[prop];
+                }
             }
         },
         set(target, prop, value) {
@@ -71,6 +76,9 @@ export function proxyArray(arr) {
     };
     return new Proxy(arr.values, handler);
 }
+// TODO: add ability to reorder array
+// TODO: при добавлении элементов слушать их события - startListenChildren
+// TODO: при удалении элементов перестать слушать их события
 export class SuperArray extends SuperValueBase {
     isArray = true;
     // definition for all the items of array
@@ -127,6 +135,15 @@ export class SuperArray extends SuperValueBase {
                 values[indexStr].destroy();
         }
     };
+    /**
+     * Listen only to add, remove or reorder array changes
+     */
+    onArrayChange(handler) {
+        return this.changeEvent.addListener((el) => {
+            if (el === this)
+                handler();
+        });
+    }
     isKeyReadonly(key) {
         return this.isReadOnly;
     }
