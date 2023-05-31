@@ -359,14 +359,12 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       // work with super type
 
-      // TODO: read only должно наследоваться потомками если оно стоит у родителя
-      // TODO: готовый инстанс может уже передаться в initial value
-
-      // TODO: если потомок super value то надо делать его через proxy
-      //       потому что иначе не сработает deepGet, deepSet etc
-      //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
-
       if (initialValue && isSuperValue(initialValue)) {
+
+        // TODO: привязать родителя
+        // TODO: установить ro если он у родителя
+        // TODO: потомок должен установить ro у детей
+
         // initial value is already set up value
         return initialValue
       }
@@ -374,6 +372,12 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
         // this means the super struct or array has already initialized,
         // so now we are linking it as my child
         const superVal: SuperValueBase<T> = result
+
+        // TODO: read only должно наследоваться потомками если оно стоит у родителя
+
+        // TODO: если потомок super value то надо делать его через proxy
+        //       потому что иначе не сработает deepGet, deepSet etc
+        //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
 
         superVal.$$setParent(this, this.makeChildPath(childKeyOrIndex))
       }
