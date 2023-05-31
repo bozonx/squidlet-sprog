@@ -178,11 +178,11 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     return this.proxyfiedInstance
   }
 
-  subscribe(handler: SuperChangeHandler): number {
+  subscribe = (handler: SuperChangeHandler): number => {
     return this.changeEvent.addListener(handler)
   }
 
-  unsubscribe(handlerIndex: number) {
+  unsubscribe = (handlerIndex: number) => {
     this.changeEvent.removeListener(handlerIndex)
   }
 

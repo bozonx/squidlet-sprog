@@ -2,7 +2,6 @@ import {newScope, SuperStruct} from "../../src/index.js";
 
 
 // TODO: check наслоедование ro для потомков
-// TODO: без инициализации ничего не должно работать
 // TODO: ловить события
 
 describe('SuperStruct', () => {
@@ -59,6 +58,7 @@ describe('SuperStruct', () => {
 
   it('default value', async () => {
     const scope = newScope()
+    const spy = sinon.spy()
     const def = {
       $exp: 'newSuperStruct',
       definition: {
@@ -69,12 +69,17 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
     struct.$super.init()
     assert.equal(struct['p1'], 5)
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(struct.$super, undefined)
   })
 
   it('wrong default value', async () => {
     const scope = newScope()
+    const spy = sinon.spy()
     const def = {
       $exp: 'newSuperStruct',
       definition: {
@@ -85,11 +90,16 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+
     assert.throws(() => struct.$super.init())
+    spy.should.have.not.been.called
   })
 
   it('not required value', async () => {
     const scope = newScope()
+    const spy = sinon.spy()
     const def = {
       $exp: 'newSuperStruct',
       definition: {
@@ -99,12 +109,18 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
     struct.$super.init()
+
     assert.deepEqual(struct, {p1: undefined})
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(struct.$super, undefined)
   })
 
   it('required value', async () => {
     const scope = newScope()
+    const spy = sinon.spy()
     const def = {
       $exp: 'newSuperStruct',
       definition: {
@@ -115,12 +131,17 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
     struct.$super.init({p1: 5})
     assert.deepEqual(struct, {p1: 5})
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(struct.$super, undefined)
   })
 
   it('bad required value', async () => {
     const scope = newScope()
+    const spy = sinon.spy()
     const def = {
       $exp: 'newSuperStruct',
       definition: {
@@ -131,11 +152,16 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+
     assert.throws(() => struct.$super.init())
+    spy.should.have.not.been.called
   })
 
   it('readonly value - set initial and set via setter', async () => {
     const scope = newScope()
+    const spy = sinon.spy()
     const def = {
       $exp: 'newSuperStruct',
       definition: {
@@ -146,6 +172,9 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+
     const setter = struct
       .$super.init({p1: 5})
 
@@ -156,6 +185,8 @@ describe('SuperStruct', () => {
     assert.deepEqual(struct, {p1: 6})
 
     assert.throws(() => struct.setValue('p1', 7))
+
+    spy.should.have.been.calledTwice
   })
 
 })

@@ -9,6 +9,8 @@ import rewire from 'rewire'
 chai.use(sinonChai)
 chai.use(chaiAsPromised)
 
+chai.should()
+
 global.assert = chai.assert
 //global.expect = chai.expect
 global.sinon = sinon
