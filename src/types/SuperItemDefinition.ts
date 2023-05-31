@@ -9,12 +9,16 @@ interface SuperItemDefinitionBase {
 interface SuperItemDefinitionExtra {
   required: boolean
   readonly: boolean
+  nullable: boolean
 }
 
 export type SuperItemInitDefinition = SuperItemDefinitionBase & Partial<SuperItemDefinitionExtra>
 export type SuperItemDefinition = SuperItemDefinitionBase & SuperItemDefinitionExtra
 
 
-export const DEFAULT_INIT_SUPER_DEFINITION: SuperItemInitDefinition = {
+export const DEFAULT_INIT_SUPER_DEFINITION: SuperItemDefinition = {
   type: 'any',
+  required: false,
+  readonly: false,
+  nullable: false,
 }

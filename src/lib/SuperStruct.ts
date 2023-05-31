@@ -9,7 +9,11 @@ import {
   SuperValuePublic
 } from './SuperValueBase.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {
+  DEFAULT_INIT_SUPER_DEFINITION,
+  SuperItemDefinition,
+  SuperItemInitDefinition
+} from '../types/SuperItemDefinition.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -219,8 +223,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(definition)) {
       const keyName = keyStr as keyof T
       res[keyName] = {
+        ...DEFAULT_INIT_SUPER_DEFINITION,
         ...definition[keyName],
-        required: Boolean(definition[keyName].required),
 
         // TODO: WTF ???!!!!
         readonly: (defaultRo)

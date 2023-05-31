@@ -64,7 +64,8 @@ describe('SuperStruct', () => {
       definition: {
         p1: {
           type: 'number',
-          default: 5
+          default: 5,
+          nullable: true,
         },
         p2: {
           type: 'string',
@@ -85,17 +86,20 @@ describe('SuperStruct', () => {
     assert.deepEqual(struct.$super.definition, {
       "p1": {
         "default": 5,
+        "nullable": true,
         "readonly": true,
         "required": false,
         "type": "number",
       },
       "p2": {
         "readonly": true,
+        "nullable": false,
         "required": false,
         "type": "string",
       },
       "p3": {
         "default": "d",
+        "nullable": false,
         "readonly": false,
         "required": false,
         "type": "string",
@@ -268,6 +272,7 @@ describe('SuperStruct', () => {
 
     spy.should.have.been.calledOnce
 
+    // TODO: setNull
     // struct.$super.setNull('p2')
     //
     // assert.isNull(struct['p2'])
@@ -280,6 +285,6 @@ describe('SuperStruct', () => {
 })
 
 // TODO: toDefaultValue
-// TODO: setNull
+
 // TODO: setValue, setOwnValue - не своего типа
 // TODO: clone

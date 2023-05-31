@@ -10,7 +10,8 @@ import {SuperScope} from '../scope.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
-  DEFAULT_INIT_SUPER_DEFINITION, SuperItemDefinition,
+  DEFAULT_INIT_SUPER_DEFINITION,
+  SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 
@@ -154,10 +155,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     super(scope)
 
     this.itemDefinition = {
-      ...(itemDefinition || DEFAULT_INIT_SUPER_DEFINITION),
-      required: Boolean(itemDefinition?.required),
-      readonly: Boolean(itemDefinition?.readonly),
-    }
+      ...DEFAULT_INIT_SUPER_DEFINITION,
+      ...itemDefinition,
+    } as SuperItemDefinition
     this.defaultArray = defaultArray
   }
 
