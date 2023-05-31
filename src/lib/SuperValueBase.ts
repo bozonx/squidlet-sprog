@@ -353,9 +353,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     childKeyOrIndex: string | number,
     initialValue?: any
   ): any {
-
-    console.log(22222, definition, childKeyOrIndex, initialValue)
-
     if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       // work with super type
 
@@ -425,7 +422,10 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       if (typeof value === 'undefined' && definition.required) {
         throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
       }
-      else if (isCorrespondingType(value, definition.type)) {
+      else if (typeof value === 'undefined' && !definition.required) {
+        return undefined
+      }
+      else if (!isCorrespondingType(value, definition.type)) {
         throw new Error(
           `The value of ${childKeyOrIndex} has type ${typeof value}, `
           + `but not ${definition.type}`

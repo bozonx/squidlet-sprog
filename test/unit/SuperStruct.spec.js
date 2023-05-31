@@ -46,7 +46,7 @@ describe('SuperStruct', () => {
     assert.equal(struct['p1'], 5)
   })
 
-  it.only('wrong default value', async () => {
+  it('wrong default value', async () => {
     const scope = newScope()
     const def = {
       $exp: 'newSuperStruct',

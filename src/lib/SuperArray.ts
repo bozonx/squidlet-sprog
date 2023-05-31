@@ -185,7 +185,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
         ? initialArr?.[index]
         : this.defaultArray?.[index]
 
-      this.values[index] = this.initChild(
+      this.values[index] = this.setupChildValue(
         this.itemDefinition,
         index,
         value
