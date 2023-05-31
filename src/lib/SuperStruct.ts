@@ -225,10 +225,10 @@ export class SuperStruct<T = Record<string, AllTypes>>
       res[keyName] = {
         ...DEFAULT_INIT_SUPER_DEFINITION,
         ...definition[keyName],
-
-        // TODO: WTF ???!!!!
         readonly: (defaultRo)
+          // if ro was set to false in definition then leave false. In other cases true
           ? definition[keyName].readonly !== false
+          // or just use that value which is was set in definition
           : Boolean(definition[keyName].readonly),
       }
     }
