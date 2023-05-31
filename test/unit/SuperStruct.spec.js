@@ -178,14 +178,15 @@ describe('SuperStruct', () => {
     const setter = struct
       .$super.init({p1: 5})
 
+    spy.should.have.been.calledOnce
+
     assert.deepEqual(struct, {p1: 5})
 
     setter('p1', 6)
 
     assert.deepEqual(struct, {p1: 6})
-
     assert.throws(() => struct.setValue('p1', 7))
-
+    // first time on init and the second time using setter
     spy.should.have.been.calledTwice
   })
 

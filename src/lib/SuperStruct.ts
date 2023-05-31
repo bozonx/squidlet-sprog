@@ -208,7 +208,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
    */
   protected myRoSetter = (name: keyof T, newValue: AllTypes) => {
     this.setOwnValue(name as any, newValue, true)
-    this.riseChildrenChangeEvent(name as string)
   }
 
   private prepareDefinition(
