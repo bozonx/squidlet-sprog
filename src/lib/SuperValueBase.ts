@@ -9,7 +9,7 @@ import {
   joinDeepPath
 } from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {AllTypes} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 
@@ -103,6 +103,10 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     this.changeEvent.emit(this, this.pathToMe)
     // listen to children to bubble their events
     this.startListenChildren()
+
+
+    // TODO: ещё же надо вызвать init() потомков
+
     // return setter for read only props
     return this.myRoSetter
   }
@@ -339,20 +343,39 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     this.changeEvent.emit(this, this.pathToMe)
   }
 
-  // TODO: review
-  protected initChild(
+  /**
+   * Setup child value.
+   * It the value is primitive then it checks its type and returns default or initial value
+   * If the child is Super Struct or Array
+   */
+  protected setupChildValue(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     initialValue?: any
   ): any {
 
-    // TODO: создавать проксированный инстанс
+    // TODO: что с супер функциями???
+    // TODO: ifElse и циклы и выражения запрещено ставить как значения
+
+    console.log(22222, definition, childKeyOrIndex, initialValue)
+
+    if ([ ...Object.keys(SUPER_VALUES), SUPER_TYPES.SuperFunc ].includes(definition.type)) {
+      // work with super type
+    }
+    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+      // setup just a simple type
+    }
+    else {
+      throw new Error(`Not supported type as super value child: ${definition.type}`)
+    }
+
+
+
+
+
+
 
     // TODO: read only должно наследоваться потомками если оно стоит у родителя
-
-    // TODO: если потомок super value то надо делать его через proxy
-    //       потому что иначе не сработает deepGet, deepSet etc
-    //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
 
     let result: any | undefined
 
@@ -366,6 +389,9 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       //       and not initial value - then make a new super instance
     }
     else {
+
+      console.log(1111, initialValue, definition.type, isCorrespondingType(initialValue, definition.type))
+
       // set a new value. It doesn't mean is it readonly or not
       if (isCorrespondingType(initialValue, definition.type)) {
         result = initialValue
@@ -378,6 +404,13 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       }
 
       if (isSuperValue(result)) {
+
+        // TODO: если потомок super value то надо делать его через proxy
+        //       потому что иначе не сработает deepGet, deepSet etc
+        //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
+
+
+
         // this means the super struct or array has already initialized,
         // so now we are linking it as my child
         const superVal: SuperValueBase<T> = result

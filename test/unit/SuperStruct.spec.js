@@ -14,6 +14,8 @@ describe('SuperStruct', () => {
     }
     const proxyfied = await scope.$run(def)
 
+    proxyfied.$super.init()
+
     proxyfied.setValue('p1', 5)
 
     assert.equal(proxyfied['p1'], 5)
@@ -25,5 +27,43 @@ describe('SuperStruct', () => {
 
     assert.deepEqual({...proxyfied}, {p1: 6})
   })
+
+  it('default value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.$super.init()
+
+    assert.equal(struct['p1'], 5)
+  })
+
+  it.only('wrong default value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 'str'
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+
+    assert.throws(() => struct.$super.init())
+  })
+
+  // TODO: chech initial value
+  // TODO: chech bad initial value
+  // TODO: без инициализации ничего не должно работать
 
 })

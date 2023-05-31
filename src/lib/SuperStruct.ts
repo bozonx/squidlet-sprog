@@ -113,7 +113,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
 
-      this.values[keyName] = this.initChild(
+      this.values[keyName] = this.setupChildValue(
         this.definition[keyName],
         keyStr,
         initialValues?.[keyName]
