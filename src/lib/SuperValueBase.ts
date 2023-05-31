@@ -396,7 +396,14 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
           }
         }
         else if (definition.type === SUPER_VALUES.SuperArray) {
-
+          def = {
+            $exp: 'newSuperArray',
+            item: {
+              ...definition.default.item,
+              //readonly: definition.readonly
+            },
+            default: definition.default.default,
+          }
         }
 
         //this.myScope.$resolve()

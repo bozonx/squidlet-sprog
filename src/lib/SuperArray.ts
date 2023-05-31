@@ -125,6 +125,8 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
 // TODO: при добавлении элементов слушать их события - startListenChildren
 // TODO: при удалении элементов перестать слушать их события
 
+// TODO: можно переделать входные параметры в плоские - type, initial, default, readonly
+
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
   readonly isArray = true
