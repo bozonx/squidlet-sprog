@@ -191,6 +191,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * @param pathTo
    */
   hasKey = (pathTo: string): boolean => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     return deepHas(this.values as any, pathTo)
   }
 
@@ -200,7 +202,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * To change its value get its parent and set value via parent like: parent.value = 5
    */
   getValue = (pathTo: string): AllTypes | undefined => {
-    if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
     return deepGet(this.values as any, pathTo)
   }
@@ -211,7 +214,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * Even you can set value to the deepest primitive like: struct.struct.num = 5
    */
   setValue = (pathTo: string, newValue: AllTypes) => {
-    if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
     const splat = splitDeepPath(pathTo)
 
@@ -229,6 +233,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * The same as setValue but it sets null
    */
   setNull = (pathTo: string) => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     this.setValue(pathTo, null)
   }
 
@@ -308,6 +314,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * You can change the clone but changes will not affect the struct.
    */
   clone = (): T => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     return deepClone(omitObj(this.values as any, SUPER_VALUE_PROP))
   }
 

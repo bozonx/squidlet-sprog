@@ -149,14 +149,20 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
   myKeys(): string[] {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     return Object.keys(this.values as any)
   }
 
   getOwnValue(key: string): AllTypes {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     return this.values[key as keyof T] as any
   }
 
   setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false) {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const name: keyof T = key as any
 
     if (typeof this.definition[name] === 'undefined') {
@@ -185,6 +191,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
    * @param key
    */
   toDefaultValue = (key: string) => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const defaultValue = this.definition[key as keyof T]?.default || null
 
     this.setOwnValue(key, defaultValue)

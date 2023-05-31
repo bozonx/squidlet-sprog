@@ -10,6 +10,8 @@ describe('SuperArray', () => {
     const arr = new SuperArray(scope, item)
     const proxyfied = arr.getProxy()
 
+    proxyfied.$super.init()
+
     proxyfied.setValue('[0]', 5)
 
     assert.equal(proxyfied[0], 5)

@@ -1,6 +1,10 @@
 import {newScope, SuperStruct} from "../../src/index.js";
 
 
+// TODO: check наслоедование ro для потомков
+// TODO: без инициализации ничего не должно работать
+// TODO: ловить события
+
 describe('SuperStruct', () => {
   it('proxy', async () => {
     const scope = newScope()
@@ -26,6 +30,31 @@ describe('SuperStruct', () => {
     assert.deepEqual(proxyfied, {p1: 6})
 
     assert.deepEqual({...proxyfied}, {p1: 6})
+  })
+
+  it('you have to initialize struct first', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+    // from base class
+    assert.throws(() => struct.hasKey('p1'))
+    assert.throws(() => struct.getValue('p1'))
+    assert.throws(() => struct.setValue('p1', 6))
+    assert.throws(() => struct.setNull('p1'))
+    assert.throws(() => struct.clone())
+    // from struct
+    assert.throws(() => struct.myKeys())
+    assert.throws(() => struct.getOwnValue('p1'))
+    assert.throws(() => struct.setOwnValue('p1', 7))
+    assert.throws(() => struct.toDefaultValue('p1'))
   })
 
   it('default value', async () => {
@@ -122,11 +151,11 @@ describe('SuperStruct', () => {
 
     assert.deepEqual(struct, {p1: 5})
 
+    setter('p1', 6)
 
+    assert.deepEqual(struct, {p1: 6})
+
+    assert.throws(() => struct.setValue('p1', 7))
   })
-
-  // TODO: chech ro
-  // TODO: check наслоедование ro для потомков
-  // TODO: без инициализации ничего не должно работать
 
 })
