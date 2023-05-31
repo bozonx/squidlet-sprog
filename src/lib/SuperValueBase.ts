@@ -354,72 +354,60 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     initialValue?: any
   ): any {
 
-    // TODO: что с супер функциями???
-    // TODO: ifElse и циклы и выражения запрещено ставить как значения
-
     console.log(22222, definition, childKeyOrIndex, initialValue)
 
-    if ([ ...Object.keys(SUPER_VALUES), SUPER_TYPES.SuperFunc ].includes(definition.type)) {
+    if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       // work with super type
-    }
-    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      // setup just a simple type
-    }
-    else {
-      throw new Error(`Not supported type as super value child: ${definition.type}`)
-    }
 
+      // TODO: read only должно наследоваться потомками если оно стоит у родителя
+      // TODO: готовый инстанс может уже передаться в initial value
 
+      // TODO: если потомок super value то надо делать его через proxy
+      //       потому что иначе не сработает deepGet, deepSet etc
+      //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
 
-
-
-
-
-    // TODO: read only должно наследоваться потомками если оно стоит у родителя
-
-    let result: any | undefined
-
-    if (typeof initialValue === 'undefined') {
-      // if no new value then set default value if exist
-      result = definition.default
-
-      // TODO: тут тоже проверить тип, он может быть не верный
-
-      // TODO: if definition of child is super struct or array
-      //       and not initial value - then make a new super instance
-    }
-    else {
-
-      console.log(1111, initialValue, definition.type, isCorrespondingType(initialValue, definition.type))
-
-      // set a new value. It doesn't mean is it readonly or not
-      if (isCorrespondingType(initialValue, definition.type)) {
-        result = initialValue
+      if (initialValue && isSuperValue(initialValue)) {
+        // initial value is already set up value
+        return initialValue
       }
       else {
-        throw new Error(
-          `The initial value ${initialValue} with key ${childKeyOrIndex} ` +
-          `is not corresponding type ${definition.type}`
-        )
-      }
-
-      if (isSuperValue(result)) {
-
-        // TODO: если потомок super value то надо делать его через proxy
-        //       потому что иначе не сработает deepGet, deepSet etc
-        //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
-
-
-
         // this means the super struct or array has already initialized,
         // so now we are linking it as my child
         const superVal: SuperValueBase<T> = result
 
         superVal.$$setParent(this, this.makeChildPath(childKeyOrIndex))
       }
+
+
+    }
+    else if (definition.type === SUPER_TYPES.SuperFunc) {
+      // super function
+      // TODO: do it
+    }
+    // TODO: обычная ф-я ???
+    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+      // setup just a simple type
+      const value = (typeof initialValue === 'undefined')
+        ? definition.default
+        : initialValue
+
+      if (typeof value === 'undefined' && definition.required) {
+        throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
+      }
+      else if (isCorrespondingType(value, definition.type)) {
+        throw new Error(
+          `The value of ${childKeyOrIndex} has type ${typeof value}, `
+          + `but not ${definition.type}`
+        )
+      }
+
+      return value
+    }
+    else {
+      throw new Error(`Not supported type as super value child: ${definition.type}`)
     }
 
-    return result
+    throw new Error(`Can't setup a value of ${childKeyOrIndex}`)
   }
 
   /**

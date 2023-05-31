@@ -120,13 +120,13 @@ export class SuperStruct<T = Record<string, AllTypes>>
       )
     }
 
-    // check required values
-    for (const keyStr of Object.keys(this.definition)) {
-      const keyName = keyStr as keyof T
-      if (this.definition[keyName].required && typeof this.values[keyName] === 'undefined') {
-        throw new Error(`The value ${keyStr} is required, but it wasn't initiated`)
-      }
-    }
+    // // check required values
+    // for (const keyStr of Object.keys(this.definition)) {
+    //   const keyName = keyStr as keyof T
+    //   if (this.definition[keyName].required && typeof this.values[keyName] === 'undefined') {
+    //     throw new Error(`The value ${keyStr} is required, but it wasn't initiated`)
+    //   }
+    // }
 
     return super.init()
   }
