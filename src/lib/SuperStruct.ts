@@ -30,8 +30,8 @@ export const STRUCT_PUBLIC_MEMBERS = [
 /**
  * Wrapper for SuperStruct which allows to manipulate it as common object.
  * And it puts some methods to it:
- * * arr.$super - instance of SuperStruct
- * * arr... - see other methods in STRUCT_PUBLIC_MEMBERS
+ * * struct.$super - instance of SuperStruct
+ * * struct... - see other methods in STRUCT_PUBLIC_MEMBERS
  */
 export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
   const handler: ProxyHandler<Record<any, any>> = {

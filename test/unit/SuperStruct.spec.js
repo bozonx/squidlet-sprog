@@ -2,15 +2,17 @@ import {newScope, SuperStruct} from "../../src/index.js";
 
 
 describe('SuperStruct', () => {
-  it('proxy', () => {
+  it('proxy', async () => {
     const scope = newScope()
     const def = {
-      p1: {
-        type: 'number'
-      }
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number'
+        }
+      },
     }
-    const struct = new SuperStruct(scope, def)
-    const proxyfied = struct.getProxy()
+    const proxyfied = await scope.$run(def)
 
     proxyfied.setValue('p1', 5)
 
