@@ -1,10 +1,6 @@
 import {newScope, SuperStruct} from "../../src/index.js";
 
 
-// TODO: link
-// TODO: unlink
-
-
 describe('SuperStruct', () => {
   it('proxy', async () => {
     const scope = newScope()
@@ -309,6 +305,11 @@ describe('SuperStruct', () => {
     struct.setValue('p1', 6)
 
     assert.deepEqual(cloned, {p1: 5})
+  })
+
+  it('link', async () => {
+    // TODO: link
+    // TODO: unlink
   })
 
 })
