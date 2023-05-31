@@ -254,7 +254,8 @@ describe('SuperStruct', () => {
         },
         p2: {
           type: 'string',
-          default: 's'
+          default: 's',
+          nullable: true,
         }
       },
     }
@@ -269,22 +270,45 @@ describe('SuperStruct', () => {
     assert.isTrue(struct.$super.isKeyReadonly('p1'))
     assert.isTrue(struct.$super.hasKey('p1'))
     assert.deepEqual(struct.$super.myKeys(), ['p1', 'p2'])
-
     spy.should.have.been.calledOnce
 
-    // TODO: setNull
-    // struct.$super.setNull('p2')
-    //
-    // assert.isNull(struct['p2'])
+    struct.$super.setNull('p2')
+    assert.isNull(struct['p2'])
+    spy.should.have.been.calledTwice
 
     struct.$super.toDefaultValue('p2')
-
     assert.equal(struct.$super.getOwnValue('p2'), 's')
+    spy.should.have.been.calledThrice
+    // set wrong value
+    assert.throws(() => struct.$super.setOwnValue('p2', 5))
+    assert.throws(() => struct.$super.setValue('p2', true))
+    assert.throws(() => struct.$super.setValue('p2'))
+    // wrong key
+    assert.throws(() => struct.$super.setValue('p3', 5))
+    spy.should.have.been.calledThrice
+  })
+
+  it('clone', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.$super.init()
+
+    const cloned = struct.$super.clone()
+
+    struct.setValue('p1', 6)
+
+    assert.deepEqual(cloned, {p1: 5})
   })
 
 })
-
-// TODO: toDefaultValue
-
-// TODO: setValue, setOwnValue - не своего типа
-// TODO: clone

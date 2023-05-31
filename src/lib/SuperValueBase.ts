@@ -433,7 +433,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       else if (typeof value === 'undefined' && !definition.required) {
         return undefined
       }
-      else if (!isCorrespondingType(value, definition.type)) {
+      else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
         throw new Error(
           `The value of ${childKeyOrIndex} has type ${typeof value}, `
           + `but not ${definition.type}`

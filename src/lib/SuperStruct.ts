@@ -177,7 +177,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     else if (!ignoreRo && this.definition[name].readonly) {
       throw new Error(`Can't set readonly value of name ${String(name)}`)
     }
-    else if (!isCorrespondingType(value, this.definition[name].type)) {
+    else if (!isCorrespondingType(value, this.definition[name].type, this.definition[name].nullable)) {
       throw new Error(
         `The value ${String(name)} is not corresponding type ${this.definition[name].type}`
       )
