@@ -363,6 +363,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
         // this means the super struct or array has already initialized,
         // so now we are linking it as my child
 
+        // TODO: проверить соответствие в default's definition
         // TODO: установить ro если он у родителя
         // TODO: потомок должен установить ro у детей
 
@@ -370,7 +371,14 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
         return initialValue
       }
+      else if (!definition.default) {
+        throw new Error(`There aren't initial value and default value for super value`)
+      }
+      else if (typeof definition.default !== 'object') {
+        throw new Error(`Wrong type of definition.default`)
+      }
       else {
+        // if initial value not defined then create an instance using default's definition
 
         // TODO: read only должно наследоваться потомками если оно стоит у родителя
 
@@ -383,10 +391,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
         if (definition.type === SUPER_VALUES.SuperStruct) {
           def = {
             $exp: 'newSuperStruct',
-            definition: {
-
-            },
-            //defaultRo:
+            definition: definition.default,
+            defaultRo: definition.readonly,
           }
         }
         else if (definition.type === SUPER_VALUES.SuperArray) {

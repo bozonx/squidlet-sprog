@@ -66,6 +66,7 @@ describe('SuperStruct', () => {
   // TODO: chech bad initial value
   // TODO: chech required
   // TODO: chech ro
+  // TODO: check наслоедование ro для потомков
   // TODO: без инициализации ничего не должно работать
 
 })
