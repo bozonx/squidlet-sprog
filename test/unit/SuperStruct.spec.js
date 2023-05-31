@@ -1,7 +1,8 @@
 import {newScope, SuperStruct} from "../../src/index.js";
 
 
-// TODO: check наслоедование ro для потомков
+// TODO: link
+// TODO: unlink
 
 
 describe('SuperStruct', () => {
@@ -236,4 +237,49 @@ describe('SuperStruct', () => {
     spy.should.have.been.calledTwice
   })
 
+  it('little methods', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          readonly: true,
+          default: 5
+        },
+        p2: {
+          type: 'string',
+          default: 's'
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+    struct.$super.init()
+
+    spy.should.have.been.calledOnce
+    assert.equal(struct.getValue('p1'), 5)
+    assert.equal(struct.$super.getOwnValue('p1'), 5)
+    assert.isTrue(struct.$super.isKeyReadonly('p1'))
+    assert.isTrue(struct.$super.hasKey('p1'))
+    assert.deepEqual(struct.$super.myKeys(), ['p1', 'p2'])
+
+    spy.should.have.been.calledOnce
+
+    // struct.$super.setNull('p2')
+    //
+    // assert.isNull(struct['p2'])
+
+    struct.$super.toDefaultValue('p2')
+
+    assert.equal(struct.$super.getOwnValue('p2'), 's')
+  })
+
 })
+
+// TODO: toDefaultValue
+// TODO: setNull
+// TODO: setValue, setOwnValue - не своего типа
+// TODO: clone
