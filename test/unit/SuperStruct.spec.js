@@ -40,9 +40,7 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
-
     struct.$super.init()
-
     assert.equal(struct['p1'], 5)
   })
 
@@ -58,13 +56,75 @@ describe('SuperStruct', () => {
       },
     }
     const struct = await scope.$run(def)
-
     assert.throws(() => struct.$super.init())
   })
 
-  // TODO: chech initial value
-  // TODO: chech bad initial value
-  // TODO: chech required
+  it('not required value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+    struct.$super.init()
+    assert.deepEqual(struct, {p1: undefined})
+  })
+
+  it('required value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          required: true
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+    struct.$super.init({p1: 5})
+    assert.deepEqual(struct, {p1: 5})
+  })
+
+  it('bad required value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          required: true
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+    assert.throws(() => struct.$super.init())
+  })
+
+  it('readonly value - set initial and set via setter', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          readonly: true
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+    const setter = struct
+      .$super.init({p1: 5})
+
+    assert.deepEqual(struct, {p1: 5})
+
+
+  })
+
   // TODO: chech ro
   // TODO: check наслоедование ro для потомков
   // TODO: без инициализации ничего не должно работать
