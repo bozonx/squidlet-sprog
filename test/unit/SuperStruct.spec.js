@@ -2,7 +2,7 @@ import {newScope, SuperStruct} from "../../src/index.js";
 
 
 // TODO: check наслоедование ro для потомков
-// TODO: ловить события
+
 
 describe('SuperStruct', () => {
   it('proxy', async () => {
@@ -54,6 +54,52 @@ describe('SuperStruct', () => {
     assert.throws(() => struct.getOwnValue('p1'))
     assert.throws(() => struct.setOwnValue('p1', 7))
     assert.throws(() => struct.toDefaultValue('p1'))
+  })
+
+  it('set default ro', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5
+        },
+        p2: {
+          type: 'string',
+        },
+        p3: {
+          type: 'string',
+          default: 'd',
+          readonly: false
+        },
+      },
+      defaultRo: true
+    }
+    const struct = await scope.$run(def)
+
+    struct.$super.init({p2: 'str'})
+
+    assert.deepEqual(struct, {p1: 5, p2: 'str', p3: 'd'})
+    assert.deepEqual(struct.$super.definition, {
+      "p1": {
+        "default": 5,
+        "readonly": true,
+        "required": false,
+        "type": "number",
+      },
+      "p2": {
+        "readonly": true,
+        "required": false,
+        "type": "string",
+      },
+      "p3": {
+        "default": "d",
+        "readonly": false,
+        "required": false,
+        "type": "string",
+      }
+    })
   })
 
   it('default value', async () => {

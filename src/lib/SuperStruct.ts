@@ -221,6 +221,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
       res[keyName] = {
         ...definition[keyName],
         required: Boolean(definition[keyName].required),
+
+        // TODO: WTF ???!!!!
         readonly: (defaultRo)
           ? definition[keyName].readonly !== false
           : Boolean(definition[keyName].readonly),
