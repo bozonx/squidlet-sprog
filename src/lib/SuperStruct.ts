@@ -124,6 +124,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
       )
     }
 
+    // TODO: инициализацию наверное лучше сделать отдельно
+    // TODO: будут ли init values???
     // // check required values
     // for (const keyStr of Object.keys(this.definition)) {
     //   const keyName = keyStr as keyof T
@@ -142,6 +144,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
       const keyName = key as keyof T
 
       if (isSuperValue(this.values[keyName])) {
+        // it will destroy itself and its children
         (this.values[keyName] as SuperValueBase).destroy()
       }
     }
@@ -169,7 +172,10 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     const name: keyof T = key as any
 
-    if (typeof this.definition[name] === 'undefined') {
+    if (typeof value === 'undefined') {
+      throw new Error(`It isn't possible to set undefined to struct's child`)
+    }
+    else if (typeof this.definition[name] === 'undefined') {
       throw new Error(
         `Can't set value with name ${String(name)} which isn't defined in definition`
       )
@@ -177,13 +183,15 @@ export class SuperStruct<T = Record<string, AllTypes>>
     else if (!ignoreRo && this.definition[name].readonly) {
       throw new Error(`Can't set readonly value of name ${String(name)}`)
     }
-    else if (!isCorrespondingType(value, this.definition[name].type, this.definition[name].nullable)) {
+    else if (!isCorrespondingType(
+      value,
+      this.definition[name].type,
+      this.definition[name].nullable
+    )) {
       throw new Error(
         `The value ${String(name)} is not corresponding type ${this.definition[name].type}`
       )
     }
-
-    // TODO: наверное проверить required чтобы не устанавливали undefined and null
 
     this.values[name] = value as any
 
@@ -197,7 +205,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
   toDefaultValue = (key: string) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const defaultValue = this.definition[key as keyof T]?.default || null
+    let defaultValue = this.definition[key as keyof T]?.default
+
+    if (typeof defaultValue === 'undefined') defaultValue = null
 
     this.setOwnValue(key, defaultValue)
   }
