@@ -1,9 +1,6 @@
 import {newScope, SuperArray} from "../../src/index.js";
 
 
-// TODO: test toDefaultValue что установиться undefined если нет значения по умолчанию
-
-
 describe('SuperArray', () => {
   it('proxy', async () => {
     const scope = newScope()
@@ -189,5 +186,8 @@ describe('SuperArray', () => {
 
   // TODO: initial for type - 0
   // TODO: check to default
+  // TODO: array specific methods
+  // TODO: test toDefaultValue что установиться undefined если нет значения по умолчанию
+
 
 })
