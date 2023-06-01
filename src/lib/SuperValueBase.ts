@@ -9,7 +9,7 @@ import {
   joinDeepPath
 } from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {AllTypes, SIMPLE_TYPES, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES, SimpleType, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './helpers.js';
@@ -361,61 +361,9 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     initialValue?: any
-  ): any {
+  ): AllTypes {
     if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-      // work with super type
-
-      if (initialValue && isSuperValue(initialValue)) {
-        // this means the super struct or array has already initialized,
-        // so now we are linking it as my child
-
-        // TODO: проверить соответствие в default's definition
-        // TODO: установить ro если он у родителя
-        // TODO: потомок должен установить ro у детей
-
-        initialValue.$$setParent(this, this.makeChildPath(childKeyOrIndex))
-
-        return initialValue
-      }
-      else if (!definition.default) {
-        throw new Error(`There aren't initial value and default value for super value`)
-      }
-      else if (typeof definition.default !== 'object') {
-        throw new Error(`Wrong type of definition.default`)
-      }
-      else {
-        // if initial value not defined then create an instance using default's definition
-
-        // TODO: read only должно наследоваться потомками если оно стоит у родителя
-
-        // TODO: если потомок super value то надо делать его через proxy
-        //       потому что иначе не сработает deepGet, deepSet etc
-        //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
-
-        let def
-
-        if (definition.type === SUPER_VALUES.SuperStruct) {
-          def = {
-            $exp: 'newSuperStruct',
-            definition: definition.default,
-            defaultRo: definition.readonly,
-          }
-        }
-        else if (definition.type === SUPER_VALUES.SuperArray) {
-          def = {
-            $exp: 'newSuperArray',
-            item: {
-              ...definition.default.item,
-              //readonly: definition.readonly
-            },
-            default: definition.default.default,
-          }
-        }
-
-        //this.myScope.$resolve()
-      }
-
-
+      return this.setupSuperChild(definition, childKeyOrIndex, initialValue)
     }
     else if (definition.type === SUPER_TYPES.SuperFunc) {
       // super function
@@ -423,9 +371,10 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     }
 
     // TODO: обычная ф-я ???
+    // TODO: инстанс класса ???
 
     else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      return this.initSimpleChild(definition, childKeyOrIndex, initialValue)
+      return this.setupSimpleChild(definition, childKeyOrIndex, initialValue)
     }
     else {
       throw new Error(`Not supported type as super value child: ${definition.type}`)
@@ -454,11 +403,14 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
 
-  private initSimpleChild(
+  /**
+   * It checks and resolve initial value
+   */
+  private setupSimpleChild(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     initialValue?: any
-  ) {
+  ): SimpleType {
     // use initial value of default if no initial value
     const value = (typeof initialValue === 'undefined')
       ? definition.default
@@ -475,6 +427,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
         definition.nullable
       )
     }
+    // Value is defined in this case don't check required.
+    // Check type
     else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
       throw new Error(
         `The value of ${childKeyOrIndex} has type ${typeof value}, `
@@ -483,6 +437,66 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     }
 
     return value
+  }
+
+  private setupSuperChild(
+    definition: SuperItemDefinition,
+    childKeyOrIndex: string | number,
+    initialValue?: any
+  ): SuperValueBase {
+    // work with super type
+
+    if (initialValue && isSuperValue(initialValue)) {
+      // this means the super struct or array has already initialized,
+      // so now we are linking it as my child
+
+      // TODO: проверить соответствие в default's definition
+      // TODO: установить ro если он у родителя
+      // TODO: потомок должен установить ro у детей
+
+      initialValue.$$setParent(this, this.makeChildPath(childKeyOrIndex))
+
+      return initialValue
+    }
+    else if (!definition.default) {
+      throw new Error(`There aren't initial value and default value for super value`)
+    }
+    else if (typeof definition.default !== 'object') {
+      throw new Error(`Wrong type of definition.default`)
+    }
+    else {
+      // if initial value not defined then create an instance using default's definition
+
+      // TODO: read only должно наследоваться потомками если оно стоит у родителя
+
+      // TODO: если потомок super value то надо делать его через proxy
+      //       потому что иначе не сработает deepGet, deepSet etc
+      //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
+
+      let def
+
+      if (definition.type === SUPER_VALUES.SuperStruct) {
+        def = {
+          $exp: 'newSuperStruct',
+          definition: definition.default,
+          defaultRo: definition.readonly,
+        }
+      }
+      else if (definition.type === SUPER_VALUES.SuperArray) {
+        def = {
+          $exp: 'newSuperArray',
+          item: {
+            ...definition.default.item,
+            //readonly: definition.readonly
+          },
+          default: definition.default.default,
+        }
+      }
+
+      //this.myScope.$resolve()
+    }
+
+    throw new Error(`Can't setup a super value of ${childKeyOrIndex}`)
   }
 
 }
