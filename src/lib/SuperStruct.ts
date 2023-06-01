@@ -201,6 +201,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
   toDefaultValue = (key: string) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    // TODO: не правильно - см nullable и required !!!!!!!!!!!
+
     let defaultValue = this.definition[key as keyof T]?.default
 
     if (typeof defaultValue === 'undefined') defaultValue = null

@@ -1,4 +1,4 @@
-import {arrayKeys} from 'squidlet-lib';
+import {arrayKeys, omitObj} from 'squidlet-lib';
 import {
   isSuperValue,
   SUPER_PROXY_PUBLIC_MEMBERS,
@@ -7,22 +7,19 @@ import {
   SuperValuePublic
 } from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-import {All_TYPES, AllTypes} from '../types/valueTypes.js';
+import {AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
-  SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 
 
-export interface SuperArrayDefinition {
-  type: keyof typeof All_TYPES
-  readonly: boolean
-  nullable: boolean
-  defaultArray?: any[]
+export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required' | 'default'> {
   // if set then default value of each item of array will be this value
   defaultValue?: AllTypes
+  // default array value. It override defaultValue
+  defaultArray?: any[]
 }
 
 export interface SuperArrayPublic extends SuperValuePublic {
@@ -157,11 +154,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     super(scope)
 
     this.definition = {
-      type: 'any',
-      readonly: false,
-      nullable: false,
+      ...omitObj(DEFAULT_INIT_SUPER_DEFINITION, 'required'),
       ...definition,
-    }
+    } as SuperArrayDefinition
   }
 
   /**
@@ -174,7 +169,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     }
     // set initial values
     const initArrLength = initialArr?.length || 0
-    const defaultArrLength = this.defaultArray?.length || 0
+    const defaultArrLength = this.definition.defaultArray?.length || 0
     const maxLength: number = Math.max(initArrLength, defaultArrLength)
     const indexArr = (new Array(maxLength)).fill(true)
     // Any way set length to remove odd items. Actually init is allowed to run only once
@@ -185,20 +180,23 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
       // if index is in range of initalArr then get its item otherwise get from defaultArray
       const value = (index < initArrLength)
         ? initialArr?.[index]
-        : this.defaultArray?.[index]
-
-      const itemDefinition: SuperItemDefinition = {
-        // TODO: add
+        : this.definition.defaultArray?.[index]
+      const childDefinition: SuperItemDefinition = {
+        type: this.definition.type,
+        default: (this.definition.defaultArray)
+          ? this.definition.defaultArray[index]
+          : this.definition.defaultValue,
+        readonly: this.definition.readonly,
+        nullable: this.definition.nullable,
+        required: false,
       }
 
       this.values[index] = this.setupChildValue(
-        itemDefinition,
+        childDefinition,
         index,
         value
       )
     })
-
-    // TODO: а нужно ли проверять required???
 
     return super.init()
   }
