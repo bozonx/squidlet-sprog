@@ -7,12 +7,13 @@ import {
   SuperValuePublic
 } from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-import {AllTypes} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
+import {resolveInitialSimpleValue} from './helpers.js';
 
 
 
@@ -267,9 +268,22 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   toDefaultValue = (index: number) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const defaultValue = (this.definition.defaultArray)
+    let defaultValue = (this.definition.defaultArray)
       ? this.definition.defaultArray[index]
       : this.definition.default
+
+    // TODO: а если super type??? То надо вызвать default value у него ???
+    //       или ничего не делать?
+
+    if (
+      Object.keys(SIMPLE_TYPES).includes(this.definition.type)
+      && typeof defaultValue === 'undefined'
+    ) {
+      defaultValue = resolveInitialSimpleValue(
+        this.definition.type as keyof typeof SIMPLE_TYPES,
+        this.definition.nullable
+      )
+    }
 
     this.setOwnValue(index, defaultValue)
   }

@@ -9,6 +9,7 @@ import {AllTypes} from '../types/valueTypes.js';
 // TODO: тип, ro и тд ставится сразу на весь объект как в массиве
 // TODO: типов может быть несколько
 // TODO: required не будет, поэтому возможен undefined
+// TODO: а может для некоторых элементов сделать отдельные definition?
 
 
 export class SuperData<T = any> extends SuperValueBase<Record<string| number, T>> {

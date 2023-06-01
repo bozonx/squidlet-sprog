@@ -183,11 +183,50 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
+  it('toDefaultValue - to default', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        default: 5
+      },
+    }
+    const arr = await scope.$run(def)
 
-  // TODO: initial for type - 0
-  // TODO: check to default
+    arr.subscribe(spy)
+
+    arr.$super.init([6])
+
+    assert.deepEqual(arr, [6])
+    arr.toDefaultValue(0)
+    assert.deepEqual(arr, [5])
+    spy.should.have.been.calledTwice
+  })
+
+  it('toDefaultValue - to type\'s initial', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+
+    arr.$super.init([6])
+
+    assert.deepEqual(arr, [6])
+    arr.toDefaultValue(0)
+    assert.deepEqual(arr, [0])
+    spy.should.have.been.calledTwice
+  })
+
   // TODO: array specific methods
-  // TODO: test toDefaultValue что установиться undefined если нет значения по умолчанию
 
 
 })
