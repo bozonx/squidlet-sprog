@@ -15,10 +15,16 @@ import {
 } from '../types/SuperItemDefinition.js';
 
 
-export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required' | 'default'> {
-  // if set then default value of each item of array will be this value
-  defaultValue?: AllTypes
-  // default array value. It override defaultValue
+
+// TODO: add ability to reorder array
+// TODO: при добавлении элементов слушать их события - startListenChildren
+// TODO: при удалении элементов перестать слушать их события
+
+
+
+export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
+  // 'default' means default value of each item of array will be this value
+  // default array value. It overrides default
   defaultArray?: any[]
 }
 
@@ -128,11 +134,6 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
 }
 
 
-// TODO: add ability to reorder array
-// TODO: при добавлении элементов слушать их события - startListenChildren
-// TODO: при удалении элементов перестать слушать их события
-
-
 export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
   readonly isArray = true
   // definition for all the items of array
@@ -185,7 +186,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
         type: this.definition.type,
         default: (this.definition.defaultArray)
           ? this.definition.defaultArray[index]
-          : this.definition.defaultValue,
+          : this.definition.default,
         readonly: this.definition.readonly,
         nullable: this.definition.nullable,
         required: false,
@@ -226,22 +227,28 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   myKeys(): number[] {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     return arrayKeys(this.values)
   }
 
   getOwnValue(key: number): AllTypes {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     return this.values[key] as any
   }
 
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false) {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const index = Number(key)
 
     if (!ignoreRo && this.isReadOnly) {
       throw new Error(`Can't set a value to readonly array`)
     }
-    else if (!isCorrespondingType(value, this.itemDefinition.type)) {
+    else if (!isCorrespondingType(value, this.definition.type)) {
       throw new Error(
-        `The value of index ${index} is not corresponding to array type ${this.itemDefinition.type}`
+        `The value of index ${index} is not corresponding to array type ${this.definition.type}`
       )
     }
 
