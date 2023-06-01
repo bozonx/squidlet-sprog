@@ -25,9 +25,13 @@ export interface SuperValuePublic {
 export interface SuperLinkItem {
   // not proxyfied struct or array
   externalSuperValue: SuperValueBase
+  // name of key of their child which is linked to mine
   externalKey: string | number
+  // name or key of my child which is linked to their
   myKey: string | number
+  // handler id of their events
   externalHandlerIndex: number
+  // handler id of my events
   myHandlerIndex: number
 }
 
@@ -87,9 +91,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     return this.myPath
   }
 
-
-  // TODO: может добавить noInit - чтобы не забыть потом проинициализировать
-  // TODO: или на get и set проверять чтобы был проинициализирован
 
   protected constructor(scope: SuperScope) {
     this.myScope = scope
@@ -167,8 +168,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   abstract toDefaultValue(key: string | number): void
 
   /**
-   * Make proxy of my self.
-   * Please run it only once just after creating of instance.
+   * Return proxy of my self and make it if it is the first time
    */
   getProxy(): any | any[] {
     if (!this.proxyfiedInstance) {
@@ -238,6 +238,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     this.setValue(pathTo, null)
   }
 
+  // TODO: review - нужно учитывать что тот элемент может задестроиться
   /**
    * Link key of some struct or array to key of this.
    * Both values of these keys will change at the same time and rise change events both
@@ -323,7 +324,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     // TODO: копирование себя, но без родителя и его пути
     //  и со сброшенными обработчиками событий
     //  поидее потомков надо тоже отсоединить от дерева и присоединить к себе
-    // TODO: add to proxy
   }
 
   makeChildPath(childKeyOrIndex: string | number): string {
@@ -461,7 +461,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
       value.subscribe((target: SuperValueBase, path?: string) => {
         // if not path then it's some wierd
-        if (!path) console.warn(`Bubble event without path. Root is "${this.pathToMe}", child is "${key}"`)
+        if (!path) console.warn(`Bubble event without path. But root is "${this.pathToMe}", child is "${key}"`)
         // just bubble children's event
         this.changeEvent.emit(target, path)
       })
