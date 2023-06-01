@@ -160,7 +160,7 @@ describe('SuperStruct', () => {
     struct.subscribe(spy)
     struct.$super.init()
 
-    assert.deepEqual(struct, {p1: undefined})
+    assert.deepEqual(struct, {p1: 0})
     spy.should.have.been.calledOnce
     spy.should.have.been.calledWith(struct.$super, undefined)
   })
