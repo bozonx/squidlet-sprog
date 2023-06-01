@@ -432,7 +432,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     //       нужно не только менять потомка но и сам массив - push, splice etc
 
     this.setOwnValue(index, newValue, true)
-    this.riseChildrenChangeEvent(index)
   }
 
 }

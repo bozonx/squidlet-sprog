@@ -65,17 +65,13 @@ export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
       return true
     },
 
-    deleteProperty(target: any, p: string): boolean {
+    deleteProperty(): boolean {
       throw new Error(`It isn't possible to delete struct value`)
     },
 
-    ownKeys(target: any): ArrayLike<string | symbol> {
+    ownKeys(): ArrayLike<string | symbol> {
       return Object.keys(omitObj(struct.values, SUPER_VALUE_PROP))
     },
-
-    // TODO: запретить переопределять методы struct
-    // defineProperty?(target: T, property: string | symbol, attributes: PropertyDescriptor): boolean;
-    // getOwnPropertyDescriptor?(target: T, p: string | symbol): PropertyDescriptor | undefined;
   }
 
   return new Proxy(struct.values, handler) as ProxyfiedStruct
