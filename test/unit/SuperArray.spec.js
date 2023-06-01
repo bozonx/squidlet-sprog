@@ -6,6 +6,9 @@ import {newScope, SuperArray} from "../../src/index.js";
 
 describe('SuperArray', () => {
   it('proxy', () => {
+
+    // TODO: review
+
     const scope = newScope()
     const item = {
       type: 'number'
