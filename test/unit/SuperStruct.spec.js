@@ -53,7 +53,7 @@ describe('SuperStruct', () => {
     assert.throws(() => struct.toDefaultValue('p1'))
   })
 
-  it('set default ro', async () => {
+  it('check definition', async () => {
     const scope = newScope()
     const def = {
       $exp: 'newSuperStruct',
@@ -144,7 +144,47 @@ describe('SuperStruct', () => {
     spy.should.have.not.been.called
   })
 
-  it('not required value', async () => {
+  // TODO: надо в начале проверять тип default
+  // it('wrong default value - check it immediatelly', async () => {
+  //   const scope = newScope()
+  //   const spy = sinon.spy()
+  //   const def = {
+  //     $exp: 'newSuperStruct',
+  //     definition: {
+  //       p1: {
+  //         type: 'number',
+  //         default: 'str'
+  //       }
+  //     },
+  //   }
+  //   const struct = await scope.$run(def)
+  //
+  //   struct.subscribe(spy)
+  //
+  //   assert.throws(() => struct.$super.init({p1: 5}))
+  //   spy.should.have.not.been.called
+  // })
+
+  it('wrong initial value', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+
+    assert.throws(() => struct.$super.init({p1: 's'}))
+    spy.should.have.not.been.called
+  })
+
+  it('not required value - will use initial value for type', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {
@@ -232,6 +272,7 @@ describe('SuperStruct', () => {
     setter('p1', 6)
 
     assert.deepEqual(struct, {p1: 6})
+    // try to set by usual way
     assert.throws(() => struct.setValue('p1', 7))
     // first time on init and the second time using setter
     spy.should.have.been.calledTwice

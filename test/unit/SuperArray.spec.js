@@ -78,4 +78,116 @@ describe('SuperArray', () => {
     assert.throws(() => arr.reverse())
     assert.throws(() => arr.sort(() => null))
   })
+
+  it('check definition', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        default: 4,
+        defaultArray: [5]
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.$super.init()
+
+    assert.deepEqual(arr, [5])
+    assert.deepEqual(arr.$super.definition, {
+      "default": 4,
+      "defaultArray": [ 5],
+      "nullable": false,
+      "readonly": false,
+      "type": "number",
+    })
+  })
+
+  it('priority of initial value', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        default: 4,
+        defaultArray: [5]
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init([6])
+
+    assert.deepEqual(arr, [6])
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(arr.$super, undefined)
+  })
+
+  // TODO: надо в начале проверять тип default и defaultArray
+  // it('wrong default value', async () => {
+  //   const scope = newScope()
+  //   const def = {
+  //     $exp: 'newSuperArray',
+  //     definition: {
+  //       type: 'number',
+  //       default: 's',
+  //     },
+  //   }
+  //   const arr = await scope.$run(def)
+  //
+  //   assert.throws(() => arr.$super.init())
+  // })
+
+  it('wrong initial value', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+
+    assert.throws(() => arr.$super.init(['s']))
+    spy.should.have.not.been.called
+  })
+
+  it('readonly - via intial and setter', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        readonly: true,
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+
+    const setter = arr
+      .$super.init([5])
+
+    spy.should.have.been.calledOnce
+
+    assert.deepEqual(arr, [5])
+
+    setter(0, 6)
+
+    assert.deepEqual(arr, [6])
+    // try to set by usual way
+    assert.throws(() => arr.setValue(0, 7))
+    // first time on init and the second time using setter
+    spy.should.have.been.calledTwice
+  })
+
+
+  // TODO: initial for type - 0
+  // TODO: check to default
+
 })
