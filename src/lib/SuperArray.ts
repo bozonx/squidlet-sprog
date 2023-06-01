@@ -7,7 +7,7 @@ import {
   SuperValuePublic
 } from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-import {AllTypes} from '../types/valueTypes.js';
+import {All_TYPES, AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
@@ -15,6 +15,15 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 
+
+export interface SuperArrayDefinition {
+  type: keyof typeof All_TYPES
+  readonly: boolean
+  nullable: boolean
+  defaultArray?: any[]
+  // if set then default value of each item of array will be this value
+  defaultValue?: AllTypes
+}
 
 export interface SuperArrayPublic extends SuperValuePublic {
   isArray: boolean
@@ -126,20 +135,17 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
 // TODO: при добавлении элементов слушать их события - startListenChildren
 // TODO: при удалении элементов перестать слушать их события
 
-// TODO: можно переделать входные параметры в плоские - type, initial, default, readonly
-
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
   readonly isArray = true
   // definition for all the items of array
-  readonly itemDefinition: SuperItemDefinition
+  readonly definition: SuperArrayDefinition
   readonly values: T[] = []
-  readonly defaultArray?: any[]
   protected proxyFn = proxyArray
 
 
   get isReadOnly(): boolean {
-    return Boolean(this.itemDefinition.readonly)
+    return Boolean(this.definition.readonly)
   }
 
   get length(): number {
@@ -147,20 +153,16 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
 
-  constructor(
-    scope: SuperScope,
-    itemDefinition?: SuperItemInitDefinition,
-    defaultArray?: any[]
-  ) {
+  constructor(scope: SuperScope, definition: Partial<SuperArrayDefinition>) {
     super(scope)
 
-    this.itemDefinition = {
-      ...DEFAULT_INIT_SUPER_DEFINITION,
-      ...itemDefinition,
-    } as SuperItemDefinition
-    this.defaultArray = defaultArray
+    this.definition = {
+      type: 'any',
+      readonly: false,
+      nullable: false,
+      ...definition,
+    }
   }
-
 
   /**
    * Init with initial values.
@@ -185,8 +187,12 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
         ? initialArr?.[index]
         : this.defaultArray?.[index]
 
+      const itemDefinition: SuperItemDefinition = {
+        // TODO: add
+      }
+
       this.values[index] = this.setupChildValue(
-        this.itemDefinition,
+        itemDefinition,
         index,
         value
       )
