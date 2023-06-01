@@ -246,13 +246,14 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     if (!ignoreRo && this.isReadOnly) {
       throw new Error(`Can't set a value to readonly array`)
     }
-    else if (!isCorrespondingType(value, this.definition.type)) {
+    else if (typeof value === 'undefined') {
+      // skip checking of value type and after set value in array to undefined
+    }
+    else if (!isCorrespondingType(value, this.definition.type, this.definition.nullable)) {
       throw new Error(
         `The value of index ${index} is not corresponding to array type ${this.definition.type}`
       )
     }
-
-    // TODO: наверное проверить required чтобы не устанавливали undefined and null
 
     this.values[index] = value as T
 
@@ -264,9 +265,11 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    * @param index
    */
   toDefaultValue = (index: number) => {
-    const defaultValue = this.itemDefinition.default
+    if (!this.isInitialized) throw new Error(`Init it first`)
 
-    // TODO: test что установиться undefined если нет значения по умолчанию
+    const defaultValue = (this.definition.defaultArray)
+      ? this.definition.defaultArray[index]
+      : this.definition.default
 
     this.setOwnValue(index, defaultValue)
   }
@@ -283,7 +286,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    * @param index
    */
   clearItem = (index: number) => {
-    if (this.isReadOnly) {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
 
@@ -299,10 +303,11 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    * @param ignoreRo
    */
   deleteItem = (index: number, ignoreRo: boolean = false) => {
-    if (!ignoreRo && this.isReadOnly) {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (!ignoreRo && this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
-    // TODO: test
+
     this.values.splice(index)
     this.riseChildrenChangeEvent(index)
   }
@@ -312,6 +317,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   // Methods which are mutate an array: push, pop, shift, unshift, fill, splice, reverse, sort
 
   push = (...items: any[]): number => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     //const prevLength = this.values.length
     const newLength = this.values.push(...items)
     // const arr = (new Array(newLength - prevLength)).fill(true)
@@ -330,6 +336,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   pop = () => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
@@ -343,6 +350,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   shift = () => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const res = this.values.shift()
 
     //this.riseChildrenChangeEvent(0)
@@ -355,6 +364,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   unshift = (...items: any[]) => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const res = this.values.unshift(...items)
     // emit event for whole array
     this.riseMyEvent()
@@ -371,6 +382,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   fill = (value: any, start?: number, end?: number): ProxyfiedArray => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     this.values.fill(value, start, end)
     // emit event for whole array
     this.riseMyEvent()
@@ -381,6 +394,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   splice = (start: number, deleteCount: number, ...items: T[]) => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const res = this.values.splice(start, deleteCount, ...items)
     // emit event for whole array
     this.riseMyEvent()
@@ -391,6 +406,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   reverse = () => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const res = this.values.reverse()
     // emit event for whole array
     this.riseMyEvent()
@@ -399,6 +416,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   sort = (compareFn?: (a: T, b: T) => number): ProxyfiedArray => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     this.values.sort()
     // emit event for whole array
     this.riseMyEvent()
@@ -438,10 +457,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    * Set value of self readonly value and rise an event
    */
   protected myRoSetter = (index: number, newValue: AllTypes) => {
-
-    // TODO: для массива то получается ro не полноценный
-    //       нужно не только менять потомка но и сам массив - push, splice etc
-
     this.setOwnValue(index, newValue, true)
   }
 
