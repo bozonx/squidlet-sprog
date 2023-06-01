@@ -5,16 +5,15 @@ import {newScope, SuperArray} from "../../src/index.js";
 
 
 describe('SuperArray', () => {
-  it('proxy', () => {
-
-    // TODO: review
-
+  it('proxy', async () => {
     const scope = newScope()
-    const item = {
-      type: 'number'
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number'
+      },
     }
-    const arr = new SuperArray(scope, item)
-    const proxyfied = arr.getProxy()
+    const proxyfied = await scope.$run(def)
 
     proxyfied.$super.init()
 
@@ -32,6 +31,7 @@ describe('SuperArray', () => {
     assert.equal(proxyfied[2], 7)
     assert.deepEqual(proxyfied, [5, 6, 7])
 
+    // spread
     assert.deepEqual([...proxyfied], [5, 6, 7])
 
     // for of
@@ -45,7 +45,37 @@ describe('SuperArray', () => {
     assert.deepEqual(checkArr2, [5, 6, 7])
   })
 
-  // it('SuperArray', () => {
-  //   const arr = new SuperArray()
-  // })
+  it('you have to initialize array first', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [5]
+      },
+    }
+    const arr = await scope.$run(def)
+    // from base class
+    assert.throws(() => arr.hasKey('p1'))
+    assert.throws(() => arr.getValue('p1'))
+    assert.throws(() => arr.setValue('p1', 6))
+    assert.throws(() => arr.setNull('p1'))
+    assert.throws(() => arr.clone())
+    // from array class
+    assert.throws(() => arr.myKeys())
+    assert.throws(() => arr.getOwnValue(0))
+    assert.throws(() => arr.setOwnValue(0, 6))
+    assert.throws(() => arr.toDefaultValue(0))
+    // array specific
+    assert.throws(() => arr.clearItem(0))
+    assert.throws(() => arr.deleteItem(0))
+    assert.throws(() => arr.push(1))
+    assert.throws(() => arr.pop())
+    assert.throws(() => arr.shift())
+    assert.throws(() => arr.unshift(1))
+    assert.throws(() => arr.fill(1))
+    assert.throws(() => arr.splice(1))
+    assert.throws(() => arr.reverse())
+    assert.throws(() => arr.sort(() => null))
+  })
 })

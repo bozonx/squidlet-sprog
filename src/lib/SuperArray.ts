@@ -418,7 +418,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   sort = (compareFn?: (a: T, b: T) => number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    this.values.sort()
+    this.values.sort(compareFn)
     // emit event for whole array
     this.riseMyEvent()
 
