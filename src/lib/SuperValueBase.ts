@@ -420,27 +420,11 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       // super function
       // TODO: do it
     }
+
     // TODO: обычная ф-я ???
+
     else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      // setup just a simple type
-      const value = (typeof initialValue === 'undefined')
-        ? definition.default
-        : initialValue
-
-      if (typeof value === 'undefined' && definition.required) {
-        throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
-      }
-      else if (typeof value === 'undefined' && !definition.required) {
-        return undefined
-      }
-      else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-        throw new Error(
-          `The value of ${childKeyOrIndex} has type ${typeof value}, `
-          + `but not ${definition.type}`
-        )
-      }
-
-      return value
+      return this.initSimpleChild(definition, childKeyOrIndex, initialValue)
     }
     else {
       throw new Error(`Not supported type as super value child: ${definition.type}`)
@@ -466,6 +450,33 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
         this.changeEvent.emit(target, path)
       })
     }
+  }
+
+
+  private initSimpleChild(
+    definition: SuperItemDefinition,
+    childKeyOrIndex: string | number,
+    initialValue?: any
+  ) {
+    // setup just a simple type
+    const value = (typeof initialValue === 'undefined')
+      ? definition.default
+      : initialValue
+
+    if (typeof value === 'undefined' && definition.required) {
+      throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
+    }
+    else if (typeof value === 'undefined' && !definition.required) {
+      return undefined
+    }
+    else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
+      throw new Error(
+        `The value of ${childKeyOrIndex} has type ${typeof value}, `
+        + `but not ${definition.type}`
+      )
+    }
+
+    return value
   }
 
 }
