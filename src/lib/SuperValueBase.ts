@@ -114,12 +114,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
   destroy() {
-
-    // TODO: если задестроится external элемент то у нас ещё link останется - это плохо
-    //       тогда либо надо проверять в событии живой ли элемент
-    //       либо слушать событие дестроя
-
-    for (const linkId of this.links) {
+    for (const linkId in this.links) {
       // actually empty is also undefined
       if (typeof linkId === 'undefined') continue
 
@@ -240,6 +235,9 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
   // TODO: review - нужно учитывать что тот элемент может задестроиться
+  // TODO: если задестроится external элемент то у нас ещё link останется - это плохо
+  //       тогда либо надо проверять в событии живой ли элемент
+  //       либо слушать событие дестроя
   /**
    * Link key of some struct or array to key of this.
    * Both values of these keys will change at the same time and rise change events both
@@ -361,7 +359,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     initialValue?: any
-  ): AllTypes {
+  ): any {
     if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       return this.setupSuperChild(definition, childKeyOrIndex, initialValue)
     }
@@ -439,6 +437,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     return value
   }
 
+  // TODO: review
   private setupSuperChild(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
