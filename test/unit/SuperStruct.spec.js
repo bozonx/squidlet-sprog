@@ -278,6 +278,31 @@ describe('SuperStruct', () => {
     spy.should.have.been.calledTwice
   })
 
+  it('toDefaultValue - type\'s default', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.$super.init()
+
+    assert.deepEqual(struct, {p1: 0})
+
+    struct.setValue('p1', 1)
+
+    assert.deepEqual(struct, {p1: 1})
+
+    struct.toDefaultValue('p1')
+
+    assert.deepEqual(struct, {p1: 0})
+  })
+
   it('little methods', async () => {
     const scope = newScope()
     const spy = sinon.spy()

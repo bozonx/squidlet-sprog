@@ -1,6 +1,6 @@
 import {omitObj} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {AllTypes} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
   isSuperValue,
@@ -14,6 +14,7 @@ import {
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
+import {resolveInitialSimpleValue} from './helpers.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -201,11 +202,20 @@ export class SuperStruct<T = Record<string, AllTypes>>
   toDefaultValue = (key: string) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    // TODO: не правильно - см nullable и required !!!!!!!!!!!
-
     let defaultValue = this.definition[key as keyof T]?.default
 
-    if (typeof defaultValue === 'undefined') defaultValue = null
+    // TODO: а если super type??? То надо вызвать default value у него ???
+    //       или ничего не делать?
+
+    if (
+      Object.keys(SIMPLE_TYPES).includes(this.definition[key as keyof T].type)
+      && typeof defaultValue === 'undefined'
+    ) {
+      defaultValue = resolveInitialSimpleValue(
+        this.definition[key as keyof T].type as keyof typeof SIMPLE_TYPES,
+        this.definition[key as keyof T].nullable,
+      )
+    }
 
     this.setOwnValue(key, defaultValue)
   }
