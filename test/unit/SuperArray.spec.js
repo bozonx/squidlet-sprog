@@ -170,6 +170,7 @@ describe('SuperArray', () => {
     const setter = arr
       .$super.init([5])
 
+    assert.isTrue(arr.$super.isKeyReadonly(0))
     spy.should.have.been.calledOnce
 
     assert.deepEqual(arr, [5])
@@ -226,7 +227,44 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
-  // TODO: array specific methods
+  it('little methods', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        nullable: true
+      },
+    }
+    const arr = await scope.$run(def)
 
+    arr.subscribe(spy)
+    arr.$super.init()
+
+    assert.isFalse(arr.$super.isKeyReadonly(0))
+
+    arr.$super.setNull('[0]')
+    assert.isNull(arr.getValue('[0]'))
+
+    arr.$super.setOwnValue(0, 6)
+    assert.equal(arr.$super.getOwnValue(0), 6)
+
+    assert.isTrue(arr.$super.hasKey('[0]'))
+    assert.isFalse(arr.$super.hasKey('[1]'))
+
+    arr.$super.setValue('[2]', 2)
+    // TODO: WTF???
+    assert.deepEqual(arr.$super.myKeys(), [0, undefined, 2])
+
+  })
+
+  it('array specific methods', async () => {
+
+    // TODO: array specific methods
+
+
+
+  })
 
 })

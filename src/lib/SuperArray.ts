@@ -273,7 +273,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
       : this.definition.default
 
     // TODO: а если super type??? То надо вызвать default value у него ???
-    //       или ничего не делать?
+    //       или ничего не делать? Если менять заного то надо дестроить предыдущий
 
     if (
       Object.keys(SIMPLE_TYPES).includes(this.definition.type)

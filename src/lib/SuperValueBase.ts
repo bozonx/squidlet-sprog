@@ -188,6 +188,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    */
   hasKey = (pathTo: string): boolean => {
     if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
     return deepHas(this.values as any, pathTo)
   }
