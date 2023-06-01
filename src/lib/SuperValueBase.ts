@@ -12,6 +12,7 @@ import {SuperScope} from '../scope.js';
 import {AllTypes, SIMPLE_TYPES, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
+import {resolveInitialSimpleValue} from './helpers.js';
 
 
 export interface SuperValuePublic {
@@ -458,7 +459,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     childKeyOrIndex: string | number,
     initialValue?: any
   ) {
-    // setup just a simple type
+    // use initial value of default if no initial value
     const value = (typeof initialValue === 'undefined')
       ? definition.default
       : initialValue
@@ -467,7 +468,12 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
     }
     else if (typeof value === 'undefined' && !definition.required) {
-      return undefined
+      // return null if nullable or initial value for each type
+      // e.g string='', number=0, boolean=false etc
+      return resolveInitialSimpleValue(
+        definition.type as keyof typeof SIMPLE_TYPES,
+        definition.nullable
+      )
     }
     else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
       throw new Error(
