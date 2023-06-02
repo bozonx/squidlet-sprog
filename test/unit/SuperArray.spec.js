@@ -131,13 +131,15 @@ describe('SuperArray', () => {
       },
     }
 
-    try {
-      const arr = await scope.$run(def)
+    let arr
 
-      assert.fail('Shouldn\'t be ok')
+    try {
+      arr = await scope.$run(def)
     }
     catch (e) {
     }
+
+    if (arr) assert.fail('Shouldn\'t be ok')
   })
 
   it('wrong initial value', async () => {

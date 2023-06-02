@@ -144,26 +144,28 @@ describe('SuperStruct', () => {
     spy.should.have.not.been.called
   })
 
-  // TODO: надо в начале проверять тип default
-  // it('wrong default value - check it immediatelly', async () => {
-  //   const scope = newScope()
-  //   const spy = sinon.spy()
-  //   const def = {
-  //     $exp: 'newSuperStruct',
-  //     definition: {
-  //       p1: {
-  //         type: 'number',
-  //         default: 'str'
-  //       }
-  //     },
-  //   }
-  //   const struct = await scope.$run(def)
-  //
-  //   struct.subscribe(spy)
-  //
-  //   assert.throws(() => struct.$super.init({p1: 5}))
-  //   spy.should.have.not.been.called
-  // })
+  it('wrong default value - check it immediatelly', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 'str'
+        }
+      },
+    }
+
+    let struct
+
+    try {
+      struct = await scope.$run(def)
+    }
+    catch (e) {
+    }
+
+    if (struct) assert.fail('Shouldn\'t be ok')
+  })
 
   it('wrong initial value', async () => {
     const scope = newScope()

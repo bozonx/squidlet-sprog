@@ -97,6 +97,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     defaultRo: boolean = false
   ) {
     super(scope)
+    this.checkDefinition(definition)
 
     this.definition = this.prepareDefinition(definition, defaultRo)
   }
@@ -252,6 +253,14 @@ export class SuperStruct<T = Record<string, AllTypes>>
     }
 
     return res
+  }
+
+  private checkDefinition(definition: Record<keyof T, SuperItemInitDefinition>,) {
+    for (const keyStr of Object.keys(definition)) {
+      const keyName = keyStr as keyof T
+
+
+    }
   }
 
 }
