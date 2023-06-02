@@ -103,6 +103,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     this.inited = true
     // rise an event any way if any values was set or not
     this.changeEvent.emit(this, this.pathToMe)
+
+    // TODO: это должно произойти вглубь на всех потомков, все должны друг друга слушать
     // listen to children to bubble their events
     this.startListenChildren()
 
@@ -132,6 +134,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   $$setParent(parent: SuperValueBase, myPath: string) {
     this.myParent = parent
     this.myPath = myPath
+
+    // TODO: наверное ещё вызывать замену path на всех потомках в глубь
   }
 
   /**
@@ -353,7 +357,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
   /**
    * Setup child value.
-   * It the value is primitive then it checks its type and returns default or initial value
+   * It is the value is primitive then it checks its type and returns
+   * default or initial value.
    * If the child is Super Struct or Array
    */
   protected setupChildValue(

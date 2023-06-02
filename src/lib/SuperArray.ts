@@ -333,16 +333,14 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
-    //const prevLength = this.values.length
     const newLength = this.values.push(...items)
-    // const arr = (new Array(newLength - prevLength)).fill(true)
-    //
-    // // TODO: test
-    // // rise events for all the new children
-    // arr.forEach((el: true, index: number) => this.riseChildrenChangeEvent(index))
-    //
 
-    // TODO: наверное надо инициализировать super value и проверить значения
+    for (const item of items) {
+      // TODO: если передан super value
+      //    надо подменить у него parent, path и слушать buble событий от него
+      //    все его потомки должны обновить родительский path
+
+    }
 
     // emit event for whole array
     this.riseMyEvent()

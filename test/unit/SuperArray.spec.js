@@ -273,7 +273,11 @@ describe('SuperArray', () => {
 
   })
 
-  // TODO: not mutable methods
+  // TODO: children - simple objects and array - check deepness and changes of them
+  // TODO: обычная ф-я ???
+  // TODO: инстанс класса ???
+
+  // TODO: not mutable arr methods
   // TODO: add ability to reorder array
   // TODO: link
   // TODO: unlink

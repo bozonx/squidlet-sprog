@@ -196,6 +196,11 @@ export class SuperStruct<T = Record<string, AllTypes>>
       )
     }
 
+    // TODO: если передан super value
+    //    надо подменить у него parent, path и слушать buble событий от него
+    //    все его потомки должны обновить родительский path
+
+
     this.values[name] = value as any
 
     this.riseChildrenChangeEvent(key)

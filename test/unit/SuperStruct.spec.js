@@ -355,6 +355,11 @@ describe('SuperStruct', () => {
     assert.deepEqual(cloned, {p1: 5})
   })
 
+
+  // TODO: children - simple objects and array - check deepness and changes of them
+  // TODO: обычная ф-я ???
+  // TODO: инстанс класса ???
+
   it('link', async () => {
     // TODO: link
     // TODO: unlink
