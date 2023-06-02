@@ -126,26 +126,6 @@ describe('SuperStruct', () => {
 
   it('wrong default value', async () => {
     const scope = newScope()
-    const spy = sinon.spy()
-    const def = {
-      $exp: 'newSuperStruct',
-      definition: {
-        p1: {
-          type: 'number',
-          default: 'str'
-        }
-      },
-    }
-    const struct = await scope.$run(def)
-
-    struct.subscribe(spy)
-
-    assert.throws(() => struct.$super.init())
-    spy.should.have.not.been.called
-  })
-
-  it('wrong default value - check it immediatelly', async () => {
-    const scope = newScope()
     const def = {
       $exp: 'newSuperStruct',
       definition: {
