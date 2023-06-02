@@ -1,6 +1,6 @@
 import {omitObj} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
   isSuperValue,
@@ -257,9 +257,31 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   private checkDefinition(definition: Record<keyof T, SuperItemInitDefinition>,) {
     for (const keyStr of Object.keys(definition)) {
-      const keyName = keyStr as keyof T
+      const {
+        type,
+        required,
+        nullable,
+        readonly,
+        default: defaultValue,
+      } = definition[keyStr as keyof T]
 
-
+      if (type && !Object.keys(All_TYPES).includes(type)) {
+        throw new Error(`Wrong type of SuperStruct child "${keyStr}": ${type}`)
+      }
+      else if (typeof required !== 'undefined' && typeof required !== 'boolean') {
+        throw new Error(`required has to be boolean`)
+      }
+      else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
+        throw new Error(`nullable has to be boolean`)
+      }
+      else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
+        throw new Error(`readonly has to be boolean`)
+      }
+      else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
+        throw new Error(
+          `Default value ${defaultValue} of SuperStruct's "${keyStr}" doesn't meet type: ${type}`
+        )
+      }
     }
   }
 

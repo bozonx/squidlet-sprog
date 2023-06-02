@@ -482,6 +482,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   private checkDefinition(definition: Partial<SuperArrayDefinition>) {
     const {
       type,
+      default: defaultValue,
       defaultArray,
       nullable,
       readonly,
@@ -496,9 +497,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
       throw new Error(`readonly has to be boolean`)
     }
-    else if (definition.default && !isCorrespondingType(definition.default, type, nullable)) {
+    else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
       throw new Error(
-        `Default value ${definition.default} of SuperArray doesn't meet type: ${type}`
+        `Default value ${defaultValue} of SuperArray doesn't meet type: ${type}`
       )
     }
     else if (defaultArray) {
