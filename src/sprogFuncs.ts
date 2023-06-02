@@ -1,4 +1,3 @@
-import {simpleCall} from './lang/simpleCall.js';
 import {callSuperFunc, newSuperFunc} from './lang/superFunc.js';
 import {deleteValue, getValue, setValue} from './lang/deepValue.js';
 import {deleteVar, newVar} from './lang/simpleVar.js';
@@ -8,6 +7,7 @@ import {ifElse} from './lang/ifElse.js';
 import {forEach} from './lang/forEach.js';
 import {newSuperStruct} from './lang/superStruct.js';
 import {newSuperArray} from './lang/superArray.js';
+import {simpleCall} from './lang/simpleFunc.js';
 
 
 // TODO: доделать SuperStruct & SuperArray

@@ -1,4 +1,4 @@
-import {SuperScope} from '../scope.js';
+import {SuperScope, SprogFn} from '../scope.js';
 import {evalInSandBox} from '../lib/sandBox.js';
 
 
@@ -37,5 +37,28 @@ export function makeSimpleFunc(scope: SuperScope) {
     // TODO: add lines
 
     const func = evalInSandBox(scope, `function() {}`)
+  }
+}
+
+/**
+ * Call js function from scope
+ * example yaml template:
+ *   $ext: simpleCall
+ *   path: myFunc
+ *   args:
+ *     - 1
+ *     - 'some value'
+ */
+export const simpleCall: SprogFn = (scope: SuperScope) => {
+  return async (p: {path: string, args?: any[]}): Promise<any | void> => {
+    const path: string = await scope.$resolve(p.path)
+    const args: string = await scope.$resolve(p.args)
+    const func = await scope.$getScopedFn('getValue')({ path })
+
+    if (typeof func !== 'function') {
+      throw new Error(`It isn't a function`)
+    }
+
+    return func(args)
   }
 }
