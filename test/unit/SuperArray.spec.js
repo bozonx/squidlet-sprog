@@ -121,20 +121,24 @@ describe('SuperArray', () => {
     spy.should.have.been.calledWith(arr.$super, undefined)
   })
 
-  // TODO: надо в начале проверять тип default и defaultArray
-  // it('wrong default value', async () => {
-  //   const scope = newScope()
-  //   const def = {
-  //     $exp: 'newSuperArray',
-  //     definition: {
-  //       type: 'number',
-  //       default: 's',
-  //     },
-  //   }
-  //   const arr = await scope.$run(def)
-  //
-  //   assert.throws(() => arr.$super.init())
-  // })
+  it('wrong default value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        default: 's',
+      },
+    }
+
+    try {
+      const arr = await scope.$run(def)
+
+      assert.fail('Shouldn\'t be ok')
+    }
+    catch (e) {
+    }
+  })
 
   it('wrong initial value', async () => {
     const scope = newScope()

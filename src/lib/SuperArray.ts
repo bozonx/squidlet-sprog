@@ -7,7 +7,7 @@ import {
   SuperValuePublic
 } from './SuperValueBase.js';
 import {SuperScope} from '../scope.js';
-import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
@@ -20,6 +20,7 @@ import {resolveInitialSimpleValue} from './helpers.js';
 // TODO: add ability to reorder array
 // TODO: при добавлении элементов слушать их события - startListenChildren
 // TODO: при удалении элементов перестать слушать их события
+// TODO: наверное в default запретить пока super value
 
 
 
@@ -155,6 +156,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   constructor(scope: SuperScope, definition: Partial<SuperArrayDefinition>) {
     super(scope)
 
+    this.checkDefinition(definition)
+
     this.definition = {
       ...omitObj(DEFAULT_INIT_SUPER_DEFINITION, 'required'),
       ...definition,
@@ -169,6 +172,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     if (this.inited) {
       throw new Error(`The array has been already initialized`)
     }
+
     // set initial values
     const initArrLength = initialArr?.length || 0
     const defaultArrLength = this.definition.defaultArray?.length || 0
@@ -472,6 +476,41 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    */
   protected myRoSetter = (index: number, newValue: AllTypes) => {
     this.setOwnValue(index, newValue, true)
+  }
+
+
+  private checkDefinition(definition: Partial<SuperArrayDefinition>) {
+    const {
+      type,
+      defaultArray,
+      nullable,
+      readonly,
+    } = definition
+
+    if (type && !Object.keys(All_TYPES).includes(type)) {
+      throw new Error(`Wrong type of SuperArray child: ${type}`)
+    }
+    else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
+      throw new Error(`nullable has to be boolean`)
+    }
+    else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
+      throw new Error(`readonly has to be boolean`)
+    }
+    else if (definition.default && !isCorrespondingType(definition.default, type, nullable)) {
+      throw new Error(
+        `Default value ${definition.default} of SuperArray doesn't meet type: ${type}`
+      )
+    }
+    else if (defaultArray) {
+      if (!Array.isArray(defaultArray)) {
+        throw new Error(`defaultArray has to be an array`)
+      }
+      else if (
+        defaultArray.findIndex((el) => !isCorrespondingType(el, type, nullable)) >= 0
+      ) {
+        throw new Error(`wrong defaultArray`)
+      }
+    }
   }
 
 }
