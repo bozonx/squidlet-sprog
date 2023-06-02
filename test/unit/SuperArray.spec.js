@@ -273,4 +273,9 @@ describe('SuperArray', () => {
 
   })
 
+  // TODO: not mutable methods
+  // TODO: add ability to reorder array
+  // TODO: link
+  // TODO: unlink
+
 })

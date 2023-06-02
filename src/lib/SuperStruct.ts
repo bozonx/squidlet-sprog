@@ -17,6 +17,11 @@ import {
 import {resolveInitialSimpleValue} from './helpers.js';
 
 
+
+// TODO: наверное в default запретить пока super value
+
+
+
 export interface SuperStructPublic extends SuperValuePublic {
   isStruct: boolean
 }

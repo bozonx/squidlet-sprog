@@ -17,9 +17,6 @@ import {resolveInitialSimpleValue} from './helpers.js';
 
 
 
-// TODO: add ability to reorder array
-// TODO: при добавлении элементов слушать их события - startListenChildren
-// TODO: при удалении элементов перестать слушать их события
 // TODO: наверное в default запретить пока super value
 
 
