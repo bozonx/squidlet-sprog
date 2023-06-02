@@ -127,16 +127,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
       )
     }
 
-    // TODO: инициализацию наверное лучше сделать отдельно
-    // TODO: будут ли init values???
-    // // check required values
-    // for (const keyStr of Object.keys(this.definition)) {
-    //   const keyName = keyStr as keyof T
-    //   if (this.definition[keyName].required && typeof this.values[keyName] === 'undefined') {
-    //     throw new Error(`The value ${keyStr} is required, but it wasn't initiated`)
-    //   }
-    // }
-
     return super.init()
   }
 
@@ -170,40 +160,21 @@ export class SuperStruct<T = Record<string, AllTypes>>
     return this.values[key as keyof T] as any
   }
 
-  setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false) {
+  setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const name: keyof T = key as any
-
+    const name: keyof T = keyStr as any
+    // obviously check it otherwise it will be set to default
     if (typeof value === 'undefined') {
       throw new Error(`It isn't possible to set undefined to struct's child`)
-    }
-    else if (typeof this.definition[name] === 'undefined') {
-      throw new Error(
-        `Can't set value with name ${String(name)} which isn't defined in definition`
-      )
     }
     else if (!ignoreRo && this.definition[name].readonly) {
       throw new Error(`Can't set readonly value of name ${String(name)}`)
     }
-    else if (!isCorrespondingType(
-      value,
-      this.definition[name].type,
-      this.definition[name].nullable
-    )) {
-      throw new Error(
-        `The value ${String(name)} is not corresponding type ${this.definition[name].type}`
-      )
-    }
 
-    // TODO: если передан super value
-    //    надо подменить у него parent, path и слушать buble событий от него
-    //    все его потомки должны обновить родительский path
+    this.values[name] = this.setupChildValue(this.definition[name], keyStr, value)
 
-
-    this.values[name] = value as any
-
-    this.riseChildrenChangeEvent(key)
+    this.riseChildrenChangeEvent(keyStr)
   }
 
   /**

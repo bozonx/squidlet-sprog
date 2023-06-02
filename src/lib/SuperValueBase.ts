@@ -105,11 +105,9 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     this.changeEvent.emit(this, this.pathToMe)
 
     // TODO: это должно произойти вглубь на всех потомков, все должны друг друга слушать
+    // TODO: хотя наверное это уже произошло при установке значений
     // listen to children to bubble their events
-    this.startListenChildren()
-
-
-    // TODO: ещё же надо вызвать init() потомков
+    //this.startListenChildren()
 
     // return setter for read only props
     return this.myRoSetter
@@ -134,8 +132,12 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   $$setParent(parent: SuperValueBase, myPath: string) {
     this.myParent = parent
     this.myPath = myPath
+    // reregister path of all the super children
+    for (const childId of this.myKeys()) {
+      const item = this.values[childId as keyof T] as SuperValueBase
 
-    // TODO: наверное ещё вызывать замену path на всех потомках в глубь
+      if (isSuperValue(item)) item.$$setParent(this, this.makeChildPath(childId))
+    }
   }
 
   /**
@@ -356,7 +358,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
   /**
-   * Setup child value.
+   * Setup child value according the definition and init it.
    * It is the value is primitive then it checks its type and returns
    * default or initial value.
    * If the child is Super Struct or Array
@@ -364,10 +366,11 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   protected setupChildValue(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
-    initialValue?: any
+    value?: any
   ): any {
-    if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-      return this.setupSuperChild(definition, childKeyOrIndex, initialValue)
+    if (!definition) throw new Error(`no definition`)
+    else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
+      return this.setupSuperChild(definition, childKeyOrIndex, value)
     }
     else if (definition.type === SUPER_TYPES.SuperFunc) {
       // super function
@@ -378,32 +381,13 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     // TODO: инстанс класса ???
 
     else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      return this.setupSimpleChild(definition, childKeyOrIndex, initialValue)
+      return this.setupSimpleChild(definition, childKeyOrIndex, value)
     }
     else {
       throw new Error(`Not supported type as super value child: ${definition.type}`)
     }
 
     throw new Error(`Can't setup a value of ${childKeyOrIndex}`)
-  }
-
-  /**
-   * listen to children to bubble their events
-   * @protected
-   */
-  protected startListenChildren() {
-    for (const key of this.myKeys()) {
-      const value: SuperValueBase = (this.values as any)[key]
-
-      if (typeof value !== 'object' || !value.isSuperValue) continue
-
-      value.subscribe((target: SuperValueBase, path?: string) => {
-        // if not path then it's some wierd
-        if (!path) console.warn(`Bubble event without path. But root is "${this.pathToMe}", child is "${key}"`)
-        // just bubble children's event
-        this.changeEvent.emit(target, path)
-      })
-    }
   }
 
 
@@ -450,6 +434,15 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     initialValue?: any
   ): SuperValueBase {
     // work with super type
+
+    // TODO: check undefined initialValue
+    // TODO: check syper type
+    // TODO: startListenChildren()
+
+    // TODO: если передан super value
+    //    надо подменить у него parent, path и слушать buble событий от него
+    //    все его потомки должны обновить родительский path
+
 
     if (initialValue && isSuperValue(initialValue)) {
       // this means the super struct or array has already initialized,
@@ -502,6 +495,31 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     }
 
     throw new Error(`Can't setup a super value of ${childKeyOrIndex}`)
+  }
+
+  /**
+   * listen to children to bubble their events
+   * @protected
+   */
+  private startListenChildren() {
+
+    // TODO: use it in value setup
+    // TODO: поидее должно пойти в глубину.
+    //    Но при этом если объект был переназначен другому родителю
+    //    то надо отписаться от старых событий - зайти в старого родителя и отписаться
+
+    for (const key of this.myKeys()) {
+      const value: SuperValueBase = (this.values as any)[key]
+
+      if (typeof value !== 'object' || !value.isSuperValue) continue
+
+      value.subscribe((target: SuperValueBase, path?: string) => {
+        // if not path then it's some wierd
+        if (!path) console.warn(`Bubble event without path. But root is "${this.pathToMe}", child is "${key}"`)
+        // just bubble children's event
+        this.changeEvent.emit(target, path)
+      })
+    }
   }
 
 }

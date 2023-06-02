@@ -149,6 +149,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return this.values.length
   }
 
+  get itemDefinition(): SuperItemDefinition {
+    return { ...this.definition, required: false }
+  }
+
 
   constructor(scope: SuperScope, definition: Partial<SuperArrayDefinition>) {
     super(scope)
@@ -194,11 +198,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
         required: false,
       }
 
-      this.values[index] = this.setupChildValue(
-        childDefinition,
-        index,
-        value
-      )
+      this.values[index] = this.setupChildValue(childDefinition, index, value)
     })
 
     return super.init()
@@ -245,19 +245,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const index = Number(key)
 
-    if (!ignoreRo && this.isReadOnly) {
-      throw new Error(`Can't set a value to readonly array`)
-    }
-    else if (typeof value === 'undefined') {
-      // skip checking of value type and after set value in array to undefined
-    }
-    else if (!isCorrespondingType(value, this.definition.type, this.definition.nullable)) {
-      throw new Error(
-        `The value of index ${index} is not corresponding to array type ${this.definition.type}`
-      )
-    }
-
-    this.values[index] = value as T
+    this.values[index] = this.setupChildValue(this.itemDefinition, index, value)
 
     this.riseChildrenChangeEvent(index)
   }
