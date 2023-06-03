@@ -8,9 +8,9 @@ import {forEach} from './lang/forEach.js';
 import {newSuperStruct} from './lang/superStruct.js';
 import {newSuperArray} from './lang/superArray.js';
 import {simpleCall} from './lang/simpleFunc.js';
+import {newSuperData} from './lang/superData.js';
 
 
-// TODO: доделать SuperStruct & SuperArray
 // TODO: add switch into isElse
 // TODO: SuperFunc - add return
 // TODO: review forEach - add support of return, break, continue, inner cycles and ifElse
@@ -49,6 +49,7 @@ export const sprogFuncs = {
   ////// SUPER
   callSuperFunc,
   newSuperFunc,
+  newSuperData,
   newSuperStruct,
   newSuperArray,
 }
