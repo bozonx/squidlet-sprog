@@ -1,7 +1,7 @@
 import {arrayKeys, spliceItem, omitObj} from 'squidlet-lib';
 import {
   isSuperValue,
-  SUPER_PROXY_PUBLIC_MEMBERS,
+  SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
   SUPER_VALUE_PROP,
   SuperValueBase,
   SuperValuePublic
@@ -219,7 +219,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    * Listen only to add, remove or reorder array changes
    */
   onArrayChange(handler: () => void): number {
-    return this.changeEvent.addListener((el: any) => {
+    return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any) => {
       if (el === this) handler()
     })
   }

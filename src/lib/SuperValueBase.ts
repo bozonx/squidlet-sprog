@@ -123,7 +123,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   readonly isSuperValue = true
   readonly abstract values: T
   events = new IndexedEventEmitter()
-  //changeEvent = new IndexedEvents<SuperChangeHandler>()
   protected proxyfiedInstance?: any
   // parent super struct or array who owns me
   protected myParent?: SuperValueBase
@@ -165,7 +164,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     // means that array is completely initiated
     this.inited = true
     // rise an event any way if any values was set or not
-    this.changeEvent.emit(this, this.pathToMe)
+    this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
 
     // TODO: это должно произойти вглубь на всех потомков, все должны друг друга слушать
     // TODO: хотя наверное это уже произошло при установке значений
@@ -184,7 +183,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
       this.unlink(Number(linkId))
     }
 
-    this.changeEvent.destroy()
+    this.events.destroy()
   }
 
   /**
@@ -244,11 +243,11 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   }
 
   subscribe = (handler: SuperChangeHandler): number => {
-    return this.changeEvent.addListener(handler)
+    return this.events.addListener(SUPER_VALUE_EVENTS.change, handler)
   }
 
   unsubscribe = (handlerIndex: number) => {
-    this.changeEvent.removeListener(handlerIndex)
+    this.events.removeListener(handlerIndex, SUPER_VALUE_EVENTS.change)
   }
 
   /**
@@ -409,7 +408,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   protected riseChildrenChangeEvent(childKeyOrIndex: string | number) {
     const fullPath = this.makeChildPath(childKeyOrIndex)
 
-    this.changeEvent.emit(this, fullPath)
+    this.events.emit(SUPER_VALUE_EVENTS.change, this, fullPath)
   }
 
   /**
@@ -417,7 +416,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * @protected
    */
   protected riseMyEvent() {
-    this.changeEvent.emit(this, this.pathToMe)
+    this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
   }
 
   /**
@@ -584,7 +583,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
         // if not path then it's some wierd
         if (!path) console.warn(`Bubble event without path. But root is "${this.pathToMe}", child is "${key}"`)
         // just bubble children's event
-        this.changeEvent.emit(target, path)
+        this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
       })
     }
   }
