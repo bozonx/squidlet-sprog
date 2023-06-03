@@ -21,7 +21,6 @@ import {resolveInitialSimpleValue} from './helpers.js';
 // TODO: наверное в default запретить пока super value
 
 
-
 export interface SuperStructPublic extends SuperValuePublic {
   isStruct: boolean
 }
@@ -35,6 +34,21 @@ export const STRUCT_PUBLIC_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
   'isStruct',
 ]
+
+export function prepareDefinitionItem(
+  definition: SuperItemInitDefinition,
+  defaultRo: boolean = false
+): SuperItemDefinition {
+  return {
+    ...DEFAULT_INIT_SUPER_DEFINITION,
+    ...definition,
+    readonly: (defaultRo)
+      // if ro was set to false in definition then leave false. In other cases true
+      ? definition.readonly !== false
+      // or just use that value which is was set in definition
+      : Boolean(definition.readonly),
+  }
+}
 
 
 /**
@@ -104,7 +118,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
     super(scope)
     this.checkDefinition(definition)
 
-    this.definition = this.prepareDefinition(definition, defaultRo)
+    for (const keyStr of Object.keys(definition)) {
+      this.definition[keyStr as keyof T] = prepareDefinitionItem(
+        definition[keyStr as keyof T],
+        defaultRo
+      )
+    }
   }
 
 
@@ -214,27 +233,27 @@ export class SuperStruct<T = Record<string, AllTypes>>
     this.setOwnValue(name as any, newValue, true)
   }
 
-  private prepareDefinition(
-    definition: Record<keyof T, SuperItemInitDefinition>,
-    defaultRo: boolean
-  ): Record<keyof T, SuperItemDefinition> {
-    const res: Record<keyof T, SuperItemDefinition> = {} as any
-
-    for (const keyStr of Object.keys(definition)) {
-      const keyName = keyStr as keyof T
-      res[keyName] = {
-        ...DEFAULT_INIT_SUPER_DEFINITION,
-        ...definition[keyName],
-        readonly: (defaultRo)
-          // if ro was set to false in definition then leave false. In other cases true
-          ? definition[keyName].readonly !== false
-          // or just use that value which is was set in definition
-          : Boolean(definition[keyName].readonly),
-      }
-    }
-
-    return res
-  }
+  // private prepareDefinition(
+  //   definition: Record<keyof T, SuperItemInitDefinition>,
+  //   defaultRo: boolean
+  // ): Record<keyof T, SuperItemDefinition> {
+  //   const res: Record<keyof T, SuperItemDefinition> = {} as any
+  //
+  //   for (const keyStr of Object.keys(definition)) {
+  //     const keyName = keyStr as keyof T
+  //     res[keyName] = {
+  //       ...DEFAULT_INIT_SUPER_DEFINITION,
+  //       ...definition[keyName],
+  //       readonly: (defaultRo)
+  //         // if ro was set to false in definition then leave false. In other cases true
+  //         ? definition[keyName].readonly !== false
+  //         // or just use that value which is was set in definition
+  //         : Boolean(definition[keyName].readonly),
+  //     }
+  //   }
+  //
+  //   return res
+  // }
 
   private checkDefinition(definition: Record<keyof T, SuperItemInitDefinition>,) {
     for (const keyStr of Object.keys(definition)) {
