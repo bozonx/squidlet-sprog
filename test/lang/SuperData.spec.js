@@ -397,7 +397,7 @@ describe('SuperData', () => {
     assert.deepEqual(data, {a1: 5})
   })
 
-  it('node default definition if set null', async () => {
+  it('no default definition if set null', async () => {
     const scope = newScope()
     const def = {
       $exp: 'newSuperData',
@@ -411,6 +411,29 @@ describe('SuperData', () => {
 
     assert.deepEqual(data.$super.definition, {})
     assert.throws(() => data.$super.setOwnValue('a1', 5))
+  })
+
+  it('setDefaultDefinition', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        DEFAULT_DEFINITION_KEY: null
+      }
+    }
+    const data = await scope.$run(def)
+
+    data.$super.init()
+
+    assert.deepEqual(data.$super.definition, {})
+
+    data.$super.setDefaultDefinition({
+      type: 'number',
+    })
+
+    assert.throws(() => data.$super.setOwnValue('a1', 's'))
+    data.$super.setOwnValue('a1', 5)
+    assert.deepEqual(data, {a1: 5})
   })
 
   // TODO: с учётом порядка ключей
