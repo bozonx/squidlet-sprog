@@ -295,16 +295,22 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
    */
   forget(key: string) {
     delete this.definition[key]
-    delete this.values[key]
 
-    // TODO: надо тогда вернуть на any иначе непонятно как проверять значения массива
-    // TODO: либо реально удалить просто
-    //if (key === DEFAULT_DEFINITION_KEY) return
+    if (key !== DEFAULT_DEFINITION_KEY) {
+      delete this.values[key]
 
-    spliceItem(this.keys, key)
+      // TODO: надо тогда вернуть на any иначе непонятно как проверять значения массива
+      // TODO: либо реально удалить просто
+      //if (key === DEFAULT_DEFINITION_KEY) return
 
-    // TODO: без учёта массива
-    // TODO: rise an event
+      spliceItem(this.keys, key)
+
+      // TODO: rise an change event
+    }
+
+
+    // TODO: без учёта массива происходит
+
 
     this.events.emit(SUPER_VALUE_EVENTS.definition, key)
   }

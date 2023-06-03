@@ -460,6 +460,7 @@ describe('SuperData', () => {
   //   assert.deepEqual(cloned, {p1: 5})
   // })
 
+  // TODO: test all the events
   // TODO: test default definition
   // TODO: test array like
   // TODO: test init array like values
