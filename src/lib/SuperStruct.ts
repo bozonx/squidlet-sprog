@@ -210,6 +210,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     // TODO: а если super type??? То надо вызвать default value у него ???
     //       или ничего не делать? Если менять заного то надо дестроить предыдущий
 
+    // if no default value then make it from type
     if (
       Object.keys(SIMPLE_TYPES).includes(this.definition[key as keyof T].type)
       && typeof defaultValue === 'undefined'

@@ -11,6 +11,7 @@ import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperScope} from '../scope.js';
 import {checkValueBeforeSet} from './SuperStruct.js';
+import {resolveInitialSimpleValue} from './helpers.js';
 
 
 // TODO: можно сортировать ключи, reverse, pop, etc
@@ -165,36 +166,42 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean) {
     checkValueBeforeSet(this.isInitialized, this.definition, key, value, ignoreRo)
 
+    // TODO: для массивов разрешать устанавливать value без definition
+    // TODO: можно для этого сделать спец definition - ARRDEF
+
     this.values[key] = this.setupChildValue(this.definition[key], key, value)
 
     this.riseChildrenChangeEvent(key)
   }
 
-  // TODO: add delete value
-
   /**
    * Set default value or null if the key doesn't have a default value
    * @param key
    */
-  toDefaultValue = (key: string | number) => {
+  toDefaultValue = (key: string) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
+      // TODO: а если массив?
+    else if (!this.definition[key]) {
+      throw new Error(`Struct doesn't have key ${key}`)
+    }
 
     let defaultValue = this.definition[key]?.default
 
     // TODO: а если super type??? То надо вызвать default value у него ???
     //       или ничего не делать? Если менять заного то надо дестроить предыдущий
 
-    // if (
-    //   Object.keys(SIMPLE_TYPES).includes(this.definition[key as keyof T].type)
-    //   && typeof defaultValue === 'undefined'
-    // ) {
-    //   defaultValue = resolveInitialSimpleValue(
-    //     this.definition[key as keyof T].type as keyof typeof SIMPLE_TYPES,
-    //     this.definition[key as keyof T].nullable,
-    //   )
-    // }
-    //
-    // this.setOwnValue(key, defaultValue)
+    // if no default value then make it from type
+    if (
+      Object.keys(SIMPLE_TYPES).includes(this.definition[key].type)
+      && typeof defaultValue === 'undefined'
+    ) {
+      defaultValue = resolveInitialSimpleValue(
+        this.definition[key].type as keyof typeof SIMPLE_TYPES,
+        this.definition[key].nullable,
+      )
+    }
+
+    this.setOwnValue(key, defaultValue)
   }
 
   getProxy(): T & ProxyfiedData<T> {
@@ -238,8 +245,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     spliceItem(this.keys, key)
 
+    // TODO: без учёта массива
     // TODO: rise an event
   }
+
+  // TODO: add delete array value
+
 
   /**
    * Set value of self readonly value and rise an event
