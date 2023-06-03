@@ -187,12 +187,19 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   }
 
   setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean) {
-    checkValueBeforeSet(this.isInitialized, this.definition, key, value, ignoreRo)
+    const definition = (this.definition[key])
+      ? (this.definition[key])
+      : this.definition[DEFAULT_DEFINITION_KEY]
+
+    if (!definition) {
+      throw new Error(`Doesn't have key ${key}`)
+    }
+
+    checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
 
     // TODO: для массивов разрешать устанавливать value без definition
-    // TODO: можно для этого сделать спец definition - ARRDEF
 
-    this.values[key] = this.setupChildValue(this.definition[key], key, value)
+    this.values[key] = this.setupChildValue(definition, key, value)
 
     this.riseChildrenChangeEvent(key)
   }

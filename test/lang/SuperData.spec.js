@@ -341,8 +341,7 @@ describe('SuperData', () => {
     assert.throws(() => data.$super.setOwnValue('p2', 5))
     assert.throws(() => data.$super.setValue('p2', true))
     assert.throws(() => data.$super.setValue('p2'))
-    // wrong key
-    assert.throws(() => data.$super.setValue('p3', 5))
+
     spy.should.have.been.calledThrice
   })
 
@@ -392,6 +391,10 @@ describe('SuperData', () => {
         "type": "any"
       }
     })
+
+    // set any value
+    data.$super.setOwnValue('a1', 5)
+    assert.deepEqual(data, {a1: 5})
   })
 
   it('node default definition if set null', async () => {
@@ -407,6 +410,7 @@ describe('SuperData', () => {
     data.$super.init()
 
     assert.deepEqual(data.$super.definition, {})
+    assert.throws(() => data.$super.setOwnValue('a1', 5))
   })
 
   // TODO: с учётом порядка ключей

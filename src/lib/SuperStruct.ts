@@ -34,20 +34,17 @@ export const STRUCT_PUBLIC_MEMBERS = [
 
 export function checkValueBeforeSet(
   isInitialized: boolean,
-  definitions: Record<string, SuperItemDefinition>,
+  definition: SuperItemDefinition,
   key: string,
   value: AllTypes,
   ignoreRo: boolean = false
 ) {
   if (!isInitialized) throw new Error(`Init it first`)
-  else if (!definitions[key]) {
-    throw new Error(`Doesn't have key ${key}`)
-  }
   // obviously check it otherwise it will be set to default
   else if (typeof value === 'undefined') {
     throw new Error(`It isn't possible to set undefined to data child`)
   }
-  else if (!ignoreRo && definitions[key].readonly) {
+  else if (!ignoreRo && definition.readonly) {
     throw new Error(`Can't set readonly value of name ${key}`)
   }
 }
@@ -187,9 +184,14 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
-    checkValueBeforeSet(this.isInitialized, this.definition, keyStr, value, ignoreRo)
-
     const name: keyof T = keyStr as any
+
+    checkValueBeforeSet(this.isInitialized, this.definition[name], keyStr, value, ignoreRo)
+
+    if (!this.definition[name]) {
+      throw new Error(`Doesn't have key ${keyStr}`)
+    }
+
     this.values[name] = this.setupChildValue(this.definition[name], keyStr, value)
 
     this.riseChildrenChangeEvent(keyStr)
