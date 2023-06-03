@@ -1,4 +1,4 @@
-import {arrayKeys, omitObj} from 'squidlet-lib';
+import {arrayKeys, spliceItem, omitObj} from 'squidlet-lib';
 import {
   isSuperValue,
   SUPER_PROXY_PUBLIC_MEMBERS,
@@ -311,7 +311,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
       throw new Error(`Can't delete item from readonly array`)
     }
 
-    this.values.splice(index)
+    // TODO: в тестах не учавствует
+    spliceItem(this.values, index)
     this.riseChildrenChangeEvent(index)
   }
 

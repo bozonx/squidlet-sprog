@@ -1,4 +1,4 @@
-import {deepClone} from 'squidlet-lib';
+import {deepClone, spliceItem} from 'squidlet-lib';
 import {
   checkDefinition,
   prepareDefinitionItem,
@@ -90,7 +90,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   // put definition via special method, not straight
   readonly definition: Record<string, SuperItemDefinition> = {} as any
   // current values
-  readonly values = {} as T
+  readonly values: Record<string, any> = {}
   // ordered keys
   readonly keys: string[] = []
   protected proxyFn = proxyData
@@ -136,7 +136,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   getOwnValue(key: string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return this.values[key as keyof T] as any
+    return this.values[key] as any
   }
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
@@ -202,16 +202,32 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
    * Set a new definition. You can't replace or change it.
    */
   define(key: string, definition: SuperItemInitDefinition) {
+    if (this.definition[key]) throw new Error(`Can't replace definition "${key}"`)
+
     checkDefinition(definition)
     this.keys.push(key)
 
     this.definition[key] = prepareDefinitionItem(definition)
+    // set default value as value
+    const defaultValue = this.setupChildValue(this.definition[key], key)
 
-    // TODO: set default value to value
+    if (typeof defaultValue !== 'undefined') {
+      // set value and rise an event
+      this.setOwnValue(key, defaultValue)
+    }
   }
 
-  undefine() {
+  /**
+   * Remove value and definition it that way as they never exist
+   * @param key
+   */
+  forget(key: string) {
+    delete this.definition[key]
+    delete this.values[key]
 
+    spliceItem(this.keys, key)
+
+    // TODO: rise an event
   }
 
   /**
