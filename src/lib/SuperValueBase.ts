@@ -53,8 +53,7 @@ export enum SUPER_VALUE_EVENTS {
   inited,
   destroy,
   change,
-  // TODO: add
-  // changes of definitions
+  // changes (define or forget) of definitions after initialization
   definition,
   newLink,
   unlink,

@@ -269,6 +269,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       // set value and rise an event
       this.setOwnValue(key, defaultValue)
     }
+
+    this.events.emit(SUPER_VALUE_EVENTS.definition, key)
   }
 
   /**
@@ -283,6 +285,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     }
 
     this.define(DEFAULT_DEFINITION_KEY, definition)
+
+    this.events.emit(SUPER_VALUE_EVENTS.definition, DEFAULT_DEFINITION_KEY)
   }
 
   /**
@@ -301,6 +305,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     // TODO: без учёта массива
     // TODO: rise an event
+
+    this.events.emit(SUPER_VALUE_EVENTS.definition, key)
   }
 
   // TODO: add delete array value
