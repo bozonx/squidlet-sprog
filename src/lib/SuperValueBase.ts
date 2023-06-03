@@ -1,5 +1,5 @@
 import {
-  IndexedEvents,
+  IndexedEventEmitter,
   deepGet,
   deepHas,
   deepSet,
@@ -47,6 +47,18 @@ export const SUPER_PROXY_PUBLIC_MEMBERS = [
   'toDefaultValue',
   'subscribe',
 ]
+
+export enum SUPER_VALUE_EVENTS {
+  init,
+  inited,
+  destroy,
+  change,
+  // changes of definitions
+  definition,
+  newLink,
+  unlink,
+  changeParent,
+}
 
 
 export type SuperChangeHandler = (
@@ -107,15 +119,11 @@ export function checkDefinition(definition: SuperItemInitDefinition) {
 }
 
 
-
-// TODO: add isDestroyed
-// TODO: add events init, inited, destroy, destroyed, changeParent, linked. unlinked
-
-
 export abstract class SuperValueBase<T = any | any[]> implements SuperValuePublic {
   readonly isSuperValue = true
   readonly abstract values: T
-  changeEvent = new IndexedEvents<SuperChangeHandler>()
+  events = new IndexedEventEmitter()
+  //changeEvent = new IndexedEvents<SuperChangeHandler>()
   protected proxyfiedInstance?: any
   // parent super struct or array who owns me
   protected myParent?: SuperValueBase
@@ -133,6 +141,10 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
   get isInitialized(): boolean {
     return this.inited
+  }
+
+  get isDestroyed(): boolean {
+    return this.events.isDestroyed
   }
 
   get parent(): SuperValueBase | undefined {
