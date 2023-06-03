@@ -3,6 +3,9 @@ import {newScope, SuperData} from "../../src/index.js";
 
 describe('SuperData', () => {
   it('proxy', async () => {
+
+    // TODO: review
+
     const scope = newScope()
     const def = {
       $exp: 'newSuperData',
@@ -27,5 +30,342 @@ describe('SuperData', () => {
 
     assert.deepEqual({...proxyfied}, {p1: 6})
   })
+
+  it('you have to initialize data first', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+    }
+    const data = await scope.$run(def)
+    // from base class
+    assert.throws(() => data.hasKey('p1'))
+    assert.throws(() => data.getValue('p1'))
+    assert.throws(() => data.setValue('p1', 6))
+    assert.throws(() => data.setNull('p1'))
+    assert.throws(() => data.clone())
+    // from data
+    assert.throws(() => data.myKeys())
+    assert.throws(() => data.getOwnValue('p1'))
+    assert.throws(() => data.setOwnValue('p1', 7))
+    assert.throws(() => data.toDefaultValue('p1'))
+
+    // TODO: add data specific
+  })
+
+
+  it('check definition', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5,
+          nullable: true,
+        },
+        p2: {
+          type: 'string',
+        },
+        p3: {
+          type: 'string',
+          default: 'd',
+          readonly: false
+        },
+      },
+      defaultRo: true
+    }
+    const data = await scope.$run(def)
+
+    data.$super.init({p2: 'str'})
+
+    assert.deepEqual(data, {p1: 5, p2: 'str', p3: 'd'})
+    assert.deepEqual(data.$super.definition, {
+      "p1": {
+        "default": 5,
+        "nullable": true,
+        "readonly": true,
+        "required": false,
+        "type": "number",
+      },
+      "p2": {
+        "readonly": true,
+        "nullable": false,
+        "required": false,
+        "type": "string",
+      },
+      "p3": {
+        "default": "d",
+        "nullable": false,
+        "readonly": false,
+        "required": false,
+        "type": "string",
+      }
+    })
+
+    // TODO: add array like specific
+  })
+
+  it('default value', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+    data.$super.init()
+    assert.equal(data['p1'], 5)
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(data.$super, undefined)
+  })
+
+  it('wrong default value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 'str'
+        }
+      },
+    }
+
+    let data
+
+    try {
+      data = await scope.$run(def)
+    }
+    catch (e) {
+    }
+
+    if (data) assert.fail('Shouldn\'t be ok')
+  })
+
+  it('wrong initial value', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+        }
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+
+    assert.throws(() => data.$super.init({p1: 's'}))
+    spy.should.have.not.been.called
+  })
+
+  it('not required value - will use initial value for type', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+        }
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+    data.$super.init()
+
+    assert.deepEqual(data, {p1: 0})
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(data.$super, undefined)
+  })
+
+  it('required value', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          required: true
+        }
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+    data.$super.init({p1: 5})
+    assert.deepEqual(data, {p1: 5})
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(data.$super, undefined)
+  })
+
+  it('required', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          required: true
+        }
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+
+    assert.throws(() => data.$super.init())
+    spy.should.have.not.been.called
+  })
+
+  it('readonly value - set initial and set via setter', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          readonly: true
+        }
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+
+    const setter = data
+      .$super.init({p1: 5})
+
+    spy.should.have.been.calledOnce
+
+    assert.deepEqual(data, {p1: 5})
+
+    setter('p1', 6)
+
+    assert.deepEqual(data, {p1: 6})
+    // try to set by usual way
+    assert.throws(() => data.setValue('p1', 7))
+    // first time on init and the second time using setter
+    spy.should.have.been.calledTwice
+  })
+
+  it('toDefaultValue - type\'s default', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+        },
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.$super.init()
+
+    assert.deepEqual(data, {p1: 0})
+
+    data.setValue('p1', 1)
+
+    assert.deepEqual(data, {p1: 1})
+
+    data.toDefaultValue('p1')
+
+    assert.deepEqual(data, {p1: 0})
+  })
+
+  it('little methods', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          readonly: true,
+          default: 5
+        },
+        p2: {
+          type: 'string',
+          default: 's',
+          nullable: true,
+        }
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+    data.$super.init()
+
+    spy.should.have.been.calledOnce
+    assert.equal(data.getValue('p1'), 5)
+    assert.equal(data.$super.getOwnValue('p1'), 5)
+    assert.isTrue(data.$super.isKeyReadonly('p1'))
+    assert.isTrue(data.$super.hasKey('p1'))
+    assert.deepEqual(data.$super.myKeys(), ['p1', 'p2'])
+    spy.should.have.been.calledOnce
+
+    data.$super.setNull('p2')
+    assert.isNull(data['p2'])
+    spy.should.have.been.calledTwice
+
+    data.$super.toDefaultValue('p2')
+    assert.equal(data.$super.getOwnValue('p2'), 's')
+    spy.should.have.been.calledThrice
+    // set wrong value
+    assert.throws(() => data.$super.setOwnValue('p2', 5))
+    assert.throws(() => data.$super.setValue('p2', true))
+    assert.throws(() => data.$super.setValue('p2'))
+    // wrong key
+    assert.throws(() => data.$super.setValue('p3', 5))
+    spy.should.have.been.calledThrice
+  })
+
+  // TODO: с учётом порядка ключей
+  // it('clone', async () => {
+  //   const scope = newScope()
+  //   const spy = sinon.spy()
+  //   const def = {
+  //     $exp: 'newSuperData',
+  //     definition: {
+  //       p1: {
+  //         type: 'number',
+  //         default: 5
+  //       },
+  //     },
+  //   }
+  //   const data = await scope.$run(def)
+  //
+  //   data.$super.init()
+  //
+  //   const cloned = data.$super.clone()
+  //
+  //   data.setValue('p1', 6)
+  //
+  //   assert.deepEqual(cloned, {p1: 5})
+  // })
+
+  // TODO: test default definition
+  // TODO: test array like
+  // TODO: test init array like values
 
 })

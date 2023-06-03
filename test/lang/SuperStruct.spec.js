@@ -208,7 +208,7 @@ describe('SuperStruct', () => {
     spy.should.have.been.calledWith(struct.$super, undefined)
   })
 
-  it('bad required value', async () => {
+  it('required', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {
