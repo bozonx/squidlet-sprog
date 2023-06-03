@@ -1,4 +1,4 @@
-import {newScope, SuperData} from "../../src/index.js";
+import {DEFAULT_DEFINITION_KEY, newScope, SuperData} from "../../src/index.js";
 
 
 describe('SuperData', () => {
@@ -344,6 +344,69 @@ describe('SuperData', () => {
     // wrong key
     assert.throws(() => data.$super.setValue('p3', 5))
     spy.should.have.been.calledThrice
+  })
+
+  ///////// Smart definition work
+
+  it('set and remove definition after init', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+    }
+    const data = await scope.$run(def)
+
+    data.$super.init()
+
+    data.$super.define('a1', {
+      type: 'number',
+      default: 5
+    })
+
+    assert.deepEqual(data, {a1: 5})
+    assert.deepEqual(data.$super.myKeys(), ['a1'])
+    data.$super.setOwnValue('a1', 6)
+    assert.deepEqual(data, {a1: 6})
+    data.$super.toDefaultValue('a1')
+    assert.deepEqual(data, {a1: 5})
+    // remove
+    data.$super.forget('a1')
+    assert.deepEqual(data, {})
+    assert.deepEqual(data.$super.myKeys(), [])
+    assert.isUndefined(data.$super.definition['a1'])
+  })
+
+  it('definition {type: any} by default', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+    }
+    const data = await scope.$run(def)
+
+    data.$super.init()
+
+    assert.deepEqual(data.$super.definition, {
+      DEFAULT_DEFINITION_KEY: {
+        "nullable": false,
+        "readonly": false,
+        "required": false,
+        "type": "any"
+      }
+    })
+  })
+
+  it('node default definition if set null', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        DEFAULT_DEFINITION_KEY: null
+      }
+    }
+    const data = await scope.$run(def)
+
+    data.$super.init()
+
+    assert.deepEqual(data.$super.definition, {})
   })
 
   // TODO: с учётом порядка ключей

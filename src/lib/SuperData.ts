@@ -108,7 +108,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
   constructor(
     scope: SuperScope,
-    definition: Record<keyof T, SuperItemInitDefinition>,
+    definition: Record<string, SuperItemInitDefinition> = {},
     defaultRo: boolean = false
   ) {
     super(scope)
