@@ -1,4 +1,4 @@
-import {omitObj} from 'squidlet-lib';
+import {omitObj, deepClone} from 'squidlet-lib';
 import {
   checkDefinition,
   prepareDefinitionItem,
@@ -78,26 +78,31 @@ export function proxyData(data: SuperData): ProxyfiedData {
 }
 
 
-export class SuperData<T extends Record<string | number, any> = Record<string | number, any>>
+// TODO: проверить getValue, setValue будут ли они работать если ключ это число???
+// TODO: makeChildPath не верно отработает если дадут число
+// TODO: добавить методы array - push, filter и итд
+
+export class SuperData<T extends Record<string, any> = Record<string, any>>
   extends SuperValueBase<Record<string| number, T>>
   implements SuperDataPublic
 {
   readonly isData = true
   // put definition via special method, not straight
-  readonly definition: Record<string | number, SuperItemDefinition> = {} as any
+  readonly definition: Record<string, SuperItemDefinition> = {} as any
   // current values
   readonly values = {} as T
-  readonly keys: (string | number)[] = []
+  // ordered keys
+  readonly keys: string[] = []
   protected proxyFn = proxyData
 
 
   constructor(scope: SuperScope, definition: Record<keyof T, SuperItemInitDefinition>) {
     super(scope)
 
-    // TODO: fill keys
-
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr])
+      this.keys.push(keyStr)
+
       this.definition[keyStr] = prepareDefinitionItem(definition[keyStr])
     }
   }
@@ -106,11 +111,15 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
     return super.init()
 
+    // TODO: ADD
+
     // TODO: fill keys
   }
 
   destroy = () => {
     super.destroy()
+
+    // TODO: ADD
   }
 
 
@@ -118,10 +127,10 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
     return Boolean(this.definition?.[key].readonly)
   }
 
-  myKeys(): (string | number)[] {
+  myKeys(): string[] {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return this.keys
+    return [...this.keys]
   }
 
   getOwnValue(key: string): AllTypes {
@@ -131,6 +140,9 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
   }
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
+
+    // TODO: ADD
+
     // if (!this.isInitialized) throw new Error(`Init it first`)
     //
     // const name: keyof T = keyStr as any
@@ -176,12 +188,11 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
     return super.getProxy()
   }
 
-  // TODO: сделать упорядоченным
-  // clone = (): T => {
-  //   if (!this.isInitialized) throw new Error(`Init it first`)
-  //
-  //   return deepClone(omitObj(this.values as any, SUPER_VALUE_PROP))
-  // }
+  clone = (): T => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
+    return deepClone(this.makeOrderedObject())
+  }
 
 
   /**
@@ -189,6 +200,15 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
    */
   protected myRoSetter = (name: keyof T, newValue: AllTypes) => {
     this.setOwnValue(name as any, newValue, true)
+  }
+
+
+  private makeOrderedObject(): Record<string, any> {
+    const res: Record<string, any> = {}
+
+    for (const key of this.keys) res[key] = this.values[key]
+
+    return res
   }
 
 }

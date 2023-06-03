@@ -4,7 +4,6 @@ import {
   deepHas,
   deepSet,
   deepClone,
-  omitObj,
   splitDeepPath,
   joinDeepPath
 } from 'squidlet-lib';
@@ -106,6 +105,11 @@ export function checkDefinition(definition: SuperItemInitDefinition) {
     )
   }
 }
+
+
+
+// TODO: add isDestroyed
+// TODO: add events init, inited, destroy, destroyed, changeParent, linked. unlinked
 
 
 export abstract class SuperValueBase<T = any | any[]> implements SuperValuePublic {
@@ -370,7 +374,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   clone = (): T => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return deepClone(omitObj(this.values as any, SUPER_VALUE_PROP))
+    return deepClone(this.values)
   }
 
   detachedCopy() {
