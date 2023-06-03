@@ -6,7 +6,7 @@ import {
   isSuperValue,
   SUPER_VALUE_PROP,
   SUPER_PROXY_PUBLIC_MEMBERS,
-  SuperValuePublic
+  SuperValuePublic, checkDefinition, prepareDefinitionItem
 } from './SuperValueBase.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
@@ -34,49 +34,6 @@ export const STRUCT_PUBLIC_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
   'isStruct',
 ]
-
-export function prepareDefinitionItem(
-  definition: SuperItemInitDefinition,
-  defaultRo: boolean = false
-): SuperItemDefinition {
-  return {
-    ...DEFAULT_INIT_SUPER_DEFINITION,
-    ...definition,
-    readonly: (defaultRo)
-      // if ro was set to false in definition then leave false. In other cases true
-      ? definition.readonly !== false
-      // or just use that value which is was set in definition
-      : Boolean(definition.readonly),
-  }
-}
-
-export function checkDefinition(definition: SuperItemInitDefinition) {
-  const {
-    type,
-    required,
-    nullable,
-    readonly,
-    default: defaultValue,
-  } = definition
-
-  if (type && !Object.keys(All_TYPES).includes(type)) {
-    throw new Error(`Wrong type : ${type}`)
-  }
-  else if (typeof required !== 'undefined' && typeof required !== 'boolean') {
-    throw new Error(`required has to be boolean`)
-  }
-  else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
-    throw new Error(`nullable has to be boolean`)
-  }
-  else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
-    throw new Error(`readonly has to be boolean`)
-  }
-  else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
-    throw new Error(
-      `Default value ${defaultValue} doesn't meet type: ${type}`
-    )
-  }
-}
 
 
 /**
@@ -192,6 +149,10 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
 
   isKeyReadonly(key: string | number): boolean {
+    if (!this.definition[key as keyof T]) {
+      throw new Error(`Struct doesn't have key ${key}`)
+    }
+
     return Boolean(this.definition?.[key as keyof T].readonly)
   }
 
@@ -209,6 +170,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
     if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (!this.definition[keyStr as keyof T]) {
+      throw new Error(`Struct doesn't have key ${keyStr}`)
+    }
 
     const name: keyof T = keyStr as any
     // obviously check it otherwise it will be set to default
@@ -230,8 +194,11 @@ export class SuperStruct<T = Record<string, AllTypes>>
    */
   toDefaultValue = (key: string) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (!this.definition[key as keyof T]) {
+      throw new Error(`Struct doesn't have key ${key}`)
+    }
 
-    let defaultValue = this.definition[key as keyof T]?.default
+    let defaultValue = this.definition[key as keyof T].default
 
     // TODO: а если super type??? То надо вызвать default value у него ???
     //       или ничего не делать? Если менять заного то надо дестроить предыдущий

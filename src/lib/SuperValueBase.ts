@@ -9,8 +9,12 @@ import {
   joinDeepPath
 } from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {AllTypes, SIMPLE_TYPES, SimpleType, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
-import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
+import {All_TYPES, AllTypes, SIMPLE_TYPES, SimpleType, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
+import {
+  DEFAULT_INIT_SUPER_DEFINITION,
+  SuperItemDefinition,
+  SuperItemInitDefinition
+} from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 
@@ -58,6 +62,49 @@ export const SUPER_VALUE_PROP = '$super'
 
 export function isSuperValue(val: any): boolean {
   return typeof val === 'object' && val.isSuperValue
+}
+
+export function prepareDefinitionItem(
+  definition: SuperItemInitDefinition,
+  defaultRo: boolean = false
+): SuperItemDefinition {
+  return {
+    ...DEFAULT_INIT_SUPER_DEFINITION,
+    ...definition,
+    readonly: (defaultRo)
+      // if ro was set to false in definition then leave false. In other cases true
+      ? definition.readonly !== false
+      // or just use that value which is was set in definition
+      : Boolean(definition.readonly),
+  }
+}
+
+export function checkDefinition(definition: SuperItemInitDefinition) {
+  const {
+    type,
+    required,
+    nullable,
+    readonly,
+    default: defaultValue,
+  } = definition
+
+  if (type && !Object.keys(All_TYPES).includes(type)) {
+    throw new Error(`Wrong type : ${type}`)
+  }
+  else if (typeof required !== 'undefined' && typeof required !== 'boolean') {
+    throw new Error(`required has to be boolean`)
+  }
+  else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
+    throw new Error(`nullable has to be boolean`)
+  }
+  else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
+    throw new Error(`readonly has to be boolean`)
+  }
+  else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
+    throw new Error(
+      `Default value ${defaultValue} doesn't meet type: ${type}`
+    )
+  }
 }
 
 
@@ -154,7 +201,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   /**
    * Get own keys or indexes
    */
-  abstract myKeys(): string[] | number[]
+  abstract myKeys(): (string | number)[]
 
   abstract getOwnValue(key: string | number): AllTypes
 

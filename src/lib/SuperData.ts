@@ -1,10 +1,15 @@
 import {omitObj} from 'squidlet-lib';
-import {SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_PROP, SuperValueBase, SuperValuePublic} from './SuperValueBase.js';
+import {
+  checkDefinition,
+  prepareDefinitionItem,
+  SUPER_PROXY_PUBLIC_MEMBERS,
+  SUPER_VALUE_PROP,
+  SuperValueBase,
+  SuperValuePublic
+} from './SuperValueBase.js';
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperScope} from '../scope.js';
-import {checkDefinition, prepareDefinitionItem, ProxyfiedStruct} from './SuperStruct.js';
-import {resolveInitialSimpleValue} from './helpers.js';
 
 
 // TODO: он может содержать ключи как string так и number
@@ -82,11 +87,14 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
   readonly definition: Record<string | number, SuperItemDefinition> = {} as any
   // current values
   readonly values = {} as T
+  readonly keys: (string | number)[] = []
   protected proxyFn = proxyData
 
 
   constructor(scope: SuperScope, definition: Record<keyof T, SuperItemInitDefinition>) {
     super(scope)
+
+    // TODO: fill keys
 
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr])
@@ -97,6 +105,8 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
 
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
     return super.init()
+
+    // TODO: fill keys
   }
 
   destroy = () => {
@@ -108,10 +118,10 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
     return Boolean(this.definition?.[key].readonly)
   }
 
-  myKeys(): string[] {
+  myKeys(): (string | number)[] {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return Object.keys(this.values as any)
+    return this.keys
   }
 
   getOwnValue(key: string): AllTypes {
@@ -141,14 +151,14 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
    * Set default value or null if the key doesn't have a default value
    * @param key
    */
-  toDefaultValue = (key: string) => {
-    // if (!this.isInitialized) throw new Error(`Init it first`)
-    //
-    // let defaultValue = this.definition[key as keyof T]?.default
-    //
-    // // TODO: а если super type??? То надо вызвать default value у него ???
-    // //       или ничего не делать? Если менять заного то надо дестроить предыдущий
-    //
+  toDefaultValue = (key: string | number) => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
+    let defaultValue = this.definition[key]?.default
+
+    // TODO: а если super type??? То надо вызвать default value у него ???
+    //       или ничего не делать? Если менять заного то надо дестроить предыдущий
+
     // if (
     //   Object.keys(SIMPLE_TYPES).includes(this.definition[key as keyof T].type)
     //   && typeof defaultValue === 'undefined'
@@ -165,6 +175,13 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
   getProxy(): T & ProxyfiedData<T> {
     return super.getProxy()
   }
+
+  // TODO: сделать упорядоченным
+  // clone = (): T => {
+  //   if (!this.isInitialized) throw new Error(`Init it first`)
+  //
+  //   return deepClone(omitObj(this.values as any, SUPER_VALUE_PROP))
+  // }
 
 
   /**
