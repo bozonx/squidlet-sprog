@@ -40,7 +40,7 @@ export const STRUCT_DATA_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
   'isStruct',
 ]
-export const DEFAULT_DEFINITION_KEY = 'DEFAULT_DEFINITION_KEY'
+export const DEFAULT_DEFINITION_KEY = '$DEFAULT'
 
 
 export function proxyData(data: SuperData): ProxyfiedData {

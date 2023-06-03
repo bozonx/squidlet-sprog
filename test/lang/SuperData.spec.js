@@ -1,4 +1,4 @@
-import {DEFAULT_DEFINITION_KEY, newScope, SuperData} from "../../src/index.js";
+import {newScope, SuperData} from "../../src/index.js";
 
 
 describe('SuperData', () => {
@@ -86,7 +86,7 @@ describe('SuperData', () => {
 
     assert.deepEqual(data, {p1: 5, p2: 'str', p3: 'd'})
     assert.deepEqual(data.$super.definition, {
-      "DEFAULT_DEFINITION_KEY": {
+      "$DEFAULT": {
         "nullable": false,
         "readonly": false,
         "required": false,
@@ -384,7 +384,7 @@ describe('SuperData', () => {
     data.$super.init()
 
     assert.deepEqual(data.$super.definition, {
-      DEFAULT_DEFINITION_KEY: {
+      $DEFAULT: {
         "nullable": false,
         "readonly": false,
         "required": false,
@@ -402,7 +402,7 @@ describe('SuperData', () => {
     const def = {
       $exp: 'newSuperData',
       definition: {
-        DEFAULT_DEFINITION_KEY: null
+        $DEFAULT: null
       }
     }
     const data = await scope.$run(def)
@@ -418,7 +418,7 @@ describe('SuperData', () => {
     const def = {
       $exp: 'newSuperData',
       definition: {
-        DEFAULT_DEFINITION_KEY: null
+        $DEFAULT: null
       }
     }
     const data = await scope.$run(def)
