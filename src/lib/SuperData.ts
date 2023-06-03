@@ -3,7 +3,7 @@ import {SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_PROP, SuperValueBase, SuperValue
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperScope} from '../scope.js';
-import {prepareDefinitionItem, ProxyfiedStruct} from './SuperStruct.js';
+import {checkDefinition, prepareDefinitionItem, ProxyfiedStruct} from './SuperStruct.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 
 
@@ -87,9 +87,9 @@ export class SuperData<T extends Record<string | number, any> = Record<string | 
 
   constructor(scope: SuperScope, definition: Record<keyof T, SuperItemInitDefinition>) {
     super(scope)
-    //this.checkDefinition(definition)
 
     for (const keyStr of Object.keys(definition)) {
+      checkDefinition(definition[keyStr])
       this.definition[keyStr] = prepareDefinitionItem(definition[keyStr])
     }
   }

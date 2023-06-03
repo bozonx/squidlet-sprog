@@ -50,6 +50,34 @@ export function prepareDefinitionItem(
   }
 }
 
+export function checkDefinition(definition: SuperItemInitDefinition) {
+  const {
+    type,
+    required,
+    nullable,
+    readonly,
+    default: defaultValue,
+  } = definition
+
+  if (type && !Object.keys(All_TYPES).includes(type)) {
+    throw new Error(`Wrong type : ${type}`)
+  }
+  else if (typeof required !== 'undefined' && typeof required !== 'boolean') {
+    throw new Error(`required has to be boolean`)
+  }
+  else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
+    throw new Error(`nullable has to be boolean`)
+  }
+  else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
+    throw new Error(`readonly has to be boolean`)
+  }
+  else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
+    throw new Error(
+      `Default value ${defaultValue} doesn't meet type: ${type}`
+    )
+  }
+}
+
 
 /**
  * Wrapper for SuperStruct which allows to manipulate it as common object.
@@ -116,9 +144,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
     defaultRo: boolean = false
   ) {
     super(scope)
-    this.checkDefinition(definition)
 
     for (const keyStr of Object.keys(definition)) {
+      checkDefinition(definition[keyStr as keyof T])
       this.definition[keyStr as keyof T] = prepareDefinitionItem(
         definition[keyStr as keyof T],
         defaultRo
@@ -231,58 +259,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
    */
   protected myRoSetter = (name: keyof T, newValue: AllTypes) => {
     this.setOwnValue(name as any, newValue, true)
-  }
-
-  // private prepareDefinition(
-  //   definition: Record<keyof T, SuperItemInitDefinition>,
-  //   defaultRo: boolean
-  // ): Record<keyof T, SuperItemDefinition> {
-  //   const res: Record<keyof T, SuperItemDefinition> = {} as any
-  //
-  //   for (const keyStr of Object.keys(definition)) {
-  //     const keyName = keyStr as keyof T
-  //     res[keyName] = {
-  //       ...DEFAULT_INIT_SUPER_DEFINITION,
-  //       ...definition[keyName],
-  //       readonly: (defaultRo)
-  //         // if ro was set to false in definition then leave false. In other cases true
-  //         ? definition[keyName].readonly !== false
-  //         // or just use that value which is was set in definition
-  //         : Boolean(definition[keyName].readonly),
-  //     }
-  //   }
-  //
-  //   return res
-  // }
-
-  private checkDefinition(definition: Record<keyof T, SuperItemInitDefinition>,) {
-    for (const keyStr of Object.keys(definition)) {
-      const {
-        type,
-        required,
-        nullable,
-        readonly,
-        default: defaultValue,
-      } = definition[keyStr as keyof T]
-
-      if (type && !Object.keys(All_TYPES).includes(type)) {
-        throw new Error(`Wrong type of SuperStruct child "${keyStr}": ${type}`)
-      }
-      else if (typeof required !== 'undefined' && typeof required !== 'boolean') {
-        throw new Error(`required has to be boolean`)
-      }
-      else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
-        throw new Error(`nullable has to be boolean`)
-      }
-      else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
-        throw new Error(`readonly has to be boolean`)
-      }
-      else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
-        throw new Error(
-          `Default value ${defaultValue} of SuperStruct's "${keyStr}" doesn't meet type: ${type}`
-        )
-      }
-    }
   }
 
 }
