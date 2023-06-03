@@ -116,20 +116,19 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     this.defaultRo = defaultRo
 
     for (const keyStr of Object.keys(definition)) {
+      // skip reset of default definition
+      if (definition[keyStr] === null) continue
+
       checkDefinition(definition[keyStr])
       this.keys.push(keyStr)
 
       this.definition[keyStr] = prepareDefinitionItem(definition[keyStr], defaultRo)
     }
-
+    // if wasn't set default definition then set it to allow any type
     if (typeof definition[DEFAULT_DEFINITION_KEY] === 'undefined') {
-      // if wasn't set default definition then set it to allow any type
       this.definition[DEFAULT_DEFINITION_KEY] = DEFAULT_INIT_SUPER_DEFINITION
     }
-    else if (definition[DEFAULT_DEFINITION_KEY] === null) {
-      // else if null then do not register it at all
-      delete this.definition[DEFAULT_DEFINITION_KEY]
-    }
+    // else if null then do not register it at all
   }
 
 
@@ -236,15 +235,19 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   /////// Data specific
 
   /**
-   * Set a new definition. You can't replace or change it.
+   * Set a new definition for a specific key. You can't replace or change it.
    */
   define(key: string, definition: SuperItemInitDefinition) {
     if (this.definition[key]) throw new Error(`Can't replace definition "${key}"`)
 
     checkDefinition(definition)
-    this.keys.push(key)
 
     this.definition[key] = prepareDefinitionItem(definition, this.defaultRo)
+
+    // do not set value if it is a default definition
+    if (key === DEFAULT_DEFINITION_KEY) return
+
+    this.keys.push(key)
     // set default value as value
     const defaultValue = this.setupChildValue(this.definition[key], key)
 
@@ -252,6 +255,20 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       // set value and rise an event
       this.setOwnValue(key, defaultValue)
     }
+  }
+
+  /**
+   * Set default definition or remove it if null passed
+   * @param definition
+   */
+  setDefaultDefinition(definition: SuperItemInitDefinition | null) {
+    if (definition === null) {
+      delete this.definition[DEFAULT_DEFINITION_KEY]
+
+      return
+    }
+
+    this.define(DEFAULT_DEFINITION_KEY, definition)
   }
 
   /**
