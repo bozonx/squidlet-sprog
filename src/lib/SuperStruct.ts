@@ -5,7 +5,7 @@ import {
   isSuperValue,
   SUPER_VALUE_PROP,
   SUPER_PROXY_PUBLIC_MEMBERS,
-  SuperValuePublic, checkDefinition, prepareDefinitionItem
+  SuperValuePublic, checkDefinition, prepareDefinitionItem, SUPER_VALUE_EVENTS
 } from './SuperValueBase.js';
 import {
   SuperItemDefinition,
@@ -135,6 +135,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
     if (this.inited) {
       throw new Error(`The struct has been already initialized`)
     }
+
+    this.events.emit(SUPER_VALUE_EVENTS.initStart)
+
     // set initial values
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T

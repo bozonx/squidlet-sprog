@@ -49,10 +49,11 @@ export const SUPER_PROXY_PUBLIC_MEMBERS = [
 ]
 
 export enum SUPER_VALUE_EVENTS {
-  init,
+  initStart,
   inited,
   destroy,
   change,
+  // TODO: add
   // changes of definitions
   definition,
   newLink,
@@ -171,11 +172,15 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     // listen to children to bubble their events
     //this.startListenChildren()
 
+    this.events.emit(SUPER_VALUE_EVENTS.inited)
+
     // return setter for read only props
     return this.myRoSetter
   }
 
   destroy() {
+    this.events.emit(SUPER_VALUE_EVENTS.destroy)
+
     for (const linkId in this.links) {
       // actually empty is also undefined
       if (typeof linkId === 'undefined') continue
@@ -200,6 +205,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
       if (isSuperValue(item)) item.$$setParent(this, this.makeChildPath(childId))
     }
+
+    this.events.emit(SUPER_VALUE_EVENTS.changeParent)
   }
 
   /**
@@ -359,6 +366,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
 
     this.links.push(link)
 
+    this.events.emit(SUPER_VALUE_EVENTS.newLink, linkId)
+
     return linkId
   }
 
@@ -376,6 +385,8 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     }
 
     delete this.links[linkId]
+
+    this.events.emit(SUPER_VALUE_EVENTS.unlink, linkId)
   }
 
   /**

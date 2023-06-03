@@ -2,7 +2,7 @@ import {deepClone, spliceItem} from 'squidlet-lib';
 import {
   checkDefinition, isSuperValue,
   prepareDefinitionItem,
-  SUPER_PROXY_PUBLIC_MEMBERS,
+  SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
   SUPER_VALUE_PROP,
   SuperValueBase,
   SuperValuePublic
@@ -18,12 +18,11 @@ import {checkValueBeforeSet} from './SuperStruct.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 
 
-// TODO: можно сортировать ключи, reverse, pop, etc
-// TODO: добавление нового элемента это push
-// TODO: а какой definition для элементов массива???
-// TODO: несли нет definition то нельзя работать со значением
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
 // TODO: makeChildPath не верно отработает если дадут число
+
+// TODO: можно сортировать ключи, reverse, pop, etc
+// TODO: добавление нового элемента это push
 // TODO: добавить методы array - push, filter и итд
 
 
@@ -139,6 +138,9 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (this.inited) {
       throw new Error(`The struct has been already initialized`)
     }
+
+    this.events.emit(SUPER_VALUE_EVENTS.initStart)
+
     // set initial values
     for (const key of Object.keys(this.definition)) {
       if (key === DEFAULT_DEFINITION_KEY) continue

@@ -174,6 +174,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
       throw new Error(`The array has been already initialized`)
     }
 
+    this.events.emit(SUPER_VALUE_EVENTS.initStart)
+
     // set initial values
     const initArrLength = initialArr?.length || 0
     const defaultArrLength = this.definition.defaultArray?.length || 0
