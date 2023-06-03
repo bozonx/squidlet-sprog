@@ -32,6 +32,26 @@ export const STRUCT_PUBLIC_MEMBERS = [
   'isStruct',
 ]
 
+export function checkValueBeforeSet(
+  isInitialized: boolean,
+  definitions: Record<string, SuperItemDefinition>,
+  key: string,
+  value: AllTypes,
+  ignoreRo: boolean = false
+) {
+  if (!isInitialized) throw new Error(`Init it first`)
+  else if (!definitions[key]) {
+    throw new Error(`Doesn't have key ${key}`)
+  }
+  // obviously check it otherwise it will be set to default
+  else if (typeof value === 'undefined') {
+    throw new Error(`It isn't possible to set undefined to data child`)
+  }
+  else if (!ignoreRo && definitions[key].readonly) {
+    throw new Error(`Can't set readonly value of name ${key}`)
+  }
+}
+
 
 /**
  * Wrapper for SuperStruct which allows to manipulate it as common object.
@@ -167,20 +187,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-    else if (!this.definition[keyStr as keyof T]) {
-      throw new Error(`Struct doesn't have key ${keyStr}`)
-    }
+    checkValueBeforeSet(this.isInitialized, this.definition, keyStr, value, ignoreRo)
 
     const name: keyof T = keyStr as any
-    // obviously check it otherwise it will be set to default
-    if (typeof value === 'undefined') {
-      throw new Error(`It isn't possible to set undefined to struct's child`)
-    }
-    else if (!ignoreRo && this.definition[name].readonly) {
-      throw new Error(`Can't set readonly value of name ${String(name)}`)
-    }
-
     this.values[name] = this.setupChildValue(this.definition[name], keyStr, value)
 
     this.riseChildrenChangeEvent(keyStr)

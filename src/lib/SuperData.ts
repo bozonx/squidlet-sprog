@@ -1,6 +1,6 @@
 import {deepClone, spliceItem} from 'squidlet-lib';
 import {
-  checkDefinition,
+  checkDefinition, isSuperValue,
   prepareDefinitionItem,
   SUPER_PROXY_PUBLIC_MEMBERS,
   SUPER_VALUE_PROP,
@@ -10,6 +10,7 @@ import {
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperScope} from '../scope.js';
+import {checkValueBeforeSet} from './SuperStruct.js';
 
 
 // TODO: можно сортировать ключи, reverse, pop, etc
@@ -113,21 +114,39 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
 
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
+    if (this.inited) {
+      throw new Error(`The struct has been already initialized`)
+    }
+    // set initial values
+    for (const key of Object.keys(this.definition)) {
+      this.values[key] = this.setupChildValue(
+        this.definition[key],
+        key,
+        initialValues?.[key]
+      )
+    }
+
     return super.init()
-
-    // TODO: ADD
-
-    // TODO: fill keys
   }
 
   destroy = () => {
     super.destroy()
 
-    // TODO: ADD
+    for (const key of Object.keys(this.values)) {
+      if (isSuperValue(this.values[key])) {
+        // it will destroy itself and its children
+        (this.values[key] as SuperValueBase).destroy()
+      }
+    }
   }
 
 
   isKeyReadonly(key: string | number): boolean {
+    // TODO: что  случае с элементом массива???
+    if (!this.definition[key]) {
+      throw new Error(`Data doesn't have key ${key}`)
+    }
+
     return Boolean(this.definition?.[key].readonly)
   }
 
@@ -143,24 +162,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return this.values[key] as any
   }
 
-  setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
+  setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean) {
+    checkValueBeforeSet(this.isInitialized, this.definition, key, value, ignoreRo)
 
-    // TODO: ADD
+    this.values[key] = this.setupChildValue(this.definition[key], key, value)
 
-    // if (!this.isInitialized) throw new Error(`Init it first`)
-    //
-    // const name: keyof T = keyStr as any
-    // // obviously check it otherwise it will be set to default
-    // if (typeof value === 'undefined') {
-    //   throw new Error(`It isn't possible to set undefined to struct's child`)
-    // }
-    // else if (!ignoreRo && this.definition[name].readonly) {
-    //   throw new Error(`Can't set readonly value of name ${String(name)}`)
-    // }
-    //
-    // this.values[name] = this.setupChildValue(this.definition[name], keyStr, value)
-    //
-    // this.riseChildrenChangeEvent(keyStr)
+    this.riseChildrenChangeEvent(key)
   }
 
   // TODO: add delete value
