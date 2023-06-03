@@ -129,6 +129,9 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       this.definition[DEFAULT_DEFINITION_KEY] = DEFAULT_INIT_SUPER_DEFINITION
     }
     // else if null then do not register it at all
+    // if (!this.definition[DEFAULT_DEFINITION_KEY]) {
+    //   delete this.definition[DEFAULT_DEFINITION_KEY]
+    // }
   }
 
 
@@ -138,6 +141,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     }
     // set initial values
     for (const key of Object.keys(this.definition)) {
+      if (key === DEFAULT_DEFINITION_KEY) continue
+
       this.values[key] = this.setupChildValue(
         this.definition[key],
         key,

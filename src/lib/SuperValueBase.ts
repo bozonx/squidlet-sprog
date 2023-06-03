@@ -420,6 +420,10 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     value?: any
   ): any {
     if (!definition) throw new Error(`no definition`)
+    else if (definition.type === 'any') {
+      // TODO: правильно???
+      return value
+    }
     else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       return this.setupSuperChild(definition, childKeyOrIndex, value)
     }

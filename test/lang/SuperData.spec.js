@@ -86,6 +86,12 @@ describe('SuperData', () => {
 
     assert.deepEqual(data, {p1: 5, p2: 'str', p3: 'd'})
     assert.deepEqual(data.$super.definition, {
+      "DEFAULT_DEFINITION_KEY": {
+        "nullable": false,
+        "readonly": false,
+        "required": false,
+        "type": "any",
+      },
       "p1": {
         "default": 5,
         "nullable": true,
