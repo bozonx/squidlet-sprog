@@ -1,4 +1,4 @@
-import {deepClone, spliceItem, omitObj} from 'squidlet-lib';
+import {deepClone, spliceItem} from 'squidlet-lib';
 import {
   checkDefinition, isSuperValue,
   prepareDefinitionItem,
@@ -278,6 +278,10 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   forget(key: string) {
     delete this.definition[key]
     delete this.values[key]
+
+    // TODO: надо тогда вернуть на any иначе непонятно как проверять значения массива
+    // TODO: либо реально удалить просто
+    //if (key === DEFAULT_DEFINITION_KEY) return
 
     spliceItem(this.keys, key)
 
