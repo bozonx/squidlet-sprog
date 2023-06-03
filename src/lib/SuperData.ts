@@ -1,4 +1,4 @@
-import {omitObj, deepClone} from 'squidlet-lib';
+import {deepClone} from 'squidlet-lib';
 import {
   checkDefinition,
   prepareDefinitionItem,
@@ -12,14 +12,14 @@ import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDe
 import {SuperScope} from '../scope.js';
 
 
-// TODO: он может содержать ключи как string так и number
-// TODO: он может работать как массив и объект одновременно
 // TODO: можно сортировать ключи, reverse, pop, etc
 // TODO: добавление нового элемента это push
-// TODO: тип, ro и тд ставится сразу на весь объект как в массиве
-// TODO: типов может быть несколько
-// TODO: required не будет, поэтому возможен undefined
-// TODO: а может для некоторых элементов сделать отдельные definition?
+// TODO: а какой definition для элементов массива???
+// TODO: добавить default ro
+// TODO: можно добавлять definition
+// TODO: нельзя изменять definition
+// TODO: можно удалять definition
+// TODO: несли нет definition то нельзя работать со значением
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -65,12 +65,12 @@ export function proxyData(data: SuperData): ProxyfiedData {
       return true
     },
 
-    deleteProperty(): boolean {
-      throw new Error(`It isn't possible to delete struct value`)
-    },
+    // TODO: add
+    // deleteProperty(): boolean {
+    // },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return Object.keys(omitObj(data.values, SUPER_VALUE_PROP))
+      return Object.keys(data.values)
     },
   }
 
@@ -159,6 +159,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     // this.riseChildrenChangeEvent(keyStr)
   }
 
+  // TODO: add delete value
+
   /**
    * Set default value or null if the key doesn't have a default value
    * @param key
@@ -194,6 +196,23 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return deepClone(this.makeOrderedObject())
   }
 
+  /////// Data specific
+
+  /**
+   * Set a new definition. You can't replace or change it.
+   */
+  define(key: string, definition: SuperItemInitDefinition) {
+    checkDefinition(definition)
+    this.keys.push(key)
+
+    this.definition[key] = prepareDefinitionItem(definition)
+
+    // TODO: set default value to value
+  }
+
+  undefine() {
+
+  }
 
   /**
    * Set value of self readonly value and rise an event

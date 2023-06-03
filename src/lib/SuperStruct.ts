@@ -1,6 +1,5 @@
-import {omitObj} from 'squidlet-lib';
 import {SuperScope} from '../scope.js';
-import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
   isSuperValue,
@@ -8,9 +7,7 @@ import {
   SUPER_PROXY_PUBLIC_MEMBERS,
   SuperValuePublic, checkDefinition, prepareDefinitionItem
 } from './SuperValueBase.js';
-import {isCorrespondingType} from './isCorrespondingType.js';
 import {
-  DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
@@ -75,7 +72,7 @@ export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return Object.keys(omitObj(struct.values, SUPER_VALUE_PROP))
+      return Object.keys(struct.values)
     },
   }
 
