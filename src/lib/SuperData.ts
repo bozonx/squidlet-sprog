@@ -1,4 +1,4 @@
-import {deepClone, spliceItem} from 'squidlet-lib';
+import {deepClone, spliceItem, omitObj} from 'squidlet-lib';
 import {
   checkDefinition, isSuperValue,
   prepareDefinitionItem,
@@ -8,7 +8,11 @@ import {
   SuperValuePublic
 } from './SuperValueBase.js';
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
-import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {
+  DEFAULT_INIT_SUPER_DEFINITION,
+  SuperItemDefinition,
+  SuperItemInitDefinition
+} from '../types/SuperItemDefinition.js';
 import {SuperScope} from '../scope.js';
 import {checkValueBeforeSet} from './SuperStruct.js';
 import {resolveInitialSimpleValue} from './helpers.js';
@@ -36,6 +40,7 @@ export const STRUCT_DATA_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
   'isStruct',
 ]
+export const DEFAULT_DEFINITION_KEY = 'DEFAULT_DEFINITION_KEY'
 
 
 export function proxyData(data: SuperData): ProxyfiedData {
@@ -96,6 +101,11 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   protected proxyFn = proxyData
 
 
+  get defaultDefinition(): SuperItemDefinition | undefined {
+    return this.definition[DEFAULT_DEFINITION_KEY]
+  }
+
+
   constructor(
     scope: SuperScope,
     definition: Record<keyof T, SuperItemInitDefinition>,
@@ -110,6 +120,15 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       this.keys.push(keyStr)
 
       this.definition[keyStr] = prepareDefinitionItem(definition[keyStr], defaultRo)
+    }
+
+    if (typeof definition[DEFAULT_DEFINITION_KEY] === 'undefined') {
+      // if wasn't set default definition then set it to allow any type
+      this.definition[DEFAULT_DEFINITION_KEY] = DEFAULT_INIT_SUPER_DEFINITION
+    }
+    else if (definition[DEFAULT_DEFINITION_KEY] === null) {
+      // else if null then do not register it at all
+      delete this.definition[DEFAULT_DEFINITION_KEY]
     }
   }
 
