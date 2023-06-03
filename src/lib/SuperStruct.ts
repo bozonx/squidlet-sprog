@@ -101,6 +101,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr as keyof T])
+
       this.definition[keyStr as keyof T] = prepareDefinitionItem(
         definition[keyStr as keyof T],
         defaultRo

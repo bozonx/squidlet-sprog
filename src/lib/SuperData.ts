@@ -15,11 +15,10 @@ import {SuperScope} from '../scope.js';
 // TODO: можно сортировать ключи, reverse, pop, etc
 // TODO: добавление нового элемента это push
 // TODO: а какой definition для элементов массива???
-// TODO: добавить default ro
-// TODO: можно добавлять definition
-// TODO: нельзя изменять definition
-// TODO: можно удалять definition
 // TODO: несли нет definition то нельзя работать со значением
+// TODO: проверить getValue, setValue будут ли они работать если ключ это число???
+// TODO: makeChildPath не верно отработает если дадут число
+// TODO: добавить методы array - push, filter и итд
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -65,9 +64,11 @@ export function proxyData(data: SuperData): ProxyfiedData {
       return true
     },
 
-    // TODO: add
-    // deleteProperty(): boolean {
-    // },
+    deleteProperty(target: any, prop: string): boolean {
+      data.forget(prop)
+
+      return true
+    },
 
     ownKeys(): ArrayLike<string | symbol> {
       return Object.keys(data.values)
@@ -77,10 +78,6 @@ export function proxyData(data: SuperData): ProxyfiedData {
   return new Proxy(data.values, handler) as ProxyfiedData
 }
 
-
-// TODO: проверить getValue, setValue будут ли они работать если ключ это число???
-// TODO: makeChildPath не верно отработает если дадут число
-// TODO: добавить методы array - push, filter и итд
 
 export class SuperData<T extends Record<string, any> = Record<string, any>>
   extends SuperValueBase<Record<string| number, T>>
@@ -93,17 +90,24 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly values: Record<string, any> = {}
   // ordered keys
   readonly keys: string[] = []
+  readonly defaultRo: boolean
   protected proxyFn = proxyData
 
 
-  constructor(scope: SuperScope, definition: Record<keyof T, SuperItemInitDefinition>) {
+  constructor(
+    scope: SuperScope,
+    definition: Record<keyof T, SuperItemInitDefinition>,
+    defaultRo: boolean = false
+  ) {
     super(scope)
+    // save it to use later to define a new props
+    this.defaultRo = defaultRo
 
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr])
       this.keys.push(keyStr)
 
-      this.definition[keyStr] = prepareDefinitionItem(definition[keyStr])
+      this.definition[keyStr] = prepareDefinitionItem(definition[keyStr], defaultRo)
     }
   }
 
@@ -207,7 +211,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     checkDefinition(definition)
     this.keys.push(key)
 
-    this.definition[key] = prepareDefinitionItem(definition)
+    this.definition[key] = prepareDefinitionItem(definition, this.defaultRo)
     // set default value as value
     const defaultValue = this.setupChildValue(this.definition[key], key)
 
