@@ -30,12 +30,6 @@ export function newVar(scope: SuperScope) {
       throw new Error(`Can't create reserved function ${name}`)
     }
 
-    // if (Object.keys(scope).indexOf(p.name) >= 0) {
-    //   throw new Error(`Can't reinitialize existent var ${p.name}`)
-    // }
-
-    //scope[name] = value
-
     scope.$super.define(name, definition, value)
   }
 }
@@ -56,6 +50,6 @@ export function deleteVar(scope: SuperScope) {
       throw new Error(`Can't delete reserved function ${name}`)
     }
 
-    delete scope[name]
+    scope.$super.forget(name)
   }
 }

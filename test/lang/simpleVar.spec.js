@@ -28,6 +28,7 @@ describe('simpleVar', () => {
     })
     assert.isUndefined(scope['v1'])
     assert.deepEqual(scope.$super.values, {})
+    assert.isUndefined(scope.$super.definition['v1'])
   })
 
   it('newVar with initial value', async () => {
@@ -78,7 +79,5 @@ describe('simpleVar', () => {
       value: 8,
     }))
   })
-
-  // TODO: переход переменных и определений в новый scope
 
 })
