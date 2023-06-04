@@ -2,15 +2,18 @@ import {omitObj, mergeDeepObjects, cloneDeepObject} from 'squidlet-lib';
 import {sprogFuncs} from './sprogFuncs.js';
 import {EXP_MARKER} from './constants.js';
 import {SprogDefinition} from './types/types.js';
+import {SUPER_VALUE_PROP} from './lib/SuperValueBase.js';
+import {ProxyfiedData, SuperData} from './lib/SuperData.js';
 
 
-// TODO: всегда ли должно ли быть async???
 export type SprogScopedFn = (p: any) => Promise<any | void>
 export type SprogFn = (scope: SuperScope) => SprogScopedFn
 
 export interface SuperScope {
+  $super: SuperData
   /**
-   * Clone only self scope props excluding run() and $cloneSelf()
+   * Clone only self scope props excluding $super, $run and other functions.
+   * Means clone only user defined variables.
    */
   $cloneSelf(): any
 
@@ -32,52 +35,101 @@ export interface SuperScope {
    */
   $resolve(defOrValue: any): Promise<any>
 
-  // /**
-  //  * Run sprog function in this scope
-  //  */
-  // run(funcName: string, params: Record<any, any>): Promise<any | void>
-
   [index: string]: any
 }
 
 
-export const SCOPE_FUNCTIONS = ['$resolve', '$run', '$cloneSelf', '$getScopedFn']
+export const SCOPE_FUNCTIONS = ['$cloneSelf', '$getScopedFn', '$run', '$resolve' ]
+
+
+const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
+  $cloneSelf(): Record<string, any> {
+    return this.$super.clone()
+  },
+  $getScopedFn(fnName: string): SprogScopedFn {
+    const sprogFn = sprogFuncs[fnName as keyof typeof sprogFuncs]
+    const thisScope = this as SuperScope
+
+    if (!sprogFn) throw new Error(`Sprog doesn't have function ${fnName}`)
+
+    return sprogFn(thisScope)
+  },
+  $run(definition: SprogDefinition): Promise<any | void> {
+    const sprogFn = sprogFuncs[definition.$exp]
+    const params: any = omitObj(definition, '$exp')
+    const thisScope = this as SuperScope
+
+    if (!sprogFn) throw new Error(`Sprog doesn't have function ${definition.$exp}`)
+
+    return sprogFn(thisScope)(params)
+  },
+  async $resolve(defOrValue: any): Promise<any> {
+    if (typeof defOrValue === 'object' && defOrValue[EXP_MARKER]) {
+      return this.$run(defOrValue)
+    }
+    // simple value
+    return defOrValue
+  }
+}
+
+export function proxyScope(data: SuperData): SuperScope {
+  const handler: ProxyHandler<Record<any, any>> = {
+    get(target: any, prop: string) {
+      if (prop === SUPER_VALUE_PROP) {
+        // $super = SuperData instance
+        return data
+      }
+      else if (SCOPE_FUNCTIONS.includes(prop)) {
+        // scope function
+        return scopeFunctions[prop].bind(proxyfied)
+      }
+      // else var of scope
+      return data.values[prop]
+    },
+
+    has(target: any, prop: string): boolean {
+      if (prop === SUPER_VALUE_PROP || SCOPE_FUNCTIONS.includes(prop)) {
+        return true
+      }
+
+      return Object.keys(data.values).includes(prop)
+    },
+
+    set(target: any, prop: string, newValue: any): boolean {
+      data.setOwnValue(prop, newValue)
+
+      return true
+    },
+
+    deleteProperty(target: any, prop: string): boolean {
+      data.forget(prop)
+
+      return true
+    },
+
+    ownKeys(): ArrayLike<string | symbol> {
+      return Object.keys(data.values)
+    },
+  }
+
+  const proxyfied = new Proxy(data.values, handler) as SuperScope
+
+  return proxyfied
+}
 
 
 export function newScope<T = any>(initialScope: T = {} as T, previousScope?: SuperScope): T & SuperScope {
-  const fullScope: T = mergeDeepObjects(
+  const initVars = mergeDeepObjects(
     initialScope as any,
-    omitObj(previousScope, ...SCOPE_FUNCTIONS)
+    previousScope?.$cloneSelf()
   )
+  const data = new SuperData({} as any)
 
-  return {
-    ...fullScope,
-    $cloneSelf(): T {
-      return cloneDeepObject(omitObj(fullScope as any, ...SCOPE_FUNCTIONS))
-    },
-    $getScopedFn(fnName: string): SprogScopedFn {
-      const sprogFn = sprogFuncs[fnName as keyof typeof sprogFuncs]
-      const thisScope = this as SuperScope
+  const scope: SuperScope = proxyScope(data)
 
-      if (!sprogFn) throw new Error(`Sprog doesn't have function ${fnName}`)
+  data.$$replaceScope(scope)
 
-      return sprogFn(thisScope)
-    },
-    $run(definition: SprogDefinition): Promise<any | void> {
-      const sprogFn = sprogFuncs[definition.$exp]
-      const params: any = omitObj(definition, '$exp')
-      const thisScope = this as SuperScope
+  data.init(initVars)
 
-      if (!sprogFn) throw new Error(`Sprog doesn't have function ${definition.$exp}`)
-
-      return sprogFn(thisScope)(params)
-    },
-    async $resolve(defOrValue: any): Promise<any> {
-      if (typeof defOrValue === 'object' && defOrValue[EXP_MARKER]) {
-        return this.$run(defOrValue)
-      }
-      // simple value
-      return defOrValue
-    }
-  }
+  return scope as T & SuperScope
 }

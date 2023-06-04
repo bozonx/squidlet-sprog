@@ -35,7 +35,7 @@ export type ProxyfiedData<T = Record<any, any>> = SuperDataPublic
   & T
 
 
-export const STRUCT_DATA_MEMBERS = [
+export const DATA_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
   'isStruct',
 ]
@@ -48,7 +48,7 @@ export function proxyData(data: SuperData): ProxyfiedData {
       if (prop === SUPER_VALUE_PROP) {
         return data
       }
-      else if (STRUCT_DATA_MEMBERS.includes(prop)) {
+      else if (DATA_MEMBERS.includes(prop)) {
         // public super struct prop
         return (data as any)[prop]
       }
@@ -57,7 +57,7 @@ export function proxyData(data: SuperData): ProxyfiedData {
     },
 
     has(target: any, prop: string): boolean {
-      if (prop === SUPER_VALUE_PROP || STRUCT_DATA_MEMBERS.includes(prop)) {
+      if (prop === SUPER_VALUE_PROP || DATA_MEMBERS.includes(prop)) {
         return true
       }
 
