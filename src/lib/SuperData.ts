@@ -20,7 +20,6 @@ import {resolveInitialSimpleValue} from './helpers.js';
 
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
 // TODO: makeChildPath не верно отработает если дадут число
-
 // TODO: можно сортировать ключи, reverse, pop, etc
 // TODO: добавление нового элемента это push
 // TODO: добавить методы array - push, filter и итд
@@ -207,6 +206,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     this.values[key] = this.setupChildValue(definition, key, value)
 
+    if (!this.keys.includes(key)) this.keys.push(key)
+
     this.riseChildrenChangeEvent(key)
   }
 
@@ -251,6 +252,13 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   }
 
   /////// Data specific
+  batchSet(values?: Record<string, any>) {
+    if (!values) return
+
+    for (const key of Object.keys(values)) {
+      this.setOwnValue(key, values[key])
+    }
+  }
 
   /**
    * Set a new definition for a specific key. You can't replace or change it.

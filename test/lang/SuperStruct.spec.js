@@ -334,7 +334,6 @@ describe('SuperStruct', () => {
 
   it('clone', async () => {
     const scope = newScope()
-    const spy = sinon.spy()
     const def = {
       $exp: 'newSuperStruct',
       definition: {

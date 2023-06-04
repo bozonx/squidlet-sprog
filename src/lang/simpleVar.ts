@@ -2,9 +2,6 @@ import {SCOPE_FUNCTIONS, SuperScope} from '../lib/scope.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 
 
-// TODO: add type, required
-
-
 /**
  * Register new var in the top of scope only if it doesn't exist.
  * If you don't have to check it then better to use setJsValue

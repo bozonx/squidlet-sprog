@@ -1,4 +1,4 @@
-import {omitObj, mergeDeepObjects, cloneDeepObject} from 'squidlet-lib';
+import {omitObj} from 'squidlet-lib';
 import {sprogFuncs} from '../sprogFuncs.js';
 import {EXP_MARKER} from '../constants.js';
 import {SprogDefinition} from '../types/types.js';
@@ -118,19 +118,25 @@ export function proxyScope(data: SuperData): SuperScope {
 }
 
 
-export function newScope<T = any>(initialScope: T = {} as T, previousScope?: SuperScope): T & SuperScope {
-  const initVars = mergeDeepObjects(
-    initialScope as any,
-    previousScope?.$cloneSelf()
-  )
-  const data = new SuperData(
-    {} as any,
-    previousScope?.$super.definition
-  )
+/**
+ * It creates a new scope with specified initial variables.
+ * Or define these vars into previousScope and use it scope
+ * @param initialVars
+ * @param previousScope
+ */
+export function newScope<T = any>(initialVars: T = {} as T, previousScope?: SuperScope): T & SuperScope {
+  if (previousScope) {
+    // if previous scope set then use it
+    previousScope.$super.batchSet(initialVars as any)
+
+    return previousScope as T & SuperScope
+  }
+
+  const data = new SuperData({} as any)
   const scope: SuperScope = proxyScope(data)
 
   data.$$replaceScope(scope)
-  data.init(initVars)
+  data.init(initialVars as any)
 
   return scope as T & SuperScope
 }
