@@ -1,4 +1,4 @@
-import {deepClone, spliceItem} from 'squidlet-lib';
+import {deepClone, spliceItem, omitObj, concatUniqStrArrays} from 'squidlet-lib';
 import {
   checkDefinition, isSuperValue,
   prepareDefinitionItem,
@@ -141,15 +141,19 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     this.events.emit(SUPER_VALUE_EVENTS.initStart)
 
+    const keys = concatUniqStrArrays(
+      Object.keys(omitObj(this.definition, DEFAULT_DEFINITION_KEY)),
+      Object.keys(initialValues || {})
+    )
     // set initial values
-    for (const key of Object.keys(this.definition)) {
-      if (key === DEFAULT_DEFINITION_KEY) continue
+    for (const key of keys) {
+      const def = this.definition[key] || this.definition[DEFAULT_DEFINITION_KEY]
 
-      this.values[key] = this.setupChildValue(
-        this.definition[key],
-        key,
-        initialValues?.[key]
-      )
+      if (!def) {
+        throw new Error(`Can't resolve definition of key "${key}"`)
+      }
+
+      this.values[key] = this.setupChildValue(def, key, initialValues?.[key])
     }
 
     return super.init()
