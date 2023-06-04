@@ -251,19 +251,24 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   /**
    * Set a new definition for a specific key. You can't replace or change it.
    */
-  define(key: string, definition: SuperItemInitDefinition, initialValue?: any) {
+  define(key: string, definition?: SuperItemInitDefinition, initialValue?: any) {
     if (this.definition[key]) throw new Error(`Can't replace definition "${key}"`)
 
-    checkDefinition(definition)
+    if (definition) {
+      checkDefinition(definition)
 
-    this.definition[key] = prepareDefinitionItem(definition, this.defaultRo)
-
+      this.definition[key] = prepareDefinitionItem(definition, this.defaultRo)
+    }
     // do not set value if it is a default definition
     if (key === DEFAULT_DEFINITION_KEY) return
 
+    let finalDef = this.definition[key] || this.definition[DEFAULT_DEFINITION_KEY]
+
+    if (!finalDef) throw new Error(`Can't resolve definition`)
+
     this.keys.push(key)
     // set default value as value
-    const defaultValue = this.setupChildValue(this.definition[key], key, initialValue)
+    const defaultValue = this.setupChildValue(finalDef, key, initialValue)
 
     if (typeof defaultValue !== 'undefined') {
       // set value and rise an event
