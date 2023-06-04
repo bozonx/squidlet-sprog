@@ -20,3 +20,17 @@ global.rewire = rewire
 
 // do not log to console
 //global.silent = true
+
+assert.isPromiseRejected = async (promise) => {
+  let isResolved = false
+
+  try {
+    await promise
+
+    isResolved = true
+  }
+  catch (e) {
+  }
+
+  assert.isFalse(isResolved)
+}

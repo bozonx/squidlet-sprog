@@ -252,7 +252,9 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
    * Set a new definition for a specific key. You can't replace or change it.
    */
   define(key: string, definition?: SuperItemInitDefinition, initialValue?: any) {
-    if (this.definition[key]) throw new Error(`Can't replace definition "${key}"`)
+    if (this.keys.includes(key)) {
+      throw new Error(`Can't redefine a new item. You have to call forget("${key}") first`)
+    }
 
     if (definition) {
       checkDefinition(definition)

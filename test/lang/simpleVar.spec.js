@@ -50,7 +50,7 @@ describe('simpleVar', () => {
     assert.equal(scope['v1'], 6)
   })
 
-  it('newVar: no definition', async () => {
+  it('no definition', async () => {
     const scope = newScope()
     const def = {
       $exp: 'newVar',
@@ -63,8 +63,22 @@ describe('simpleVar', () => {
     assert.equal(scope['v1'], 6)
   })
 
-  // TODO: переопределение переменной - ошибка
-  // TODO: без definition
+  it('prohibit to redefine var', async () => {
+    const scope = newScope()
+
+    await scope.$run({
+      $exp: 'newVar',
+      name: 'v1',
+      value: 6,
+    })
+
+    await assert.isPromiseRejected(scope.$run({
+      $exp: 'newVar',
+      name: 'v1',
+      value: 8,
+    }))
+  })
+
   // TODO: переход переменных и определений в новый scope
 
 })
