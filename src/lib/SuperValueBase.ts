@@ -7,7 +7,7 @@ import {
   splitDeepPath,
   joinDeepPath
 } from 'squidlet-lib';
-import {SuperScope} from '../scope.js';
+import {SuperScope} from './scope.js';
 import {All_TYPES, AllTypes, SIMPLE_TYPES, SimpleType, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,

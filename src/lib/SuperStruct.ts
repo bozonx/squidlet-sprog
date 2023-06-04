@@ -1,4 +1,4 @@
-import {SuperScope} from '../scope.js';
+import {SuperScope} from './scope.js';
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
   SuperValueBase,

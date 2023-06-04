@@ -1,4 +1,4 @@
-import {SCOPE_FUNCTIONS, SuperScope} from '../scope.js';
+import {SCOPE_FUNCTIONS, SuperScope} from '../lib/scope.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 
 

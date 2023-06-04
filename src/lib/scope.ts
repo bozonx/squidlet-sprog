@@ -1,9 +1,9 @@
 import {omitObj, mergeDeepObjects, cloneDeepObject} from 'squidlet-lib';
-import {sprogFuncs} from './sprogFuncs.js';
-import {EXP_MARKER} from './constants.js';
-import {SprogDefinition} from './types/types.js';
-import {SUPER_VALUE_PROP} from './lib/SuperValueBase.js';
-import {SuperData} from './lib/SuperData.js';
+import {sprogFuncs} from '../sprogFuncs.js';
+import {EXP_MARKER} from '../constants.js';
+import {SprogDefinition} from '../types/types.js';
+import {SUPER_VALUE_PROP} from './SuperValueBase.js';
+import {SuperData} from './SuperData.js';
 
 
 export type SprogScopedFn = (p: any) => Promise<any | void>

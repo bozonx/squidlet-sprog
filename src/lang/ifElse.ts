@@ -1,5 +1,5 @@
 import {isLastIndex} from 'squidlet-lib';
-import {SuperScope} from '../scope.js';
+import {SuperScope} from '../lib/scope.js';
 import {logicAnd} from './booleanLogic.js';
 import {SprogDefinition} from '../types/types.js';
 

@@ -1,5 +1,5 @@
 import {lastItem} from 'squidlet-lib';
-import {newScope, SuperScope} from '../scope.js';
+import {newScope, SuperScope} from '../lib/scope.js';
 import {SprogDefinition} from '../types/types.js';
 
 

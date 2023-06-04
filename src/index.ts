@@ -1,4 +1,4 @@
-export * from './scope.js'
+export * from './lib/scope.js'
 export * from './sprogFuncs.js'
 // types
 export * from './lib/SuperPromise.js'

@@ -3,13 +3,16 @@ import {deleteVar, newVar} from "../../src/lang/simpleVar.js";
 
 
 describe('scope', () => {
-  it('inherit scope', async () => {
+  it('inherit scope with definitions', async () => {
     const scope1 = newScope()
 
     await scope1.$run({
       $exp: 'newVar',
       name: 'v1',
-      value: 1,
+      definition: {
+        type: 'number',
+        default: 1,
+      }
     })
 
     const scope2 = newScope({}, scope1)
@@ -21,9 +24,9 @@ describe('scope', () => {
     })
 
     assert.deepEqual(scope2.$super.values, {v1: 1, v2: 2})
+    assert.deepEqual(scope2.$super.definition['v1'].type, 'number')
   })
 
-  // TODO: переход определений в новый scope
   // TODO: начальные данные scope
 
 })

@@ -1,4 +1,4 @@
-import {SprogFn, SuperScope} from '../scope.js';
+import {SprogFn, SuperScope} from '../lib/scope.js';
 import {evalInSandBox} from '../lib/sandBox.js';
 
 

@@ -6,7 +6,7 @@ import {
   SuperValueBase,
   SuperValuePublic
 } from './SuperValueBase.js';
-import {SuperScope} from '../scope.js';
+import {SuperScope} from './scope.js';
 import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {

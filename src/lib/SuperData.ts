@@ -13,7 +13,7 @@ import {
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
-import {SuperScope} from '../scope.js';
+import {SuperScope} from './scope.js';
 import {checkValueBeforeSet} from './SuperStruct.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 

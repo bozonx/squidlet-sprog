@@ -1,4 +1,4 @@
-import {SuperScope} from '../scope.js';
+import {SuperScope} from '../lib/scope.js';
 import {SimpleType} from '../types/valueTypes.js';
 import {SprogDefinition} from '../types/types.js';
 

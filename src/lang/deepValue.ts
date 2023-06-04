@@ -1,5 +1,5 @@
 import {deepGet, deepSet, deepDelete} from 'squidlet-lib'
-import {SuperScope} from '../scope.js';
+import {SuperScope} from '../lib/scope.js';
 
 
 /**

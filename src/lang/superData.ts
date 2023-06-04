@@ -1,4 +1,4 @@
-import {SuperScope} from '../scope.js';
+import {SuperScope} from '../lib/scope.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {proxyData, ProxyfiedData, SuperData} from '../lib/SuperData.js';
 
