@@ -124,7 +124,6 @@ export function newScope<T = any>(initialScope: T = {} as T, previousScope?: Sup
     previousScope?.$cloneSelf()
   )
   const data = new SuperData({} as any)
-
   const scope: SuperScope = proxyScope(data)
 
   data.$$replaceScope(scope)

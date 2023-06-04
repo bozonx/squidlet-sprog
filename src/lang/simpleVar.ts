@@ -1,4 +1,5 @@
 import {SCOPE_FUNCTIONS, SuperScope} from '../scope.js';
+import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 
 
 // TODO: add type, required
@@ -10,12 +11,18 @@ import {SCOPE_FUNCTIONS, SuperScope} from '../scope.js';
  * params:
  *   $exp: newVar
  *   name: someName
+ *   # use it without definition,
+ *   # if definition is set then this value will be default value of definition
  *   value: 5
+ *   definition: { ... definition of super item, see in SuperData }
  */
 export function newVar(scope: SuperScope) {
-  return async (p: {name: string, value: any}) => {
+  return async (p: {name: string, value: any, definition: SuperItemDefinition}) => {
     const name: string = await scope.$resolve(p.name)
     const value: any = await scope.$resolve(p.value)
+    const definition: SuperItemDefinition = await scope.$resolve(p.definition)
+    // if value nad definition are set then put value as default value
+    //if (typeof value !== 'undefined' && definition) definition.default = value
 
     if (!name) throw new Error(`You need to set name`)
     else if (typeof name !== 'string') throw new Error(`Name has to be a string`)
@@ -23,11 +30,13 @@ export function newVar(scope: SuperScope) {
       throw new Error(`Can't create reserved function ${name}`)
     }
 
-    if (Object.keys(scope).indexOf(p.name) >= 0) {
-      throw new Error(`Can't reinitialize existent var ${p.name}`)
-    }
+    // if (Object.keys(scope).indexOf(p.name) >= 0) {
+    //   throw new Error(`Can't reinitialize existent var ${p.name}`)
+    // }
 
-    scope[name] = value
+    //scope[name] = value
+
+    scope.$super.define(name, definition, value)
   }
 }
 
