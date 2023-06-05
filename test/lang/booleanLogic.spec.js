@@ -211,4 +211,58 @@ describe('booleanLogic', () => {
     assert.isTrue(res)
   })
 
+  it('isEqual. false', async () => {
+    const scope = newScope({v1: 4})
+    const res = await scope.$run({
+      $exp: 'isEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        5
+      ]
+    })
+
+    assert.isFalse(res)
+  })
+
+  it('isEqual. bot super. true', async () => {
+    const scope = newScope({v1: 4, v2: 4})
+    const res = await scope.$run({
+      $exp: 'isEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('isEqual. bot super. true', async () => {
+    const scope = newScope({v1: 4, v2: 0})
+    const res = await scope.$run({
+      $exp: 'isEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isFalse(res)
+  })
+
 })
