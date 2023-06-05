@@ -1,4 +1,3 @@
-import {mergeDeepObjects, collectObjValues} from 'squidlet-lib'
 import {newScope, SuperScope} from './scope.js'
 import {makeFuncProxy} from './functionProxy.js';
 import {SprogDefinition} from '../types/types.js';
@@ -10,6 +9,10 @@ import {EXP_MARKER} from '../constants.js';
 
 
 const SUPER_RETURN = 'superReturn'
+
+
+// TODO: можно по каждому prop добавить combined в scope как алиас
+// TODO: если в prop есть супер значение то им должно быть проставлено readonly
 
 
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
@@ -45,8 +48,6 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
       propsStruct
     )
 
-    // TODO: можно по каждому prop добавить combined в scope как алиас
-
     this.lines = lines
   }
 
@@ -55,42 +56,22 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
    * Apply values of function's props to exec function later.
    * It replaces previously applied values
    */
-  applyValues(values: Record<string, any>) {
+  applyValues = (values: Record<string, any>) => {
     this.validateProps(values)
 
     this.appliedValues = values
   }
 
-  /**
-   * Apply values of function's props to exec function later.
-   * It merges new values with previously applied values
-   */
-  mergeValues(values: Record<string, any>) {
+  exec = async (values?: Record<string, any>): Promise<any> => {
     this.validateProps(values)
 
-    // TODO: а если будет передано super value ???
+    const finalValues = {
+      ...this.appliedValues,
+      ...values,
+    }
 
-    this.appliedValues = mergeDeepObjects(values, this.appliedValues)
-  }
-
-  async exec(values?: Record<string, any>): Promise<any> {
-    this.validateProps(values)
-
-
-    //const propsDefaults = collectObjValues(this.props, 'default')
-
-    // TODO: а нужен ли merge??? или просто объединить?
-    // TODO: и вообще не нужно
-    // const finalValues = mergeDeepObjects(
-    //   values,
-    //   this.appliedValues
-    //   //mergeDeepObjects(this.appliedValues, propsDefaults)
-    // )
-
-    if (values) {
-      for (const key of Object.keys(values)) {
-        this.propsSetter(key, values[key])
-      }
+    for (const key of Object.keys(finalValues)) {
+      this.propsSetter(key, finalValues[key])
     }
 
     for (const line of this.lines) {
@@ -116,6 +97,20 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
 }
 
+
+
+// /**
+//  * Apply values of function's props to exec function later.
+//  * It merges new values with previously applied values
+//  */
+// mergeValues(values: Record<string, any>) {
+//   this.validateProps(values)
+//
+//   // TODO: а если будет передано super value ???
+//   //       тогда получается возмется только значение а не сам инстанс
+//
+//   this.appliedValues = mergeDeepObjects(values, this.appliedValues)
+// }
 
 // /**
 //  * Make clone of function include applied props
