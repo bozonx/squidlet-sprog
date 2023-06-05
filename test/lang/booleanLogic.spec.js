@@ -3,34 +3,28 @@ import {logicAnd} from "../../src/lang/booleanLogic.js";
 
 
 describe('booleanLogic', () => {
-  it.only('logicAnd simple. true', async () => {
+  it('logicAnd simple. true', async () => {
     const scope = newScope()
     const res = await scope.$run({
       $exp: 'logicAnd',
-      items: [
-        1,
-        2
-      ]
+      items: [ true, true ]
     })
 
     assert.isTrue(res)
   })
 
-  it.only('logicAnd simple. false', async () => {
+  it('logicAnd simple. false', async () => {
     const scope = newScope()
     const res = await scope.$run({
       $exp: 'logicAnd',
-      items: [
-        1,
-        2
-      ]
+      items: [ true, false ]
     })
 
-    assert.isTrue(res)
+    assert.isFalse(res)
   })
 
-  it.only('logicAnd. Mixed. true', async () => {
-    const scope = newScope({v1: 1})
+  it('logicAnd. Mixed. true', async () => {
+    const scope = newScope({v1: true})
     const res = await scope.$run({
       $exp: 'logicAnd',
       items: [
@@ -38,15 +32,15 @@ describe('booleanLogic', () => {
           $exp: 'getValue',
           path: 'v1',
         },
-        1
+        true
       ]
     })
 
     assert.isTrue(res)
   })
 
-  it.only('logicAnd. Mixed. false', async () => {
-    const scope = newScope({v1: 1, v2: 1})
+  it('logicAnd. Mixed. false', async () => {
+    const scope = newScope({v1: true})
     const res = await scope.$run({
       $exp: 'logicAnd',
       items: [
@@ -54,15 +48,15 @@ describe('booleanLogic', () => {
           $exp: 'getValue',
           path: 'v1',
         },
-        0
+        false
       ]
     })
 
-    assert.isTrue(res)
+    assert.isFalse(res)
   })
 
-  it.only('logicAnd. super value. true', async () => {
-    const scope = newScope({v1: 1, v2: 1})
+  it('logicAnd. super value. true', async () => {
+    const scope = newScope({v1: true, v2: true})
     const res = await scope.$run({
       $exp: 'logicAnd',
       items: [
@@ -80,8 +74,8 @@ describe('booleanLogic', () => {
     assert.isTrue(res)
   })
 
-  it.only('logicAnd. super value. false', async () => {
-    const scope = newScope({v1: 1, v2: 0})
+  it('logicAnd. super value. false', async () => {
+    const scope = newScope({v1: true, v2: false})
     const res = await scope.$run({
       $exp: 'logicAnd',
       items: [
@@ -96,7 +90,7 @@ describe('booleanLogic', () => {
       ]
     })
 
-    assert.isTrue(res)
+    assert.isFalse(res)
   })
 
 })
