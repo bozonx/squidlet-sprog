@@ -1,5 +1,5 @@
 import {newScope} from "../../src/index.js";
-import {isLess, logicAnd} from "../../src/lang/booleanLogic.js";
+import {isLess, isLessOrEqual, logicAnd} from "../../src/lang/booleanLogic.js";
 
 
 describe('booleanLogic', () => {
@@ -350,6 +350,123 @@ describe('booleanLogic', () => {
     const scope = newScope({v1: 2, v2: 2})
     const res = await scope.$run({
       $exp: 'isLess',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isFalse(res)
+  })
+
+  ///////// IS GREATER OR EQUAL
+
+  it('isGreaterOrEqual. super. equal', async () => {
+    const scope = newScope({v1: 1, v2: 1})
+    const res = await scope.$run({
+      $exp: 'isGreaterOrEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('isGreaterOrEqual. super. greater', async () => {
+    const scope = newScope({v1: 2, v2: 1})
+    const res = await scope.$run({
+      $exp: 'isGreaterOrEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('isGreaterOrEqual. super. false', async () => {
+    const scope = newScope({v1: 2, v2: 5})
+    const res = await scope.$run({
+      $exp: 'isGreaterOrEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isFalse(res)
+  })
+
+  //////// IS LESS OR EQUAL
+  it('isLessOrEqual. super. equal', async () => {
+    const scope = newScope({v1: 1, v2: 1})
+    const res = await scope.$run({
+      $exp: 'isLessOrEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('isLessOrEqual. super. less', async () => {
+    const scope = newScope({v1: 0, v2: 1})
+    const res = await scope.$run({
+      $exp: 'isLessOrEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('isLessOrEqual. super. false', async () => {
+    const scope = newScope({v1: 2, v2: 0})
+    const res = await scope.$run({
+      $exp: 'isLessOrEqual',
       items: [
         {
           $exp: 'getValue',

@@ -67,5 +67,20 @@ export function isLess(scope: SuperScope) {
   }
 }
 
-// TODO: greater or equeal
-// TODO: less or equeal
+export function isGreaterOrEqual(scope: SuperScope) {
+  return async (p: { items: (SprogDefinition | SimpleType)[] }): Promise<boolean> => {
+    const it = await scope.$resolve(p.items[0])
+    const than = await scope.$resolve(p.items[1])
+
+    return it >= than
+  }
+}
+
+export function isLessOrEqual(scope: SuperScope) {
+  return async (p: { items: (SprogDefinition | SimpleType)[] }): Promise<boolean> => {
+    const it = await scope.$resolve(p.items[0])
+    const than = await scope.$resolve(p.items[1])
+
+    return it <= than
+  }
+}
