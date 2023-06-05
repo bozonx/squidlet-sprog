@@ -35,7 +35,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     const propsStruct: ProxyfiedStruct = (new SuperStruct(scope, props, true)).getProxy()
 
     propsStruct.$super.init()
-
+    // set prop to scope
     scope.$super.define(
       'props',
       { type: 'SuperStruct', readonly: true },

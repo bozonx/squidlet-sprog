@@ -190,7 +190,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
     const name: keyof T = keyStr as any
 
-    this.validateItem(name, value)
+    this.validateItem(name, value, ignoreRo)
 
     this.values[name] = this.setupChildValue(this.definition[name], keyStr, value)
 
@@ -242,11 +242,11 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
   // TODO: test
-  validateItem(name: keyof T, value?: AllTypes) {
+  validateItem(name: keyof T, value?: AllTypes, ignoreRo?: boolean) {
     const keyStr = name as string
     const definition = this.definition[name]
 
-    checkValueBeforeSet(this.isInitialized, definition, keyStr, value)
+    checkValueBeforeSet(this.isInitialized, definition, keyStr, value, ignoreRo)
 
     if (!definition) {
       throw new Error(`Doesn't have key ${keyStr}`)
