@@ -103,7 +103,8 @@ export class SuperFunc {
   clone(newScope?: SuperScope, values?: Record<string, any>) {
     const newSuperFunc = new SuperFunc(
       newScope || this.scope,
-      {props: this.props, lines: this.lines}
+      this.props,
+      this.lines
     )
 
     if (values) newSuperFunc.applyValues(values)

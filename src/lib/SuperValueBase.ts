@@ -16,6 +16,7 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './helpers.js';
+import {SuperBase} from './SuperBase.js';
 
 
 export interface SuperValuePublic {
@@ -119,50 +120,23 @@ export function checkDefinition(definition: SuperItemInitDefinition) {
 }
 
 
-export abstract class SuperValueBase<T = any | any[]> implements SuperValuePublic {
+export abstract class SuperValueBase<T = any | any[]>
+  extends SuperBase
+  implements SuperValuePublic
+{
   readonly isSuperValue = true
   readonly abstract values: T
   events = new IndexedEventEmitter()
-  protected proxyfiedInstance?: any
-  // parent super struct or array who owns me
-  protected myParent?: SuperValueBase
-  // Path to myself in upper tree. The last part is my name
-  protected myPath?: string
-  protected inited: boolean = false
+
   protected links: SuperLinkItem[] = []
-  protected abstract proxyFn: (instance: any) => any
-  private myScope: SuperScope
-
-
-  get scope(): SuperScope {
-    return this.myScope
-  }
-
-  get isInitialized(): boolean {
-    return this.inited
-  }
 
   get isDestroyed(): boolean {
     return this.events.isDestroyed
   }
 
-  get parent(): SuperValueBase | undefined {
-    return this.myParent
-  }
-
-  get pathToMe(): string | undefined {
-    return this.myPath
-  }
-
-
-  protected constructor(scope: SuperScope) {
-    this.myScope = scope
-  }
-
 
   init(): any {
-    // means that array is completely initiated
-    this.inited = true
+    super.init()
     // rise an event any way if any values was set or not
     this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
 
@@ -196,8 +170,7 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
    * @myPath - full path to me in tree where im is
    */
   $$setParent(parent: SuperValueBase, myPath: string) {
-    this.myParent = parent
-    this.myPath = myPath
+    super.$$setParent(parent, myPath)
     // reregister path of all the super children
     for (const childId of this.myKeys()) {
       const item = this.values[childId as keyof T] as SuperValueBase
@@ -206,14 +179,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.changeParent)
-  }
-
-  /**
-   * Do it only if you are totally sure what you do.
-   * @param scope
-   */
-  $$replaceScope(scope: SuperScope) {
-    this.myScope = scope
   }
 
 
@@ -236,17 +201,6 @@ export abstract class SuperValueBase<T = any | any[]> implements SuperValuePubli
   abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): void
 
   abstract toDefaultValue(key: string | number): void
-
-  /**
-   * Return proxy of my self and make it if it is the first time
-   */
-  getProxy(): any | any[] {
-    if (!this.proxyfiedInstance) {
-      this.proxyfiedInstance = this.proxyFn(this)
-    }
-
-    return this.proxyfiedInstance
-  }
 
   subscribe = (handler: SuperChangeHandler): number => {
     return this.events.addListener(SUPER_VALUE_EVENTS.change, handler)
