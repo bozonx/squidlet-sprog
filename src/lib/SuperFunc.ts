@@ -8,7 +8,7 @@ import {AllTypes} from '../types/valueTypes.js';
 import {EXP_MARKER} from '../constants.js';
 
 
-const SUPER_RETURN = 'superReturn'
+export const SUPER_RETURN = 'superReturn'
 
 
 // TODO: можно по каждому prop добавить combined в scope как алиас
@@ -77,7 +77,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
     for (const line of this.lines) {
       if (line[EXP_MARKER] === SUPER_RETURN) {
-        return await this.scope.$run(line)
+        return this.scope.$run(line)
       }
 
       await this.scope.$run(line)

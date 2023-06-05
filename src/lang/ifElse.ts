@@ -2,6 +2,8 @@ import {isLastIndex} from 'squidlet-lib';
 import {newScope, SuperScope} from '../lib/scope.js';
 import {logicAnd} from './booleanLogic.js';
 import {SprogDefinition} from '../types/types.js';
+import {EXP_MARKER} from '../constants.js';
+import {SUPER_RETURN} from '../lib/SuperFunc.js';
 
 
 interface IfElseItem {
@@ -66,7 +68,9 @@ export function ifElse(scope: SuperScope) {
       const exeScope: SuperScope = newScope(undefined, scope)
       // just execute a block if condition is true
       for (const line of item.lines) {
-        // TODO: add return
+        if (line[EXP_MARKER] === SUPER_RETURN) {
+          return exeScope.$run(line)
+        }
 
         await exeScope.$run(line)
       }
