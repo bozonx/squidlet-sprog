@@ -3,6 +3,7 @@ import {logicAnd} from "../../src/lang/booleanLogic.js";
 
 
 describe('booleanLogic', () => {
+  ///////// AND
   it('logicAnd simple. true', async () => {
     const scope = newScope()
     const res = await scope.$run({
@@ -91,6 +92,123 @@ describe('booleanLogic', () => {
     })
 
     assert.isFalse(res)
+  })
+
+  ///////// OR
+  it('logicOr. Mixed. true', async () => {
+    const scope = newScope({v1: true})
+    const res = await scope.$run({
+      $exp: 'logicOr',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        false
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('logicOr. Mixed. false', async () => {
+    const scope = newScope({v1: false})
+    const res = await scope.$run({
+      $exp: 'logicOr',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        true
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('logicOr. Mixed. both false', async () => {
+    const scope = newScope({v1: false, v2: false})
+    const res = await scope.$run({
+      $exp: 'logicOr',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        {
+          $exp: 'getValue',
+          path: 'v2',
+        },
+      ]
+    })
+
+    assert.isFalse(res)
+  })
+
+  ///////// NOT
+  it('logicNot. positive', async () => {
+    const scope = newScope({v1: true})
+    const res = await scope.$run({
+      $exp: 'logicNot',
+      value: {
+        $exp: 'getValue',
+        path: 'v1',
+      }
+    })
+
+    assert.isFalse(res)
+  })
+
+  it('logicNot. negative', async () => {
+    const scope = newScope({v1: false})
+    const res = await scope.$run({
+      $exp: 'logicNot',
+      value: {
+        $exp: 'getValue',
+        path: 'v1',
+      }
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('logicNot. simple', async () => {
+    const scope = newScope({v1: false})
+    const res = await scope.$run({
+      $exp: 'logicNot',
+      value: 5
+    })
+
+    assert.isFalse(res)
+  })
+
+  it('logicNot. simple negative', async () => {
+    const scope = newScope({v1: false})
+    const res = await scope.$run({
+      $exp: 'logicNot',
+      value: ''
+    })
+
+    assert.isTrue(res)
+  })
+
+  ///////// EQUAL
+
+  it('isEqual. true', async () => {
+    const scope = newScope({v1: 4})
+    const res = await scope.$run({
+      $exp: 'isEqual',
+      items: [
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        4
+      ]
+    })
+
+    assert.isTrue(res)
   })
 
 })

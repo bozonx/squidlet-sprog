@@ -22,7 +22,7 @@ interface IfElseItem {
  *     # at top level condition is logic and
  *     - condition:
  *         - $exp: isEqual
- *           values:
+ *           items:
  *             - 5
  *             - $exp: getValue
  *               path: somePath

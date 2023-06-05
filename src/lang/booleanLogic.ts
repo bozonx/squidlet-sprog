@@ -36,14 +36,16 @@ export function logicNot(scope: SuperScope) {
 }
 
 export function isEqual(scope: SuperScope) {
-  return async (p: {
-    it: (SprogDefinition | SimpleType),
-    and: (SprogDefinition | SimpleType),
-  }): Promise<boolean> => {
-    const it = await scope.$resolve(p.it)
-    const and = await scope.$resolve(p.and)
+  return async (p: { items: (SprogDefinition | SimpleType)[] }): Promise<boolean> => {
+    let prevItem = await scope.$resolve(p.items[0])
 
-    return it === and
+    for (const item of p.items.slice(1)) {
+      const itemRes = await scope.$resolve(item)
+
+      if (itemRes !== prevItem) return false
+    }
+
+    return true
   }
 }
 
