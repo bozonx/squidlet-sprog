@@ -184,8 +184,36 @@ describe('ifElse', () => {
     assert.equal(scope['topVal'], 1)
   })
 
-  // TODO: test nested if
-  // TODO: test break
-  // TODO: test continue
+  it('nested', async () => {
+    const scope = newScope({topVal: 1})
+
+    await scope.$run({
+      $exp: 'ifElse',
+      items: [
+        {
+          condition: [ true ],
+          lines: [
+            {
+              $exp: 'ifElse',
+              items: [
+                {
+                  condition: [ true ],
+                  lines: [
+                    {
+                      $exp: 'setValue',
+                      path: 'topVal',
+                      value: 2
+                    }
+                  ],
+                }
+              ],
+            },
+          ]
+        },
+      ]
+    })
+
+    assert.equal(scope['topVal'], 2)
+  })
 
 })

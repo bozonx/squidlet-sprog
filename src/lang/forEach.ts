@@ -3,6 +3,9 @@ import {newScope, SuperScope} from '../lib/scope.js';
 import {SprogDefinition} from '../types/types.js';
 
 
+// TODO: test break, continue inside forEach and ifElse
+
+
 interface ForEachParams {
   reverse?: boolean
   src: any[] | Record<string, any>

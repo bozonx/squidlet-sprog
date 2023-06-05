@@ -5,7 +5,6 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 // TODO: test return inside forEach and ifElse
 
 
-
 describe('superFunc', () => {
   it('change to scope variable', async () => {
     const scope = newScope({topVal: 1})
