@@ -49,8 +49,8 @@ describe('superFunc', () => {
         }
       ]
     })
-
-    const returned = await func.exec({p1: 5})
+    // call via proxy
+    const returned = await func({p1: 5})
 
     assert.equal(returned, 5)
   })

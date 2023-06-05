@@ -2,6 +2,8 @@ import {SuperScope} from './scope.js';
 
 
 export abstract class SuperBase {
+  readonly isSuper: boolean = true
+
   protected proxyfiedInstance?: any
   // parent super struct or array who owns me
   protected myParent?: SuperBase

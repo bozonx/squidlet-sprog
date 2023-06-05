@@ -6,17 +6,19 @@ import {SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
 import {AllTypes} from '../types/valueTypes.js';
+import {EXP_MARKER} from '../constants.js';
+
+
+const SUPER_RETURN = 'superReturn'
 
 
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   readonly lines: SprogDefinition[]
+  appliedValues: Record<string, any> = {}
 
-  // TODO: review proxy
   protected proxyFn: (instance: any) => any = makeFuncProxy
 
-
-  private appliedValues: Record<string, any> = {}
-  private propsSetter
+  private readonly propsSetter
 
 
   get props(): ProxyfiedStruct {
@@ -66,6 +68,8 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   mergeValues(values: Record<string, any>) {
     this.validateProps(values)
 
+    // TODO: а если будет передано super value ???
+
     this.appliedValues = mergeDeepObjects(values, this.appliedValues)
   }
 
@@ -90,31 +94,15 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     }
 
     for (const line of this.lines) {
+      if (line[EXP_MARKER] === SUPER_RETURN) {
+        return await this.scope.$run(line)
+      }
+
       await this.scope.$run(line)
     }
 
-    // TODO: как сделать reuturn ??? Он может быть в if, switch или цикле
-    //       наверное им в scope передать ф-ю return
-    //       но ещё должно остановиться
-  }
+    // TODO: отловить return в if, switch, цикл через scope
 
-  /**
-   * Make clone of function include applied props
-   * but with the same scope
-   */
-  clone(newScope?: SuperScope, values?: Record<string, any>) {
-
-    // TODO: review
-
-    const newSuperFunc = new SuperFunc(
-      newScope || this.scope,
-      this.props,
-      this.lines
-    )
-
-    if (values) newSuperFunc.applyValues(values)
-
-    return makeFuncProxy(newSuperFunc)
   }
 
 
@@ -127,3 +115,20 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   }
 
 }
+
+
+// /**
+//  * Make clone of function include applied props
+//  * but with the same scope
+//  */
+// clone(newScope?: SuperScope, values?: Record<string, any>) {
+//   const newSuperFunc = new SuperFunc(
+//     newScope || this.scope,
+//     this.props,
+//     this.lines
+//   )
+//
+//   if (values) newSuperFunc.applyValues(values)
+//
+//   return makeFuncProxy(newSuperFunc)
+// }
