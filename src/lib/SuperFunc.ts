@@ -2,33 +2,13 @@ import {mergeDeepObjects, collectObjValues} from 'squidlet-lib'
 import {newScope, SuperScope} from './scope.js'
 import {makeFuncProxy} from './functionProxy.js';
 import {SprogDefinition} from '../types/types.js';
-import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
 import {AllTypes} from '../types/valueTypes.js';
 
 
-// export interface SuperFuncProp {
-//   // type of value
-//   type: AllTypes
-//   // default value
-//   default?: any
-//   // check if it is undefined
-//   required?: boolean
-//   // TODO: do it need to rename some props?
-// }
-
-
-// export interface SuperFuncParams {
-//   props: Record<string, SuperItemDefinition>
-//   lines: SprogDefinition[]
-// }
-//
-// export type SuperFuncDefinition = SprogDefinitionBase & SuperFuncParams
-
-
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
-  //readonly props: Record<string, SuperItemDefinition>
   readonly lines: SprogDefinition[]
 
   // TODO: review proxy
@@ -48,11 +28,13 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     props: Record<keyof T, SuperItemInitDefinition>,
     lines: SprogDefinition[]
   ) {
-    const execScope: SuperScope = newScope(finalValues, this.scope)
+    const funcScope: SuperScope = newScope(undefined, scope)
 
-    super(scope)
+    super(funcScope)
 
     const propsStruct: ProxyfiedStruct = (new SuperStruct(scope, props, true)).getProxy()
+
+    propsStruct.$super.init()
 
     scope.$super.define(
       'props',
@@ -71,7 +53,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
    * It replaces previously applied values
    */
   applyValues(values: Record<string, any>) {
-    this.props.$super.validate(values)
+    this.validateProps(values)
 
     this.appliedValues = values
   }
@@ -81,13 +63,13 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
    * It merges new values with previously applied values
    */
   mergeValues(values: Record<string, any>) {
-    this.props.$super.validate(values)
+    this.validateProps(values)
 
     this.appliedValues = mergeDeepObjects(values, this.appliedValues)
   }
 
   async exec(values?: Record<string, any>): Promise<any> {
-    this.props.$super.validate(values)
+    this.validateProps(values)
 
 
     //const propsDefaults = collectObjValues(this.props, 'default')
@@ -103,7 +85,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     this.props.$super.batchSet(values)
 
     for (const line of this.lines) {
-      await execScope.$run(line)
+      //await this.scope.$run(line)
     }
 
     // TODO: как сделать reuturn ??? Он может быть в if, switch или цикле
@@ -128,9 +110,12 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   }
 
 
-  // private validateProps(values?: Record<string, any>) {
-  //   // TODO: validate props
-  //
-  // }
+  private validateProps(values?: Record<string, any>) {
+    if (!values) return
+
+    for (const key of Object.keys(values)) {
+      this.props.$super.validateItem(key, values[key])
+    }
+  }
 
 }

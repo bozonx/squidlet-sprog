@@ -119,6 +119,31 @@ export function checkDefinition(definition: SuperItemInitDefinition) {
   }
 }
 
+export function validateChildValue(
+  key: string,
+  definition: SuperItemDefinition,
+  value?: AllTypes
+) {
+  if (definition.type === 'any') {
+    return
+  }
+  else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
+    // TODO: validate super value
+  }
+  else if (definition.type === SUPER_TYPES.SuperFunc) {
+    // TODO: validate super func
+  }
+  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+    if (!isCorrespondingType(value, definition.type, definition.nullable)) {
+      throw new Error(
+        `The value of ${name} has type ${typeof value}, `
+        + `but not ${definition.type}`
+      )
+    }
+  }
+  // TODO: check other types
+}
+
 
 export abstract class SuperValueBase<T = any | any[]>
   extends SuperBase
@@ -394,6 +419,9 @@ export abstract class SuperValueBase<T = any | any[]>
     childKeyOrIndex: string | number,
     value?: any
   ): any {
+
+    // TODO: убрать от сюда проверки, вызывать validateItem перед вызовом этой ф-и
+
     if (!definition) throw new Error(`no definition`)
     else if (definition.type === 'any') {
       // TODO: правильно???
@@ -482,7 +510,7 @@ export abstract class SuperValueBase<T = any | any[]>
       // TODO: установить ro если он у родителя
       // TODO: потомок должен установить ro у детей
 
-      initialValue.$$setParent(this, this.makeChildPath(childKeyOrIndex))
+      initialValue.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex))
 
       return initialValue
     }

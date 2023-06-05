@@ -7,6 +7,10 @@ describe('superFunc', () => {
     const scope = newScope()
     const func = await scope.$run({
       $exp: 'newSuperFunc',
+      props: {
+        p1: { type: 'number' }
+      },
+      lines: []
     })
 
     func.$super.init()

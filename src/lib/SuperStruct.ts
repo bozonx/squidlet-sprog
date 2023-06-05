@@ -5,7 +5,7 @@ import {
   isSuperValue,
   SUPER_VALUE_PROP,
   SUPER_PROXY_PUBLIC_MEMBERS,
-  SuperValuePublic, checkDefinition, prepareDefinitionItem, SUPER_VALUE_EVENTS
+  SuperValuePublic, checkDefinition, prepareDefinitionItem, SUPER_VALUE_EVENTS, validateChildValue
 } from './SuperValueBase.js';
 import {
   SuperItemDefinition,
@@ -190,11 +190,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
     const name: keyof T = keyStr as any
 
-    checkValueBeforeSet(this.isInitialized, this.definition[name], keyStr, value, ignoreRo)
-
-    if (!this.definition[name]) {
-      throw new Error(`Doesn't have key ${keyStr}`)
-    }
+    this.validateItem(name, value)
 
     this.values[name] = this.setupChildValue(this.definition[name], keyStr, value)
 
@@ -256,24 +252,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
       throw new Error(`Doesn't have key ${keyStr}`)
     }
 
-    if (definition.type === 'any') {
-      return
-    }
-    else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-      // TODO: validate super value
-    }
-    else if (definition.type === SUPER_TYPES.SuperFunc) {
-      // TODO: validate super func
-    }
-    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-        throw new Error(
-          `The value of ${name} has type ${typeof value}, `
-          + `but not ${definition.type}`
-        )
-      }
-    }
-    // TODO: check other types
+    validateChildValue(name as string, definition, value)
   }
 
 
