@@ -265,6 +265,40 @@ describe('booleanLogic', () => {
     assert.isFalse(res)
   })
 
+  it('isEqual. 3 values. true', async () => {
+    const scope = newScope({v1: 4})
+    const res = await scope.$run({
+      $exp: 'isEqual',
+      items: [
+        4,
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        4
+      ]
+    })
+
+    assert.isTrue(res)
+  })
+
+  it('isEqual. 3 values. false', async () => {
+    const scope = newScope({v1: 3})
+    const res = await scope.$run({
+      $exp: 'isEqual',
+      items: [
+        4,
+        {
+          $exp: 'getValue',
+          path: 'v1',
+        },
+        4
+      ]
+    })
+
+    assert.isFalse(res)
+  })
+
   ///////// IS GREATER
 
   it('isGreater. simple. true', async () => {

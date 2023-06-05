@@ -74,10 +74,46 @@ describe('ifElse', () => {
     assert.equal(scope['topVal'], 5)
   })
 
+  it('else if', async () => {
+    const scope = newScope({topVal: 1})
+
+    await scope.$run({
+      $exp: 'ifElse',
+      items: [
+        {
+          condition: [
+            {
+              $exp: 'isEqual',
+              items: [ 1, 2 ]
+            },
+          ],
+          lines: [
+            {
+              $exp: 'setValue',
+              path: 'topVal',
+              value: 2
+            }
+          ]
+        },
+        // else
+        {
+          lines: [
+            {
+              $exp: 'setValue',
+              path: 'topVal',
+              value: 5
+            }
+          ]
+        },
+      ]
+    })
+
+    assert.equal(scope['topVal'], 5)
+  })
+
 
   // TODO: test and, or
   // TODO: test if else
-  // TODO: test else
   // TODO: test return
   // TODO: test break
   // TODO: test continue
