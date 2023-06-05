@@ -287,7 +287,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (typeof defaultValue !== 'undefined') {
       // set value and rise an event
-      this.setOwnValue(key, defaultValue)
+      this.setOwnValue(key, defaultValue, true)
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.definition, key)

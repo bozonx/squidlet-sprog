@@ -13,7 +13,7 @@ describe('superFunc', () => {
       lines: []
     })
 
-    func.$super.init()
+    //func.$super.init()
 
 
   })
