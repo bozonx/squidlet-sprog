@@ -1,30 +1,30 @@
 import {isLastIndex} from 'squidlet-lib';
-import {SuperScope} from '../lib/scope.js';
+import {newScope, SuperScope} from '../lib/scope.js';
 import {logicAnd} from './booleanLogic.js';
 import {SprogDefinition} from '../types/types.js';
 
 
 interface IfElseItem {
   condition: SprogDefinition[]
-  block: SprogDefinition[]
+  lines: SprogDefinition[]
 }
 
 // TODO: add switch into isElse - можно даже смешивать
 
 /**
- * If else conditions
+ * If else conditions blocks
  * params:
  *   $exp: ifElse
  *   # The first is IF, the last is ELSE or ELSE IF and in the middle always ELSE IF
  *   items:
  *     # at top level condition is logic and
  *     - condition:
- *         - $exp: logicEqual
+ *         - $exp: isEqual
  *           values:
  *             - 5
  *             - $exp: getValue
  *               path: somePath
- *       block:
+ *       lines:
  *         - $exp: setValue
  *           path: someVar
  *           value: 5
@@ -33,22 +33,25 @@ export function ifElse(scope: SuperScope) {
   return async (p: { items: IfElseItem[] }) => {
     for (const itemIndex in p.items) {
       const item = p.items[itemIndex]
-
-      if (!item.block) {
-        throw new Error(`If else has to have a block`)
+      // all the item has to have line. But it can be an empty array
+      if (!item.lines) {
+        throw new Error(`ifElse statement has to have lines`)
       }
+      // the first item is IF()
       else if (Number(itemIndex) === 0 && !item.condition) {
-        throw new Error(`If statement has to have condition`)
+        throw new Error(`If statement has to have a condition`)
       }
+      // in the middle are ELSE IF()
       else if (
         Number(itemIndex) !== 0
         && !isLastIndex(p.items, itemIndex)
         && !item.condition
       ) {
-        throw new Error(`Else if statement has to have condition`)
+        throw new Error(`ElseIf statement has to have condition`)
       }
 
-      // for each item. But "else" doesn't have to have condition
+      // for each item for IF and ELSE IF
+      // run condition to decide is this iteraction is true
       if (item.condition) {
         const conditionRes: boolean = await logicAnd(scope)({ items: item.condition })
         // do nothing if condition is false
@@ -56,9 +59,16 @@ export function ifElse(scope: SuperScope) {
         if (!conditionRes) continue
       }
 
+      ////// Condition is true - execute lines
+
+      if (!item.lines.length) return
+      // new scope layer for block of code
+      const exeScope: SuperScope = newScope(undefined, scope)
       // just execute a block if condition is true
-      for (const block of item.block) {
-        await scope.$run(block)
+      for (const line of item.lines) {
+        // TODO: add return
+
+        await exeScope.$run(line)
       }
       // Stop executing
       return
