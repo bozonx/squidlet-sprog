@@ -1,5 +1,5 @@
 import {SuperScope} from './scope.js';
-import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
   isSuperValue,
@@ -12,6 +12,7 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {resolveInitialSimpleValue} from './helpers.js';
+import {isCorrespondingType} from './isCorrespondingType.js';
 
 
 
@@ -36,7 +37,7 @@ export function checkValueBeforeSet(
   isInitialized: boolean,
   definition: SuperItemDefinition,
   key: string,
-  value: AllTypes,
+  value?: AllTypes,
   ignoreRo: boolean = false
 ) {
   if (!isInitialized) throw new Error(`Init it first`)
@@ -231,6 +232,48 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   getProxy(): T & ProxyfiedStruct<T> {
     return super.getProxy()
+  }
+
+
+  /////// Struct specific
+  // TODO: test
+  batchSet(values?: T) {
+    if (!values) return
+
+    for (const key of Object.keys(values)) {
+      this.setOwnValue(key, (values as any)[key])
+    }
+  }
+
+  // TODO: test
+  validateItem(name: keyof T, value?: AllTypes) {
+    const keyStr = name as string
+    const definition = this.definition[name]
+
+    checkValueBeforeSet(this.isInitialized, definition, keyStr, value)
+
+    if (!definition) {
+      throw new Error(`Doesn't have key ${keyStr}`)
+    }
+
+    if (definition.type === 'any') {
+      return
+    }
+    else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
+      // TODO: validate super value
+    }
+    else if (definition.type === SUPER_TYPES.SuperFunc) {
+      // TODO: validate super func
+    }
+    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+      if (!isCorrespondingType(value, definition.type, definition.nullable)) {
+        throw new Error(
+          `The value of ${name} has type ${typeof value}, `
+          + `but not ${definition.type}`
+        )
+      }
+    }
+    // TODO: check other types
   }
 
 

@@ -252,6 +252,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   }
 
   /////// Data specific
+  // TODO: test
   batchSet(values?: Record<string, any>) {
     if (!values) return
 

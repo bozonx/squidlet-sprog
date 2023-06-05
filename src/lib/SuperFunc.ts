@@ -1,9 +1,11 @@
 import {mergeDeepObjects, collectObjValues} from 'squidlet-lib'
-import {AllTypes} from '../types/valueTypes.js'
 import {newScope, SuperScope} from './scope.js'
 import {makeFuncProxy} from './functionProxy.js';
-import {SprogDefinition, SprogDefinitionBase} from '../types/types.js';
-import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
+import {SprogDefinition} from '../types/types.js';
+import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {SuperBase} from './SuperBase.js';
+import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
+import {AllTypes} from '../types/valueTypes.js';
 
 
 // export interface SuperFuncProp {
@@ -25,42 +27,51 @@ import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 // export type SuperFuncDefinition = SprogDefinitionBase & SuperFuncParams
 
 
-export class SuperFunc {
-  scope: SuperScope
+export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
+  //readonly props: Record<string, SuperItemDefinition>
+  readonly lines: SprogDefinition[]
 
-  // TODO: add proxyfiedInstance, myParent, myPath
+  // TODO: review proxy
+  protected proxyFn: (instance: any) => any = makeFuncProxy
 
-  private readonly props: Record<string, SuperItemDefinition>
-  private readonly lines: SprogDefinition[]
+
   private appliedValues: Record<string, any> = {}
 
 
-  get propsDefaults(): Record<any, any> {
-    return collectObjValues(this.props, 'default')
+  get props(): ProxyfiedStruct {
+    return this.scope['props']
   }
 
 
   constructor(
     scope: SuperScope,
-    props: Record<string, SuperItemDefinition>,
+    props: Record<keyof T, SuperItemInitDefinition>,
     lines: SprogDefinition[]
   ) {
-    this.scope = scope
-    this.props = props
+    const execScope: SuperScope = newScope(finalValues, this.scope)
+
+    super(scope)
+
+    const propsStruct: ProxyfiedStruct = (new SuperStruct(scope, props, true)).getProxy()
+
+    scope.$super.define(
+      'props',
+      { type: 'SuperStruct', readonly: true },
+      propsStruct
+    )
+
+    // TODO: можно по каждому prop добавить combined в scope как алиас
+
     this.lines = lines
   }
 
-
-  replaceScope(newScope: SuperScope) {
-    this.scope = newScope
-  }
 
   /**
    * Apply values of function's props to exec function later.
    * It replaces previously applied values
    */
   applyValues(values: Record<string, any>) {
-    this.validateProps(values)
+    this.props.$super.validate(values)
 
     this.appliedValues = values
   }
@@ -70,22 +81,26 @@ export class SuperFunc {
    * It merges new values with previously applied values
    */
   mergeValues(values: Record<string, any>) {
-    this.validateProps(values)
+    this.props.$super.validate(values)
 
     this.appliedValues = mergeDeepObjects(values, this.appliedValues)
   }
 
   async exec(values?: Record<string, any>): Promise<any> {
-    this.validateProps(values)
+    this.props.$super.validate(values)
 
-    const finalValues = mergeDeepObjects(
-      values,
-      mergeDeepObjects(this.appliedValues, this.propsDefaults)
-    )
 
-    const execScope: SuperScope = newScope(finalValues, this.scope)
+    //const propsDefaults = collectObjValues(this.props, 'default')
 
-    //console.log(111, values, finalValues, this.lines, this.props)
+    // TODO: а нужен ли merge??? или просто объединить?
+    // TODO: и вообще не нужно
+    // const finalValues = mergeDeepObjects(
+    //   values,
+    //   this.appliedValues
+    //   //mergeDeepObjects(this.appliedValues, propsDefaults)
+    // )
+
+    this.props.$super.batchSet(values)
 
     for (const line of this.lines) {
       await execScope.$run(line)
@@ -113,9 +128,9 @@ export class SuperFunc {
   }
 
 
-  private validateProps(values?: Record<string, any>) {
-    // TODO: validate props
-
-  }
+  // private validateProps(values?: Record<string, any>) {
+  //   // TODO: validate props
+  //
+  // }
 
 }
