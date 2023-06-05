@@ -50,25 +50,22 @@ export function isEqual(scope: SuperScope) {
 }
 
 export function isGreater(scope: SuperScope) {
-  return async (p: {
-    it: (SprogDefinition | SimpleType),
-    than: (SprogDefinition | SimpleType),
-  }): Promise<boolean> => {
-    const it = await scope.$resolve(p.it)
-    const than = await scope.$resolve(p.than)
+  return async (p: { items: (SprogDefinition | SimpleType)[] }): Promise<boolean> => {
+    const it = await scope.$resolve(p.items[0])
+    const than = await scope.$resolve(p.items[1])
 
     return it > than
   }
 }
 
 export function isLess(scope: SuperScope) {
-  return async (p: {
-    it: (SprogDefinition | SimpleType),
-    than: (SprogDefinition | SimpleType),
-  }): Promise<boolean> => {
-    const it = await scope.$resolve(p.it)
-    const than = await scope.$resolve(p.than)
+  return async (p: { items: (SprogDefinition | SimpleType)[] }): Promise<boolean> => {
+    const it = await scope.$resolve(p.items[0])
+    const than = await scope.$resolve(p.items[1])
 
     return it < than
   }
 }
+
+// TODO: greater or equeal
+// TODO: less or equeal
