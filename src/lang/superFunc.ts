@@ -1,7 +1,9 @@
 import {deepGet} from 'squidlet-lib'
 import {SprogFn, SuperScope} from '../lib/scope.js'
-import {SuperFunc, SuperFuncParams} from '../lib/SuperFunc.js'
+import {SuperFunc} from '../lib/SuperFunc.js'
 import {makeFuncProxy} from '../lib/functionProxy.js';
+import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
+import {SprogDefinition} from '../types/types.js';
 
 
 /**
@@ -34,8 +36,14 @@ export const callSuperFunc: SprogFn = (scope: SuperScope) => {
  *   * lines - any code execution include set vars in scope and return value
  */
 export const newSuperFunc: SprogFn = (scope: SuperScope) => {
-  return async (p: SuperFuncParams): Promise<any> => {
-    const newSuperFunc = new SuperFunc(scope, p)
+  return async (p: {
+    props: Record<string, SuperItemDefinition>,
+    lines: SprogDefinition[]
+  }): Promise<any> => {
+    const props = await scope.$resolve(p.props)
+    const lines = await scope.$resolve(p.lines)
+
+    const newSuperFunc = new SuperFunc(scope, props, lines)
 
     return makeFuncProxy(newSuperFunc)
   }

@@ -3,30 +3,34 @@ import {AllTypes} from '../types/valueTypes.js'
 import {newScope, SuperScope} from './scope.js'
 import {makeFuncProxy} from './functionProxy.js';
 import {SprogDefinition, SprogDefinitionBase} from '../types/types.js';
+import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 
 
-export interface SuperFuncProp {
-  // type of value
-  type: AllTypes
-  // default value
-  default?: any
-  // check if it is undefined
-  required?: boolean
-  // TODO: do it need to rename some props?
-}
+// export interface SuperFuncProp {
+//   // type of value
+//   type: AllTypes
+//   // default value
+//   default?: any
+//   // check if it is undefined
+//   required?: boolean
+//   // TODO: do it need to rename some props?
+// }
 
-export interface SuperFuncParams {
-  props: Record<string, SuperFuncProp>
-  lines: SprogDefinition[]
-}
 
-export type SuperFuncDefinition = SprogDefinitionBase & SuperFuncParams
+// export interface SuperFuncParams {
+//   props: Record<string, SuperItemDefinition>
+//   lines: SprogDefinition[]
+// }
+//
+// export type SuperFuncDefinition = SprogDefinitionBase & SuperFuncParams
 
 
 export class SuperFunc {
   scope: SuperScope
 
-  private readonly props: Record<string, SuperFuncProp>
+  // TODO: add proxyfiedInstance, myParent, myPath
+
+  private readonly props: Record<string, SuperItemDefinition>
   private readonly lines: SprogDefinition[]
   private appliedValues: Record<string, any> = {}
 
@@ -36,7 +40,11 @@ export class SuperFunc {
   }
 
 
-  constructor(scope: SuperScope, {props, lines}: SuperFuncParams) {
+  constructor(
+    scope: SuperScope,
+    props: Record<string, SuperItemDefinition>,
+    lines: SprogDefinition[]
+  ) {
     this.scope = scope
     this.props = props
     this.lines = lines
