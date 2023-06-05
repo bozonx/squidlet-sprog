@@ -200,6 +200,7 @@ export abstract class SuperValueBase<T = any | any[]>
     for (const childId of this.myKeys()) {
       const item = this.values[childId as keyof T] as SuperValueBase
 
+      // TODO: check isSuper instead
       if (isSuperValue(item)) item.$$setParent(this, this.makeChildPath(childId))
     }
 
@@ -502,6 +503,7 @@ export abstract class SuperValueBase<T = any | any[]>
     //    все его потомки должны обновить родительский path
 
 
+    // TODO: check isSuper instead
     if (initialValue && isSuperValue(initialValue)) {
       // this means the super struct or array has already initialized,
       // so now we are linking it as my child

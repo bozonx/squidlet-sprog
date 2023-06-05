@@ -159,7 +159,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const key of Object.keys(this.values as any)) {
       const keyName = key as keyof T
 
-      if (isSuperValue(this.values[keyName])) {
+      if (typeof this.values[keyName] === 'object' && (this.values[keyName] as any).destroy) {
         // it will destroy itself and its children
         (this.values[keyName] as SuperValueBase).destroy()
       }

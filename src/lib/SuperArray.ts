@@ -212,7 +212,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     const values: any[] = this.values
 
     for (const indexStr of values) {
-      if (isSuperValue(values[indexStr])) (values[indexStr] as SuperValueBase).destroy()
+      if (typeof values[indexStr] === 'object' && values[indexStr].destroy) {
+        (values[indexStr] as SuperValueBase).destroy()
+      }
     }
   }
 

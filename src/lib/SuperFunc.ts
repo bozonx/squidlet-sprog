@@ -13,6 +13,7 @@ const SUPER_RETURN = 'superReturn'
 
 // TODO: можно по каждому prop добавить combined в scope как алиас
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
+// TODO: может добавить событие вызова ф-и???
 
 
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
