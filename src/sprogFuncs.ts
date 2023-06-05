@@ -1,4 +1,4 @@
-import {callSuperFunc, newSuperFunc} from './lang/superFunc.js';
+import {callSuperFunc, newSuperFunc, superReturn} from './lang/superFunc.js';
 import {deleteValue, getValue, setValue} from './lang/deepValue.js';
 import {deleteVar, newVar} from './lang/simpleVar.js';
 import {jsExp} from './lang/jsExp.js';
@@ -49,6 +49,7 @@ export const sprogFuncs = {
   ////// SUPER
   callSuperFunc,
   newSuperFunc,
+  superReturn,
   newSuperData,
   newSuperStruct,
   newSuperArray,

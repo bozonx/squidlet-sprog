@@ -4,6 +4,7 @@ import {SuperFunc} from '../lib/SuperFunc.js'
 import {makeFuncProxy} from '../lib/functionProxy.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 import {SprogDefinition} from '../types/types.js';
+import {AllTypes} from '../types/valueTypes.js';
 
 
 /**
@@ -41,10 +42,17 @@ export const newSuperFunc: SprogFn = (scope: SuperScope) => {
     lines: SprogDefinition[]
   }): Promise<any> => {
     const props = await scope.$resolve(p.props)
-    const lines = await scope.$resolve(p.lines)
 
-    const newSuperFunc = new SuperFunc(scope, props, lines)
+    const newSuperFunc = new SuperFunc(scope, props, p.lines)
 
     return makeFuncProxy(newSuperFunc)
+  }
+}
+
+export const superReturn: SprogFn = (scope: SuperScope) => {
+  return async (p: {
+    value: AllTypes
+  }): Promise<any> => {
+    return await scope.$resolve(p.value)
   }
 }

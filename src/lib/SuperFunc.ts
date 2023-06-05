@@ -16,6 +16,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
 
   private appliedValues: Record<string, any> = {}
+  private propsSetter
 
 
   get props(): ProxyfiedStruct {
@@ -34,7 +35,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
     const propsStruct: ProxyfiedStruct = (new SuperStruct(scope, props, true)).getProxy()
 
-    propsStruct.$super.init()
+    this.propsSetter = propsStruct.$super.init()
     // set prop to scope
     scope.$super.define(
       'props',
@@ -82,10 +83,14 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     //   //mergeDeepObjects(this.appliedValues, propsDefaults)
     // )
 
-    this.props.$super.batchSet(values)
+    if (values) {
+      for (const key of Object.keys(values)) {
+        this.propsSetter(key, values[key])
+      }
+    }
 
     for (const line of this.lines) {
-      //await this.scope.$run(line)
+      await this.scope.$run(line)
     }
 
     // TODO: как сделать reuturn ??? Он может быть в if, switch или цикле
@@ -98,6 +103,9 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
    * but with the same scope
    */
   clone(newScope?: SuperScope, values?: Record<string, any>) {
+
+    // TODO: review
+
     const newSuperFunc = new SuperFunc(
       newScope || this.scope,
       this.props,
@@ -114,7 +122,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     if (!values) return
 
     for (const key of Object.keys(values)) {
-      this.props.$super.validateItem(key, values[key])
+      this.props.$super.validateItem(key, values[key], true)
     }
   }
 
