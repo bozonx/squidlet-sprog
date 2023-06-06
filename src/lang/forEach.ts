@@ -136,48 +136,33 @@ async function doIteration(
       if (isRecursive) {
         const toStepNum = i - 1
 
-        if (toStepNum >= lastIndex) toStep(toStepNum)
+        toStep(toStepNum)
       }
       else {
         const toStepNum = i + 1
-
-        if (toStepNum <= lastIndex) toStep(toStepNum)
+        // don't worry if it is out of range because of check in "for"
+        toStep(toStepNum)
       }
     },
     $skip(numberOfSteps: number) {
       if (isRecursive) {
         const toStepNum = i - numberOfSteps
 
-        if (toStepNum >= lastIndex) toStep(toStepNum)
-
-        // TODO: на lastIndex
+        toStep(toStepNum)
       }
       else {
         const toStepNum = i + numberOfSteps
-
-        if (toStepNum <= lastIndex) toStep(toStepNum)
-
-        // TODO: на lastIndex
+        // don't worry if it is out of range because of check in "for"
+        toStep(toStepNum)
       }
     },
     $toStep(stepNumber: number) {
       if (isRecursive) {
-        if (stepNumber >= lastIndex) {
-          toStep(stepNumber + 1)
-        }
-        else {
-          // if less than 0 then end the cycle
-          toStep(lastIndex)
-        }
+        toStep(stepNumber + 1)
       }
       else {
-        if (stepNumber <= lastIndex) {
-          toStep(stepNumber - 1)
-        }
-        else {
-          // if out of range then actually end the cycle
-          toStep(lastIndex)
-        }
+        // don't worry if it is out of range because of check in "for"
+        toStep(stepNumber - 1)
       }
     }
   }
