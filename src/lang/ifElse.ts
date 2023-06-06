@@ -76,7 +76,10 @@ export function ifElse(scope: SuperScope) {
           return '$$' + BREAK_CYCLE
         }
         else if (line[EXP_MARKER] === SUPER_RETURN) {
-          return exeScope.$run(line)
+          const res = await exeScope.$run(line)
+
+          if (typeof res === 'undefined') return '$$' + BREAK_CYCLE
+          else return res
         }
 
         await exeScope.$run(line)

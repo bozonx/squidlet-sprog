@@ -523,6 +523,69 @@ describe('forEach', () => {
     assert.equal(res, 5)
   })
 
+  it('empty return. array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    const res = await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'b'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'superReturn',
+                },
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith('a')
+  })
+
   // TODO: test return
   // TODO: add support of inner cycle
 
