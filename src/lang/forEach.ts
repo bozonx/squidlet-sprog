@@ -1,13 +1,9 @@
-import {lastItem} from 'squidlet-lib';
-import {newScope, SprogFn, SuperScope} from '../lib/scope.js';
+import {newScope, SuperScope} from '../lib/scope.js';
 import {SprogDefinition} from '../types/types.js';
-import {AllTypes} from '../types/valueTypes.js';
 import {EXP_MARKER} from '../constants.js';
 import {SUPER_RETURN} from '../lib/SuperFunc.js';
 
 
-
-// TODO: add skips
 // TODO: add rename of value and index
 
 export const CONTINUE_CYCLE = 'continueCycle'
@@ -33,14 +29,14 @@ interface ForEachLocalScope {
   $isFirst: boolean
   // is this last index
   $isLast: boolean
+  // !!! remember that skips don't break cycle.
+  // They just tell the cycle to jump to specified position after the end of iteration
   // just skip the next step
-  //$skipNext
+  $skipNext(): void
   // will skip specified number of steps bot not greater than the last one
-  //$skip(numberOfSteps)
+  $skip(numberOfSteps: number): void
   // go to the next specified step number. Not previous
-  //$toStep(stepNumber)
-
-
+  $toStep(stepNumber: number): void
 }
 
 
@@ -78,7 +74,8 @@ export function forEach(scope: SuperScope) {
         (reverse) ? i >= 0 : i < src.length;
         (reverse) ? i-- : i++
       ) {
-        const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex)
+        const toStep = (stepNum: number) => i = stepNum
+        const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex, toStep)
 
         if (result === '$$' + BREAK_CYCLE) break
         else if (typeof result !== 'undefined') return result
@@ -98,7 +95,8 @@ export function forEach(scope: SuperScope) {
         (reverse) ? i-- : i++
       ) {
         const keyStr = keys[i]
-        const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
+        const toStep = (stepNum: number) => i = stepNum
+        const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex, toStep)
 
         if (result === '$$' + BREAK_CYCLE) break
         else if (typeof result !== 'undefined') return result
@@ -110,15 +108,6 @@ export function forEach(scope: SuperScope) {
   }
 }
 
-// export const continueCycle: SprogFn = (scope: SuperScope) => {
-//   return async (p: {
-//     value: AllTypes
-//   }): Promise<any> => {
-//     return await scope.$resolve(p.value)
-//   }
-// }
-
-
 
 async function doIteration(
   lines: SprogDefinition[],
@@ -128,17 +117,47 @@ async function doIteration(
   value: any,
   firstIndex: number,
   lastIndex: number,
+  toStep: (stepNum: number) => void
 ): Promise<any> {
+  const isRecursive = lastIndex === 0 && firstIndex !== 0
   const localScopeInitial: ForEachLocalScope = {
     i,
     key,
     value,
     $isFirst: i === firstIndex,
     $isLast: i === lastIndex,
-    // TODO: add skips
-    //$skipNext
-    //$skip
-    //$toStep
+    $skipNext() {
+      if (isRecursive) {
+        const toStepNum = i - 2
+
+        if (toStepNum >= lastIndex) toStep(toStepNum)
+      }
+      else {
+        const toStepNum = i + 2
+
+        if (toStepNum <= lastIndex) toStep(toStepNum)
+      }
+    },
+    $skip(numberOfSteps: number) {
+      if (isRecursive) {
+        const toStepNum = i - numberOfSteps
+
+        if (toStepNum >= lastIndex) toStep(toStepNum)
+      }
+      else {
+        const toStepNum = i + numberOfSteps
+
+        if (toStepNum <= lastIndex) toStep(toStepNum)
+      }
+    },
+    $toStep(stepNumber: number) {
+      if (isRecursive) {
+        if (stepNumber >= lastIndex) toStep(stepNumber)
+      }
+      else {
+        if (stepNumber <= lastIndex) toStep(stepNumber)
+      }
+    }
   }
 
   const localScope = newScope(localScopeInitial, scope)
