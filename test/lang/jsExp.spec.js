@@ -3,7 +3,7 @@ import {jsExp} from "../../src/lang/jsExp.js";
 
 
 describe('jsExp', () => {
-  it.only('return value', async () => {
+  it('return value', async () => {
     const scope = newScope({v1: 1})
 
     const res = await scope.$run({
@@ -14,7 +14,7 @@ describe('jsExp', () => {
     assert.equal(res, 1)
   })
 
-  it.only('change value in scope', async () => {
+  it('change value in scope', async () => {
     const scope = newScope({v1: 1})
 
     await scope.$run({

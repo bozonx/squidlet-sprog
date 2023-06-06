@@ -61,67 +61,74 @@ interface ForEachLocalScope {
 export function forEach(scope: SuperScope) {
   return async (p: ForEachParams) => {
     const src: Record<any, any> | any[] = await scope.$resolve(p.src)
+    const reverse: Record<any, any> | any[] = await scope.$resolve(p.reverse)
 
     if (Array.isArray(src)) {
-      const firstIndex = (p.reverse) ? src.length - 1 : 0
-      const laseIndex = (p.reverse) ? 0 : src.length - 1
+      if (!src.length) return
+
+      const firstIndex = (reverse) ? src.length - 1 : 0
+      const lastIndex = (reverse) ? 0 : src.length - 1
       // array iteration
       for (
-        let i = (p.reverse) ? src.length - 1 : 0;
-        (p.reverse) ? i >= src.length : i < src.length;
-        (p.reverse) ? i-- : i++
+        let i = firstIndex;
+        (reverse) ? i >= src.length : i < src.length;
+        (reverse) ? i-- : i++
       ) {
-        const localScopeInitial: ForEachLocalScope = {
-          i,
-          key: i,
-          value: src[i],
-          $isFirst: i === firstIndex,
-          $isLast: i === laseIndex,
-          // TODO: add skips
-          //$skipNext
-          //$skip
-          //$toStep
-        }
-        const localScope = newScope(localScopeInitial, scope)
-
-        for (const oneDo of p.do) {
-          await localScope.$run(oneDo)
-        }
-
-        if (p.reverse) i--
-        else i++
+        await doIteraction(p.do, scope, i, i, src[i], firstIndex, lastIndex)
       }
     }
     else if (typeof src === 'object') {
       const keys = Object.keys(src)
-      let i = (p.reverse) ? keys.length - 1 : 0
+
+      if (!keys.length) return
+
+      const firstIndex = (reverse) ? keys.length - 1 : 0
+      const lastIndex = (reverse) ? 0 : keys.length - 1
       // object iteration
       for (
-        let i = (p.reverse) ? keys.length - 1 : 0;
-        (p.reverse) ? i >= keys.length : i < keys.length;
-        (p.reverse) ? i-- : i++
+        let i = firstIndex;
+        (reverse) ? i >= keys.length : i < keys.length;
+        (reverse) ? i-- : i++
       ) {
         const keyStr = keys[i]
-        const localScopeInitial: ForEachLocalScope = {
-          i,
-          key: keyStr,
-          value: src[keyStr],
-          $isFirst: keys[0] === keyStr,
-          $isLast: lastItem(keys) === keyStr,
-          // TODO: add skips
-          //$skipNext
-          //$skip
-          //$toStep
-        }
-        const localScope = newScope(localScopeInitial, scope)
 
-        for (const oneDo of p.do) {
-          await localScope.$run(oneDo)
-        }
+        await doIteraction(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
       }
     }
     else {
       throw new Error(`Unsupported types of src: ${typeof src}`)
     }
+  }
+}
+
+
+async function doIteraction(
+  lines: SprogDefinition[],
+  scope: SuperScope,
+  i: number,
+  key: number | string,
+  value: any,
+  firstIndex: number,
+  lastIndex: number,
+) {
+  const localScopeInitial: ForEachLocalScope = {
+    i,
+    key,
+    value,
+    $isFirst: i === firstIndex,
+    $isLast: i === lastIndex,
+    // TODO: add skips
+    //$skipNext
+    //$skip
+    //$toStep
+  }
+
+  const localScope = newScope(localScopeInitial, scope)
+
+  for (const line of lines) {
+    // TODO: catch return
+    // TODO: catch continue
+    // TODO: catch break
+    await localScope.$run(line)
   }
 }
