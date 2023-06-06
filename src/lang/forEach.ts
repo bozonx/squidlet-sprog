@@ -1,15 +1,16 @@
 import {lastItem} from 'squidlet-lib';
-import {newScope, SuperScope} from '../lib/scope.js';
+import {newScope, SprogFn, SuperScope} from '../lib/scope.js';
 import {SprogDefinition} from '../types/types.js';
+import {AllTypes} from '../types/valueTypes.js';
+import {EXP_MARKER} from '../constants.js';
 
 
 
-// TODO: add break
-// TODO: add continue
-// TODO: add support of inner cycle
-// TODO: add support of inner if else
 // TODO: add skips
 // TODO: add rename of value and index
+
+export const CONTINUE_CYCLE = 'continueCycle'
+export const BREAK_CYCLE = 'breakCycle'
 
 
 interface ForEachParams {
@@ -76,7 +77,9 @@ export function forEach(scope: SuperScope) {
         (reverse) ? i >= 0 : i < src.length;
         (reverse) ? i-- : i++
       ) {
-        await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex)
+        const needBreak = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex)
+
+        if (needBreak) break
       }
     }
     else if (typeof src === 'object') {
@@ -94,7 +97,9 @@ export function forEach(scope: SuperScope) {
       ) {
         const keyStr = keys[i]
 
-        await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
+        const needBreak = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
+
+        if (needBreak) break
       }
     }
     else {
@@ -102,6 +107,15 @@ export function forEach(scope: SuperScope) {
     }
   }
 }
+
+// export const continueCycle: SprogFn = (scope: SuperScope) => {
+//   return async (p: {
+//     value: AllTypes
+//   }): Promise<any> => {
+//     return await scope.$resolve(p.value)
+//   }
+// }
+
 
 
 async function doIteration(
@@ -112,7 +126,7 @@ async function doIteration(
   value: any,
   firstIndex: number,
   lastIndex: number,
-) {
+): Promise<boolean> {
   const localScopeInitial: ForEachLocalScope = {
     i,
     key,
@@ -128,9 +142,16 @@ async function doIteration(
   const localScope = newScope(localScopeInitial, scope)
 
   for (const line of lines) {
+    if ((line[EXP_MARKER] as any) === CONTINUE_CYCLE) continue
+    else if ((line[EXP_MARKER] as any) === BREAK_CYCLE) return true
+
     // TODO: catch return
-    // TODO: catch continue
-    // TODO: catch break
-    await localScope.$run(line)
+
+    const res = await localScope.$run(line)
+
+    if (res === '$$' + CONTINUE_CYCLE) continue
+    else if (res === '$$' + BREAK_CYCLE) return true
   }
+
+  return false
 }

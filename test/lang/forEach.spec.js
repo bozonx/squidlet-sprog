@@ -204,9 +204,261 @@ describe('forEach', () => {
     spy.should.have.been.calledWith('a')
   })
 
-  // TODO: test continue
-  // TODO: test break
+  it('continue. array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'b'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'continueCycle',
+                },
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledTwice
+    spy.should.have.been.calledWith('a')
+    spy.should.have.been.calledWith('c')
+  })
+
+  it('continue. object', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: {a: 1, b: 2, c: 3},
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'key',
+                    },
+                    'b'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'continueCycle',
+                },
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledTwice
+    spy.should.have.been.calledWith(1)
+    spy.should.have.been.calledWith(3)
+  })
+
+  it('break. array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'b'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'breakCycle',
+                },
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith('a')
+  })
+
+  it('break. object', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: {a: 1, b: 2, c: 3},
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'key',
+                    },
+                    'b'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'breakCycle',
+                },
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(1)
+  })
+
   // TODO: test return
-  // TODO: test break, continue inside forEach and ifElse
+  // TODO: add support of inner cycle
 
 })

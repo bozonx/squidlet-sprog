@@ -4,6 +4,7 @@ import {logicAnd} from './booleanLogic.js';
 import {SprogDefinition} from '../types/types.js';
 import {EXP_MARKER} from '../constants.js';
 import {SUPER_RETURN} from '../lib/SuperFunc.js';
+import {BREAK_CYCLE, CONTINUE_CYCLE} from './forEach.js';
 
 
 interface IfElseItem {
@@ -70,6 +71,12 @@ export function ifElse(scope: SuperScope) {
       for (const line of item.lines) {
         if (line[EXP_MARKER] === SUPER_RETURN) {
           return exeScope.$run(line)
+        }
+        else if ((line[EXP_MARKER] as any) === CONTINUE_CYCLE) {
+          return '$$' + CONTINUE_CYCLE
+        }
+        else if ((line[EXP_MARKER] as any) === BREAK_CYCLE) {
+          return '$$' + BREAK_CYCLE
         }
 
         await exeScope.$run(line)
