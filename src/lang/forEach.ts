@@ -74,11 +74,14 @@ export function forEach(scope: SuperScope) {
         (reverse) ? i >= 0 : i < src.length;
         (reverse) ? i-- : i++
       ) {
-        const toStep = (stepNum: number) => i = stepNum
+        let toStepNum: number = -1
+        const toStep = (stepNum: number) => toStepNum = stepNum
         const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex, toStep)
 
         if (result === '$$' + BREAK_CYCLE) break
         else if (typeof result !== 'undefined') return result
+
+        if (toStepNum >= 0) i = toStepNum
       }
     }
     else if (typeof src === 'object') {
@@ -95,11 +98,14 @@ export function forEach(scope: SuperScope) {
         (reverse) ? i-- : i++
       ) {
         const keyStr = keys[i]
-        const toStep = (stepNum: number) => i = stepNum
+        let toStepNum: number = -1
+        const toStep = (stepNum: number) => toStepNum = stepNum
         const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex, toStep)
 
         if (result === '$$' + BREAK_CYCLE) break
         else if (typeof result !== 'undefined') return result
+
+        if (toStepNum >= 0) i = toStepNum
       }
     }
     else {
@@ -128,12 +134,12 @@ async function doIteration(
     $isLast: i === lastIndex,
     $skipNext() {
       if (isRecursive) {
-        const toStepNum = i - 2
+        const toStepNum = i - 1
 
         if (toStepNum >= lastIndex) toStep(toStepNum)
       }
       else {
-        const toStepNum = i + 2
+        const toStepNum = i + 1
 
         if (toStepNum <= lastIndex) toStep(toStepNum)
       }
@@ -143,19 +149,33 @@ async function doIteration(
         const toStepNum = i - numberOfSteps
 
         if (toStepNum >= lastIndex) toStep(toStepNum)
+
+        // TODO: на lastIndex
       }
       else {
         const toStepNum = i + numberOfSteps
 
         if (toStepNum <= lastIndex) toStep(toStepNum)
+
+        // TODO: на lastIndex
       }
     },
     $toStep(stepNumber: number) {
       if (isRecursive) {
-        if (stepNumber >= lastIndex) toStep(stepNumber)
+        if (stepNumber >= lastIndex) {
+          toStep(stepNumber + 1)
+        }
+        else {
+          toStep(lastIndex)
+        }
       }
       else {
-        if (stepNumber <= lastIndex) toStep(stepNumber)
+        if (stepNumber <= lastIndex) {
+          toStep(stepNumber - 1)
+        }
+        else {
+          toStep(lastIndex)
+        }
       }
     }
   }

@@ -685,4 +685,668 @@ describe('forEach', () => {
     spy.should.have.been.calledWith(1)
   })
 
+  /////////// STEPS
+
+  /////// $skipNext
+
+  it('$skipNext(). array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skipNext'
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith('c')
+  })
+
+  it('$skipNext(). to high step', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skipNext'
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.not.been.called
+  })
+
+  it('$skipNext(). reverse. array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      reverse: true,
+      src: ['a', 'b', 'c'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'c'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skipNext'
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith('a')
+  })
+
+  it('$skipNext(). reverse. array. to high step', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      reverse: true,
+      src: ['b', 'c'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'c'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skipNext'
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.not.been.called
+  })
+
+  it('$skipNext(). object', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: {a: 1, b: 2, c: 3},
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'key',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skipNext'
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(3)
+  })
+
+  //////////////// $skip
+
+  it('$skip(steps). array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skip',
+                  args: [ 2 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith('d')
+  })
+
+  it('$skip(steps). array. to high step', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skip',
+                  args: [ 3 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.not.been.called
+  })
+
+  it('$skip(steps). array. reverse', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      reverse: true,
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'd'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skip',
+                  args: [ 2 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith('a')
+  })
+
+  it('$skip(steps). array. reverse. to high step', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      reverse: true,
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'd'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skip',
+                  args: [ 3 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.not.been.called
+  })
+
+  it('$skip(steps). object', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: {a: 1, b: 2, c: 3, d: 4},
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'key',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$skip',
+                  args: [ 2 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(4)
+  })
+
+  //////// $toStep(stepNumber)
+
+  it('$toStep(stepNumber). array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$toStep',
+                  args: [ 2 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledTwice
+    spy.should.have.been.calledWith('c')
+    spy.should.have.been.calledWith('d')
+  })
+
+  it.only('$toStep(stepNumber). array. to high step', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$toStep',
+                  args: [ 4 ]
+                }
+              ]
+            },
+            // else
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.not.been.called
+  })
+
 })
