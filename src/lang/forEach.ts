@@ -3,12 +3,13 @@ import {newScope, SuperScope} from '../lib/scope.js';
 import {SprogDefinition} from '../types/types.js';
 
 
-// TODO: test break, continue inside forEach and ifElse
+
 // TODO: add break
 // TODO: add continue
 // TODO: add support of inner cycle
 // TODO: add support of inner if else
 // TODO: add skips
+// TODO: add rename of value and index
 
 
 interface ForEachParams {
@@ -61,20 +62,21 @@ interface ForEachLocalScope {
 export function forEach(scope: SuperScope) {
   return async (p: ForEachParams) => {
     const src: Record<any, any> | any[] = await scope.$resolve(p.src)
-    const reverse: Record<any, any> | any[] = await scope.$resolve(p.reverse)
+    const reverse: boolean = await scope.$resolve(p.reverse)
 
     if (Array.isArray(src)) {
       if (!src.length) return
 
       const firstIndex = (reverse) ? src.length - 1 : 0
       const lastIndex = (reverse) ? 0 : src.length - 1
+
       // array iteration
       for (
         let i = firstIndex;
-        (reverse) ? i >= src.length : i < src.length;
+        (reverse) ? i >= 0 : i < src.length;
         (reverse) ? i-- : i++
       ) {
-        await doIteraction(p.do, scope, i, i, src[i], firstIndex, lastIndex)
+        await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex)
       }
     }
     else if (typeof src === 'object') {
@@ -87,12 +89,12 @@ export function forEach(scope: SuperScope) {
       // object iteration
       for (
         let i = firstIndex;
-        (reverse) ? i >= keys.length : i < keys.length;
+        (reverse) ? i >= 0 : i < keys.length;
         (reverse) ? i-- : i++
       ) {
         const keyStr = keys[i]
 
-        await doIteraction(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
+        await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
       }
     }
     else {
@@ -102,7 +104,7 @@ export function forEach(scope: SuperScope) {
 }
 
 
-async function doIteraction(
+async function doIteration(
   lines: SprogDefinition[],
   scope: SuperScope,
   i: number,
