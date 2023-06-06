@@ -1294,7 +1294,7 @@ describe('forEach', () => {
     spy.should.have.been.calledWith('d')
   })
 
-  it.only('$toStep(stepNumber). array. to high step', async () => {
+  it('$toStep(stepNumber). array. to high step', async () => {
     const spy = sinon.spy()
     const scope = newScope({spy})
 
@@ -1347,6 +1347,174 @@ describe('forEach', () => {
     })
 
     spy.should.have.not.been.called
+  })
+
+  it('$toStep(stepNumber). reverse. array', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      reverse: true,
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'd'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$toStep',
+                  args: [ 1 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledTwice
+    spy.should.have.been.calledWith('b')
+    spy.should.have.been.calledWith('a')
+  })
+
+  it('$toStep(stepNumber). reverse. array. -1', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      reverse: true,
+      src: ['a', 'b', 'c', 'd'],
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                    'd'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$toStep',
+                  args: [ -1 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.not.been.called
+  })
+
+  it('$toStep(stepNumber). object', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: {a: 1, b: 2, c: 3, d: 4},
+      do: [
+        {
+          $exp: 'ifElse',
+          items: [
+            {
+              condition: [
+                {
+                  $exp: 'isEqual',
+                  items: [
+                    {
+                      $exp: 'getValue',
+                      path: 'key',
+                    },
+                    'a'
+                  ]
+                }
+              ],
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: '$toStep',
+                  args: [ 2 ]
+                }
+              ]
+            },
+            {
+              lines: [
+                {
+                  $exp: 'simpleCall',
+                  path: 'spy',
+                  args: [
+                    {
+                      $exp: 'getValue',
+                      path: 'value',
+                    },
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    spy.should.have.been.calledTwice
+    spy.should.have.been.calledWith(3)
+    spy.should.have.been.calledWith(4)
   })
 
 })

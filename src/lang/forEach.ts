@@ -166,6 +166,7 @@ async function doIteration(
           toStep(stepNumber + 1)
         }
         else {
+          // if less than 0 then end the cycle
           toStep(lastIndex)
         }
       }
@@ -174,6 +175,7 @@ async function doIteration(
           toStep(stepNumber - 1)
         }
         else {
+          // if out of range then actually end the cycle
           toStep(lastIndex)
         }
       }
