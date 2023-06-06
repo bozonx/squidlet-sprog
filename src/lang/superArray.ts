@@ -1,6 +1,5 @@
 import {SuperScope} from '../lib/scope.js';
 import {proxyArray, ProxyfiedArray, SuperArray, SuperArrayDefinition} from '../lib/SuperArray.js';
-import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 
 
 /**

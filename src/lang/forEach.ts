@@ -4,6 +4,11 @@ import {SprogDefinition} from '../types/types.js';
 
 
 // TODO: test break, continue inside forEach and ifElse
+// TODO: add break
+// TODO: add continue
+// TODO: add support of inner cycle
+// TODO: add support of inner if else
+// TODO: add skips
 
 
 interface ForEachParams {
@@ -25,7 +30,6 @@ interface ForEachLocalScope {
   $isFirst: boolean
   // is this last index
   $isLast: boolean
-  // TODO: add skips
   // just skip the next step
   //$skipNext
   // will skip specified number of steps bot not greater than the last one
@@ -33,10 +37,7 @@ interface ForEachLocalScope {
   // go to the next specified step number. Not previous
   //$toStep(stepNumber)
 
-  // TODO: add break
-  // TODO: add continue
-  // TODO: add support of inner cycle
-  // TODO: add support of inner if else
+
 }
 
 
