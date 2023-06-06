@@ -32,4 +32,18 @@ describe('scope', () => {
     spy.should.have.been.calledOnce
   })
 
+  it('layers', async () => {
+    const scope1 = newScope({v0: 0})
+    const scope2 = newScope(undefined, scope1)
+
+    await scope2.$run({
+      $exp: 'newVar',
+      name: 'v0',
+      value: 1,
+    })
+
+    assert.deepEqual(scope1.$super.values, {v0: 0})
+    assert.deepEqual(scope2.$super.values, {v0: 1})
+  })
+
 })
