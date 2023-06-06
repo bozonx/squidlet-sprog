@@ -69,14 +69,14 @@ export function ifElse(scope: SuperScope) {
       const exeScope: SuperScope = newScope(undefined, scope)
       // just execute a block if condition is true
       for (const line of item.lines) {
-        if (line[EXP_MARKER] === SUPER_RETURN) {
-          return exeScope.$run(line)
-        }
-        else if ((line[EXP_MARKER] as any) === CONTINUE_CYCLE) {
+        if ((line[EXP_MARKER] as any) === CONTINUE_CYCLE) {
           return '$$' + CONTINUE_CYCLE
         }
         else if ((line[EXP_MARKER] as any) === BREAK_CYCLE) {
           return '$$' + BREAK_CYCLE
+        }
+        else if (line[EXP_MARKER] === SUPER_RETURN) {
+          return exeScope.$run(line)
         }
 
         await exeScope.$run(line)

@@ -3,6 +3,7 @@ import {newScope, SprogFn, SuperScope} from '../lib/scope.js';
 import {SprogDefinition} from '../types/types.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {EXP_MARKER} from '../constants.js';
+import {SUPER_RETURN} from '../lib/SuperFunc.js';
 
 
 
@@ -77,9 +78,10 @@ export function forEach(scope: SuperScope) {
         (reverse) ? i >= 0 : i < src.length;
         (reverse) ? i-- : i++
       ) {
-        const needBreak = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex)
+        const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex)
 
-        if (needBreak) break
+        if (result === '$$' + BREAK_CYCLE) break
+        else if (typeof result !== 'undefined') return result
       }
     }
     else if (typeof src === 'object') {
@@ -96,10 +98,10 @@ export function forEach(scope: SuperScope) {
         (reverse) ? i-- : i++
       ) {
         const keyStr = keys[i]
+        const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
 
-        const needBreak = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex)
-
-        if (needBreak) break
+        if (result === '$$' + BREAK_CYCLE) break
+        else if (typeof result !== 'undefined') return result
       }
     }
     else {
@@ -126,7 +128,7 @@ async function doIteration(
   value: any,
   firstIndex: number,
   lastIndex: number,
-): Promise<boolean> {
+): Promise<any> {
   const localScopeInitial: ForEachLocalScope = {
     i,
     key,
@@ -143,15 +145,15 @@ async function doIteration(
 
   for (const line of lines) {
     if ((line[EXP_MARKER] as any) === CONTINUE_CYCLE) continue
-    else if ((line[EXP_MARKER] as any) === BREAK_CYCLE) return true
-
-    // TODO: catch return
+    else if ((line[EXP_MARKER] as any) === BREAK_CYCLE) return '$$' + BREAK_CYCLE
+    else if (line[EXP_MARKER] === SUPER_RETURN) {
+      return localScope.$run(line)
+    }
 
     const res = await localScope.$run(line)
 
     if (res === '$$' + CONTINUE_CYCLE) continue
-    else if (res === '$$' + BREAK_CYCLE) return true
+    else if (res === '$$' + BREAK_CYCLE) return '$$' + BREAK_CYCLE
+    else if (typeof res !== 'undefined') return res
   }
-
-  return false
 }
