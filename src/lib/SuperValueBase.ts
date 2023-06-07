@@ -275,11 +275,11 @@ export abstract class SuperValueBase<T = any | any[]>
    * To change its value get its parent and set value via parent like: parent.value = 5
    */
   getValue = (pathTo: string, defaultValue?: any): AllTypes | undefined => {
+
+    // TODO: remove defaultValue
+
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
-
-
-    //return (this.layeredValues as any)[pathTo]
 
     return deepGet(this.layeredValues as any, pathTo, defaultValue)
   }

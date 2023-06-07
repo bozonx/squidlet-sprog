@@ -493,7 +493,7 @@ describe('SuperData', () => {
 
   })
 
-  it.only('layers deep', async () => {
+  it('layers deep', async () => {
     const scope = {}
     const dataBottom = new SuperData(scope)
 
@@ -515,11 +515,11 @@ describe('SuperData', () => {
     assert.equal(dataBottom.getValue('a.aa'), 1)
     assert.equal(dataTop.getValue('a.aa'), 3)
     // set another value to bottom
-    dataBottom.setValue('a.bb', 1)
-    assert.equal(dataBottom.getValue('a.bb'), 1)
-    assert.equal(dataTop.getValue('a.bb'), 1)
-    assert.isTrue(dataBottom.hasKey('a.bb'))
-    assert.isTrue(dataTop.hasKey('a.bb'))
+    // dataBottom.setValue('a.bb', 1)
+    // assert.equal(dataBottom.getValue('a.bb'), 1)
+    // assert.equal(dataTop.getValue('a.bb'), 1)
+    // assert.isTrue(dataBottom.hasKey('a.bb'))
+    // assert.isTrue(dataTop.hasKey('a.bb'))
     // set another value to top
     dataTop.setValue('a.cc', 1)
     assert.isUndefined(dataBottom.getValue('a.cc'))
@@ -527,8 +527,41 @@ describe('SuperData', () => {
     assert.isFalse(dataBottom.hasKey('a.cc'))
     assert.isTrue(dataTop.hasKey('a.cc'))
 
-    // TODO: forget
+    // TODO: если нижнее значение определено, а верхнее нет, то должно устанавливаться на нижнее
+    // TODO: forget deep
   })
+
+  it('get from bottom layer', async () => {
+    const scope = {}
+    const dataBottom = new SuperData(scope)
+
+    dataBottom.init({a: {}})
+
+    const dataTop = new SuperData(
+      scope,
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.init()
+
+    dataBottom.setValue('a.bb', 1)
+    assert.equal(dataBottom.getValue('a.bb'), 1)
+    assert.equal(dataTop.getValue('a.bb'), 1)
+    assert.isTrue(dataBottom.hasKey('a.bb'))
+    assert.isTrue(dataTop.hasKey('a.bb'))
+    // it will not work because "a" have value {} which makes a new tree
+    dataTop.setOwnValue('a', {})
+    assert.equal(dataBottom.getValue('a.bb'), 1)
+    assert.isUndefined(dataTop.getValue('a.bb'))
+    assert.isTrue(dataBottom.hasKey('a.bb'))
+    assert.isFalse(dataTop.hasKey('a.bb'))
+  })
+
+  // TODO: test deep with super
+
+
 
   // TODO: с учётом порядка ключей
   // it('clone', async () => {
