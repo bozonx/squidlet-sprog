@@ -248,7 +248,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return this.ownValues[key] as any
   }
 
-  setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false) {
+  setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     const index = Number(key)
@@ -256,6 +256,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     this.ownValues[index] = this.setupChildValue(this.itemDefinition, index, value)
 
     this.riseChildrenChangeEvent(index)
+
+    return true
   }
 
   /**

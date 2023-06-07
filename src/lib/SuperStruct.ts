@@ -122,9 +122,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
       throw new Error(`Struct can inherit only other struct`)
     }
 
-    super(scope, lowLayer)
+    super(scope, lowLayer as SuperValueBase | undefined)
 
-    this.layeredValues = proxifyLayeredValue(this.ownValues as any, lowLayer)
+    this.layeredValues = proxifyLayeredValue(
+      this.ownValues as any,
+      lowLayer as SuperValueBase | undefined
+    )
 
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr as keyof T])
@@ -196,7 +199,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     return this.ownValues[key as keyof T] as any
   }
 
-  setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
+  setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false): boolean {
     const name: keyof T = keyStr as any
 
     this.validateItem(name, value, ignoreRo)
@@ -204,6 +207,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
     this.ownValues[name] = this.setupChildValue(this.definition[name], keyStr, value)
 
     this.riseChildrenChangeEvent(keyStr)
+
+    return true
   }
 
   /**
@@ -269,7 +274,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
       return this.definition[key]
     }
     else if (this.lowLayer) {
-      return (this.lowLayer as SuperStruct).getDefinition(key as string)
+      return (this.lowLayer as any).getDefinition(key as string)
     }
   }
 

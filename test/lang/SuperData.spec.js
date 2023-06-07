@@ -488,9 +488,6 @@ describe('SuperData', () => {
     dataTop.setValue('e', 'a')
     assert.equal(dataBottom.getValue('e'), 2)
     assert.equal(dataTop.getValue('e'), 'a')
-
-    // TODO: change events
-
   })
 
   it('layers deep', async () => {
@@ -514,12 +511,6 @@ describe('SuperData', () => {
     dataTop.setValue('a.aa', 3)
     assert.equal(dataBottom.getValue('a.aa'), 1)
     assert.equal(dataTop.getValue('a.aa'), 3)
-    // set another value to bottom
-    // dataBottom.setValue('a.bb', 1)
-    // assert.equal(dataBottom.getValue('a.bb'), 1)
-    // assert.equal(dataTop.getValue('a.bb'), 1)
-    // assert.isTrue(dataBottom.hasKey('a.bb'))
-    // assert.isTrue(dataTop.hasKey('a.bb'))
     // set another value to top
     dataTop.setValue('a.cc', 1)
     assert.isUndefined(dataBottom.getValue('a.cc'))
@@ -578,9 +569,54 @@ describe('SuperData', () => {
     assert.isUndefined(dataTop.getOwnValue('a'))
   })
 
+  it('deep super value', async () => {
+    const scope = {}
+    const dataBottom = new SuperData(scope)
+    const deepValue = new SuperData(scope)
 
-  // TODO: test deep definition - если нет в верхнем то взять из нижнего
-  // TODO: test deep with super. test forget
+    deepValue.init({d: 1})
+    dataBottom.init({a: deepValue.getProxy()})
+
+    const dataTop = new SuperData(
+      scope,
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.init()
+
+    assert.equal(dataBottom.getValue('a.d'), 1)
+    assert.equal(dataTop.getValue('a.d'), 1)
+  })
+
+  it('layers events', async () => {
+    const scope = {}
+    const spy1 = sinon.spy()
+    const spy2 = sinon.spy()
+    const dataBottom = new SuperData(scope)
+
+    dataBottom.subscribe(spy1)
+    dataBottom.init({a: 1})
+
+    const dataTop = new SuperData(
+      scope,
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.subscribe(spy2)
+    dataTop.init()
+
+    dataTop.setValue('a', 2)
+
+    assert.equal(dataBottom.getValue('a'), 2)
+    assert.equal(dataTop.getValue('a'), 2)
+    spy1.should.have.been.calledTwice
+    // it have to rise an event too
+    spy2.should.have.been.calledTwice
+  })
 
 
 

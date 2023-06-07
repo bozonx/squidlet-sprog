@@ -171,10 +171,10 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       throw new Error(`Super data can inherit only other super data`)
     }
 
-    super(scope, lowLayer)
+    super(scope, lowLayer as SuperValueBase | undefined)
     // save it to use later to define a new props
     this.defaultRo = defaultRo
-    this.layeredValues = proxifyLayeredValue(this.ownValues, lowLayer)
+    this.layeredValues = proxifyLayeredValue(this.ownValues, lowLayer as SuperValueBase | undefined)
 
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition
@@ -237,14 +237,15 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
   isKeyReadonly(key: string | number): boolean {
 
-    // TODO: лучше ещё и в нижнем слое спросить
-
     // TODO: что  случае с элементом массива???
-    if (!this.definition[key]) {
+
+    const def = this.getDefinition(key)
+
+    if (!def) {
       throw new Error(`Data doesn't have key ${key}`)
     }
 
-    return Boolean(this.definition?.[key].readonly)
+    return def.readonly
   }
 
   // TODO: rename to ownKeys
@@ -261,7 +262,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return this.ownValues[key] as any
   }
 
-  setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean) {
+  setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean): boolean {
     const definition = (this.definition[key])
       ? (this.definition[key])
       : this.definition[DEFAULT_DEFINITION_KEY]
@@ -279,6 +280,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (!this.keys.includes(key)) this.keys.push(key)
 
     this.riseChildrenChangeEvent(key)
+
+    return true
   }
 
   /**
@@ -380,7 +383,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   }
 
   // TODO: можно переместить в SuperValueBase
-  getDefinition(key: string): SuperItemDefinition | undefined {
+  getDefinition(key: string | number): SuperItemDefinition | undefined {
     if (this.definition[key]) {
       return this.definition[key]
     }

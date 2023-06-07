@@ -238,8 +238,9 @@ export abstract class SuperValueBase<T = any | any[]>
    * @param key
    * @param value
    * @param ignoreRo
+   * @returns {boolean} if true then value was found and set. If false value hasn't been set
    */
-  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): void
+  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean
 
   abstract toDefaultValue(key: string | number): void
 
@@ -288,8 +289,9 @@ export abstract class SuperValueBase<T = any | any[]>
    * Set value deeply.
    * You can set own value or value of some deep object.
    * Even you can set value to the deepest primitive like: struct.struct.num = 5
+   * @returns {boolean} if true then value was found and set. If false value hasn't been set
    */
-  setValue = (pathTo: string, newValue: AllTypes) => {
+  setValue = (pathTo: string, newValue: AllTypes): boolean => {
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
@@ -298,21 +300,27 @@ export abstract class SuperValueBase<T = any | any[]>
     if (splat.length === 1) {
       // own value - there splat[0] is number or string
       if (this.myKeys().includes(splat[0])) {
-        this.setOwnValue(splat[0], newValue)
+        return this.setOwnValue(splat[0], newValue)
       }
       else if (this.lowLayer && this.lowLayer.allKeys().includes(splat[0])) {
         const lowPath = joinDeepPath([splat[0]])
 
-        this.lowLayer.setValue(lowPath, newValue)
+        const wasSet = this.lowLayer.setValue(lowPath, newValue)
+
+        if (wasSet) {
+          this.riseChildrenChangeEvent(lowPath)
+        }
+
+        return wasSet
       }
       else {
         // if it is a new var then set it to top layer
-        this.setOwnValue(splat[0], newValue)
+        return this.setOwnValue(splat[0], newValue)
       }
     }
     else {
       // deep value
-      deepSet(this.layeredValues as any, pathTo, newValue)
+      return deepSet(this.layeredValues as any, pathTo, newValue)
     }
   }
 
