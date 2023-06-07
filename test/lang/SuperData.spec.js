@@ -489,9 +489,45 @@ describe('SuperData', () => {
     assert.equal(dataBottom.getValue('e'), 2)
     assert.equal(dataTop.getValue('e'), 'a')
 
-
     // TODO: change events
-    // TODO: deep getValue, setValue
+
+  })
+
+  it.only('layers deep', async () => {
+    const scope = {}
+    const dataBottom = new SuperData(scope)
+
+    dataBottom.init({a: {aa: 1}})
+
+    const dataTop = new SuperData(
+      scope,
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.init({a: {aa: 2}})
+
+    assert.equal(dataBottom.getValue('a.aa'), 1)
+    assert.equal(dataTop.getValue('a.aa'), 2)
+    // update only top value
+    dataTop.setValue('a.aa', 3)
+    assert.equal(dataBottom.getValue('a.aa'), 1)
+    assert.equal(dataTop.getValue('a.aa'), 3)
+    // set another value to bottom
+    dataBottom.setValue('a.bb', 1)
+    assert.equal(dataBottom.getValue('a.bb'), 1)
+    assert.equal(dataTop.getValue('a.bb'), 1)
+    assert.isTrue(dataBottom.hasKey('a.bb'))
+    assert.isTrue(dataTop.hasKey('a.bb'))
+    // set another value to top
+    dataTop.setValue('a.cc', 1)
+    assert.isUndefined(dataBottom.getValue('a.cc'))
+    assert.equal(dataTop.getValue('a.cc'), 1)
+    assert.isFalse(dataBottom.hasKey('a.cc'))
+    assert.isTrue(dataTop.hasKey('a.cc'))
+
+    // TODO: forget
   })
 
   // TODO: с учётом порядка ключей
