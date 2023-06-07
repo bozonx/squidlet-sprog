@@ -252,11 +252,11 @@ export abstract class SuperValueBase<T = any | any[]>
    * If it is a primitive you can't change its value.
    * To change its value get its parent and set value via parent like: parent.value = 5
    */
-  getValue = (pathTo: string): AllTypes | undefined => {
+  getValue = (pathTo: string, defaultValue?: any): AllTypes | undefined => {
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    return deepGet(this.values as any, pathTo)
+    return deepGet(this.values as any, pathTo, defaultValue)
   }
 
   /**

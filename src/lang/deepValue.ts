@@ -1,5 +1,6 @@
-import {deepGet, deepSet, deepDelete} from 'squidlet-lib'
+import {deepGetParent} from 'squidlet-lib';
 import {SuperScope} from '../lib/scope.js';
+import {isSuperValue} from '../lib/SuperValueBase.js';
 
 
 /**
@@ -15,7 +16,7 @@ export function getValue(scope: SuperScope) {
     const path: string = await scope.$resolve(p.path)
     const defaultValue: any | undefined = await scope.$resolve(p.defaultValue)
 
-    return deepGet(scope, path, defaultValue)
+    return scope.$super.getValue(path, defaultValue)
   }
 }
 
@@ -39,7 +40,7 @@ export function setValue(scope: SuperScope) {
     const path: string = await scope.$resolve(p.path)
     const value: any = await scope.$resolve(p.value)
 
-    deepSet(scope, path, value)
+    scope.$super.setValue(path, value)
   }
 }
 
@@ -53,7 +54,18 @@ export function setValue(scope: SuperScope) {
 export function deleteValue(scope: SuperScope) {
   return async (p: {path: string}) => {
     const path: string = await scope.$resolve(p.path)
+    const [parent, lastPathPart] = deepGetParent(
+      scope,
+      path
+    )
 
-    deepDelete(scope, path)
+    if (parent && typeof lastPathPart !== 'undefined') {
+      if (isSuperValue(parent)) {
+        parent.$super.forget(lastPathPart)
+      }
+      else {
+        delete parent[lastPathPart]
+      }
+    }
   }
 }

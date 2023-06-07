@@ -46,4 +46,7 @@ describe('scope', () => {
     assert.deepEqual(scope2.$super.values, {v0: 1})
   })
 
+
+  // TODO: test deep with overwrite
+
 })

@@ -97,6 +97,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly keys: string[] = []
   readonly defaultRo: boolean
   protected proxyFn = proxyData
+  private lowLayer?: SuperData
 
 
   get defaultDefinition(): SuperItemDefinition | undefined {
@@ -107,11 +108,13 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   constructor(
     scope: SuperScope,
     definition: Record<string, SuperItemInitDefinition> = {},
-    defaultRo: boolean = false
+    defaultRo: boolean = false,
+    lowLayer?: SuperData
   ) {
     super(scope)
     // save it to use later to define a new props
     this.defaultRo = defaultRo
+    this.lowLayer = lowLayer
 
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition

@@ -135,7 +135,12 @@ export function newScope<T = any>(initialVars: T = {} as T, previousScope?: Supe
     return previousScope as T & SuperScope
   }
 
-  const data = new SuperData({} as any)
+  const data = new SuperData(
+    {} as any,
+    undefined,
+    undefined,
+    //previousScope?.$super
+  )
   const scope: SuperScope = proxyScope(data)
 
   data.$$replaceScope(scope)
