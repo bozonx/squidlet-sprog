@@ -125,6 +125,9 @@ export function proxyScope(data: SuperData): SuperScope {
  * @param previousScope
  */
 export function newScope<T = any>(initialVars: T = {} as T, previousScope?: SuperScope): T & SuperScope {
+
+  // TODO: test что нельзя удалять переменные из scope
+
   const data = new SuperData(
     // TODO: для data наверное вообще не нужна scope
     {} as any,
@@ -139,6 +142,8 @@ export function newScope<T = any>(initialVars: T = {} as T, previousScope?: Supe
 
   return scope as T & SuperScope
 }
+
+
 
 
 

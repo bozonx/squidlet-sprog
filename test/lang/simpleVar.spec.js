@@ -20,14 +20,14 @@ describe('simpleVar', () => {
     await scope.$run(def)
 
     assert.equal(scope['v1'], 5)
-    assert.deepEqual(scope.$super.values, {v1: 5})
+    assert.deepEqual(scope.$super.clone(), {v1: 5})
     // delete var
     await scope.$run({
       $exp: 'deleteVar',
       name: 'v1',
     })
     assert.isUndefined(scope['v1'])
-    assert.deepEqual(scope.$super.values, {})
+    assert.deepEqual(scope.$super.clone(), {})
     assert.isUndefined(scope.$super.definition['v1'])
   })
 
