@@ -116,8 +116,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
     scope: SuperScope,
     definition: Record<keyof T, SuperItemInitDefinition>,
     defaultRo: boolean = false,
-    lowLayer?: SuperValueBase
+    lowLayer?: SuperStruct
   ) {
+    if (lowLayer && !lowLayer.isStruct) {
+      throw new Error(`Struct can inherit only other struct`)
+    }
+
     super(scope, lowLayer)
 
     this.layeredValues = proxifyLayeredValue(this.ownValues as any, lowLayer)
@@ -258,6 +262,15 @@ export class SuperStruct<T = Record<string, AllTypes>>
     }
 
     validateChildValue(name as string, definition, value)
+  }
+
+  getDefinition(key: keyof T): SuperItemDefinition | undefined {
+    if (this.definition[key]) {
+      return this.definition[key]
+    }
+    else if (this.lowLayer) {
+      return (this.lowLayer as SuperStruct).getDefinition(key as string)
+    }
   }
 
 

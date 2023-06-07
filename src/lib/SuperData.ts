@@ -165,8 +165,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     scope: SuperScope,
     definition: Record<string, SuperItemInitDefinition> = {},
     defaultRo: boolean = false,
-    lowLayer?: SuperValueBase
+    lowLayer?: SuperData
   ) {
+    if (lowLayer && !lowLayer.isData) {
+      throw new Error(`Super data can inherit only other super data`)
+    }
+
     super(scope, lowLayer)
     // save it to use later to define a new props
     this.defaultRo = defaultRo
@@ -373,6 +377,16 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     this.define(DEFAULT_DEFINITION_KEY, definition)
 
     this.events.emit(SUPER_VALUE_EVENTS.definition, DEFAULT_DEFINITION_KEY)
+  }
+
+  // TODO: можно переместить в SuperValueBase
+  getDefinition(key: string): SuperItemDefinition | undefined {
+    if (this.definition[key]) {
+      return this.definition[key]
+    }
+    else if (this.lowLayer) {
+      return (this.lowLayer as SuperData).getDefinition(key)
+    }
   }
 
   /**
