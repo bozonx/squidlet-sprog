@@ -113,7 +113,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
 
   constructor(
-    scope: SuperScope,
     definition: Record<keyof T, SuperItemInitDefinition>,
     defaultRo: boolean = false,
     lowLayer?: SuperStruct
@@ -122,7 +121,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
       throw new Error(`Struct can inherit only other struct`)
     }
 
-    super(scope, lowLayer as SuperValueBase | undefined)
+    super(lowLayer as SuperValueBase | undefined)
 
     this.layeredValues = proxifyLayeredValue(
       this.ownValues as any,

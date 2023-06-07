@@ -10,12 +10,7 @@ export abstract class SuperBase {
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
   protected inited: boolean = false
-  private myScope: SuperScope
   protected abstract proxyFn: (instance: any) => any
-
-  get scope(): SuperScope {
-    return this.myScope
-  }
 
   get isInitialized(): boolean {
     return this.inited
@@ -30,10 +25,6 @@ export abstract class SuperBase {
   }
 
 
-  protected constructor(scope: SuperScope) {
-    this.myScope = scope
-  }
-
   init(): any {
     // means that item is completely initiated
     this.inited = true
@@ -42,14 +33,6 @@ export abstract class SuperBase {
   $$setParent(parent: SuperBase, myPath: string) {
     this.myParent = parent
     this.myPath = myPath
-  }
-
-  /**
-   * Do it only if you are totally sure what you do.
-   * @param scope
-   */
-  $$replaceScope(scope: SuperScope) {
-    this.myScope = scope
   }
 
   /**

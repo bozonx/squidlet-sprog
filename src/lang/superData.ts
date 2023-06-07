@@ -1,6 +1,6 @@
 import {SuperScope} from '../lib/scope.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
-import {proxyData, ProxyfiedData, SuperData} from '../lib/SuperData.js';
+import {ProxyfiedData, SuperData} from '../lib/SuperData.js';
 
 
 /**
@@ -23,8 +23,7 @@ export function newSuperData<T = any>(scope: SuperScope) {
   }): Promise<T & ProxyfiedData> => {
     const definition = await scope.$resolve(p.definition)
     const defaultRo = await scope.$resolve(p.defaultRo)
-    const inner = new SuperData(scope, definition, defaultRo)
 
-    return proxyData(inner)
+    return (new SuperData(definition, defaultRo)).getProxy() as T & ProxyfiedData
   }
 }

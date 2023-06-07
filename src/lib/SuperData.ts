@@ -169,7 +169,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   // TODO: а зачем нужен scope, вместо него можно просто передавать low layer ???
 
   constructor(
-    scope: SuperScope,
     definition: Record<string, SuperItemInitDefinition> = {},
     defaultRo: boolean = false,
     lowLayer?: SuperData
@@ -178,7 +177,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       throw new Error(`Super data can inherit only other super data`)
     }
 
-    super(scope, lowLayer as SuperValueBase | undefined)
+    super(lowLayer as SuperValueBase | undefined)
     // save it to use later to define a new props
     this.defaultRo = defaultRo
     this.layeredValues = proxifyLayeredValue(this.ownValues, lowLayer as SuperValueBase | undefined)

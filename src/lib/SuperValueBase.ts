@@ -165,8 +165,8 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
 
-  protected constructor(scope: SuperScope, lowLayer?: SuperValueBase) {
-    super(scope);
+  protected constructor(lowLayer?: SuperValueBase) {
+    super()
 
     this.lowLayer = lowLayer
   }

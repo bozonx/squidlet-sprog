@@ -129,15 +129,12 @@ export function newScope<T = any>(initialVars: T = {} as T, previousScope?: Supe
   // TODO: test что нельзя удалять переменные из scope
 
   const data = new SuperData(
-    // TODO: для data наверное вообще не нужна scope
-    {} as any,
     undefined,
     undefined,
     previousScope?.$super
   )
   const scope: SuperScope = proxyScope(data)
 
-  data.$$replaceScope(scope)
   data.init(initialVars as any)
 
   return scope as T & SuperScope

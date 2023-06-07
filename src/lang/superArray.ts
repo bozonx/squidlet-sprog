@@ -1,5 +1,5 @@
 import {SuperScope} from '../lib/scope.js';
-import {proxyArray, ProxyfiedArray, SuperArray, SuperArrayDefinition} from '../lib/SuperArray.js';
+import {ProxyfiedArray, SuperArray, SuperArrayDefinition} from '../lib/SuperArray.js';
 
 
 /**
@@ -15,8 +15,7 @@ import {proxyArray, ProxyfiedArray, SuperArray, SuperArrayDefinition} from '../l
 export function newSuperArray(scope: SuperScope) {
   return async (p: {definition: Partial<SuperArrayDefinition>}): Promise<ProxyfiedArray> => {
     const definition = await scope.$resolve(p.definition)
-    const inner = new SuperArray(scope, definition)
 
-    return proxyArray(inner)
+    return (new SuperArray(definition)).getProxy()
   }
 }

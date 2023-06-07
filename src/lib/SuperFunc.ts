@@ -23,6 +23,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   protected proxyFn: (instance: any) => any = makeFuncProxy
 
   private readonly propsSetter
+  private readonly scope: SuperScope
 
 
   get props(): ProxyfiedStruct {
@@ -35,11 +36,11 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     props: Record<keyof T, SuperItemInitDefinition>,
     lines: SprogDefinition[]
   ) {
-    const funcScope: SuperScope = newScope(undefined, scope)
+    super()
 
-    super(funcScope)
+    this.scope = newScope(undefined, scope)
 
-    const propsStruct: ProxyfiedStruct = (new SuperStruct(scope, props, true)).getProxy()
+    const propsStruct: ProxyfiedStruct = (new SuperStruct(props, true)).getProxy()
 
     this.propsSetter = propsStruct.$super.init()
     // set prop to scope

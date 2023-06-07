@@ -437,13 +437,11 @@ describe('SuperData', () => {
   })
 
   it('layers', async () => {
-    const scope = {}
-    const dataBottom = new SuperData(scope)
+    const dataBottom = new SuperData()
 
     dataBottom.init({a: 1, b: 2})
 
     const dataTop = new SuperData(
-      scope,
       undefined,
       undefined,
       dataBottom
@@ -491,13 +489,11 @@ describe('SuperData', () => {
   })
 
   it('layers deep', async () => {
-    const scope = {}
-    const dataBottom = new SuperData(scope)
+    const dataBottom = new SuperData()
 
     dataBottom.init({a: {aa: 1}})
 
     const dataTop = new SuperData(
-      scope,
       undefined,
       undefined,
       dataBottom
@@ -520,13 +516,11 @@ describe('SuperData', () => {
   })
 
   it('get from bottom layer', async () => {
-    const scope = {}
-    const dataBottom = new SuperData(scope)
+    const dataBottom = new SuperData()
 
     dataBottom.init({a: {}})
 
     const dataTop = new SuperData(
-      scope,
       undefined,
       undefined,
       dataBottom
@@ -548,13 +542,11 @@ describe('SuperData', () => {
   })
 
   it('set to bottom layer from top if value has not defined on top', async () => {
-    const scope = {}
-    const dataBottom = new SuperData(scope)
+    const dataBottom = new SuperData()
 
     dataBottom.init({a: 1})
 
     const dataTop = new SuperData(
-      scope,
       undefined,
       undefined,
       dataBottom
@@ -570,15 +562,13 @@ describe('SuperData', () => {
   })
 
   it('deep super value', async () => {
-    const scope = {}
-    const dataBottom = new SuperData(scope)
-    const deepValue = new SuperData(scope)
+    const dataBottom = new SuperData()
+    const deepValue = new SuperData()
 
     deepValue.init({d: 1})
     dataBottom.init({a: deepValue.getProxy()})
 
     const dataTop = new SuperData(
-      scope,
       undefined,
       undefined,
       dataBottom
@@ -591,16 +581,14 @@ describe('SuperData', () => {
   })
 
   it('layers events whe set via top layer', async () => {
-    const scope = {}
     const spy1 = sinon.spy()
     const spy2 = sinon.spy()
-    const dataBottom = new SuperData(scope)
+    const dataBottom = new SuperData()
 
     dataBottom.subscribe(spy1)
     dataBottom.init({a: 1})
 
     const dataTop = new SuperData(
-      scope,
       undefined,
       undefined,
       dataBottom
@@ -619,16 +607,14 @@ describe('SuperData', () => {
   })
 
   it('layers events whe set via bottom layer', async () => {
-    const scope = {}
     const spy1 = sinon.spy()
     const spy2 = sinon.spy()
-    const dataBottom = new SuperData(scope)
+    const dataBottom = new SuperData()
 
     dataBottom.subscribe(spy1)
     dataBottom.init({a: 1})
 
     const dataTop = new SuperData(
-      scope,
       undefined,
       undefined,
       dataBottom

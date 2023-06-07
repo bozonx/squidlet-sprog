@@ -1,5 +1,5 @@
 import {SuperScope} from '../lib/scope.js';
-import {SuperStruct, proxyStruct, ProxyfiedStruct} from '../lib/SuperStruct.js';
+import {SuperStruct, ProxyfiedStruct} from '../lib/SuperStruct.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
 
 
@@ -23,8 +23,7 @@ export function newSuperStruct<T = any>(scope: SuperScope) {
   }): Promise<T & ProxyfiedStruct> => {
     const definition = await scope.$resolve(p.definition)
     const defaultRo = await scope.$resolve(p.defaultRo)
-    const inner = new SuperStruct(scope, definition, defaultRo)
 
-    return proxyStruct(inner)
+    return (new SuperStruct(definition, defaultRo)).getProxy() as T & ProxyfiedStruct
   }
 }
