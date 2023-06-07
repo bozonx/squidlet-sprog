@@ -436,6 +436,44 @@ describe('SuperData', () => {
     assert.deepEqual(data, {a1: 5})
   })
 
+  it('layers', async () => {
+    const scope = {}
+    const dataBottom = new SuperData(scope)
+
+    dataBottom.init({a: 1, b: 2})
+
+    const dataTop = new SuperData(
+      scope,
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.init({a: 5, c: 3})
+
+    assert.deepEqual(dataBottom.ownValues, {a: 1, b: 2})
+    assert.deepEqual(dataTop.ownValues, {a: 5, c: 3})
+    assert.deepEqual(dataBottom.myKeys(), ['a', 'b'])
+    assert.deepEqual(dataTop.myKeys(), ['a', 'c'])
+    assert.deepEqual(dataTop.allKeys(), ['a', 'c', 'b'])
+    assert.deepEqual(dataTop.clone(), {a: 5, b: 2, c: 3})
+    assert.equal(dataBottom.getValue('a'), 1)
+    assert.equal(dataTop.getValue('a'), 5)
+    assert.equal(dataTop.getValue('b'), 2)
+    // delete var always from both layers
+    dataTop.forget('a')
+    assert.deepEqual(dataBottom.myKeys(), ['b'])
+    assert.deepEqual(dataTop.myKeys(), ['c'])
+    assert.deepEqual(dataTop.allKeys(), ['c', 'b'])
+
+    // TODO: define
+    // TODO: check set own value
+    // TODO: check setValue
+    // TODO: check hasKey
+    // TODO: change events
+    // TODO: deep getValue, setValue
+  })
+
   // TODO: с учётом порядка ключей
   // it('clone', async () => {
   //   const scope = newScope()

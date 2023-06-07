@@ -13,6 +13,7 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
+import {proxifyLayeredValue} from './SuperData.js';
 
 
 
@@ -68,7 +69,7 @@ export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
         return (struct as any)[prop]
       }
       // else prop or object itself
-      return struct.values[prop]
+      return struct.layeredValues[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -76,7 +77,7 @@ export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
         return true
       }
 
-      return Object.keys(struct.values).includes(prop)
+      return struct.allKeys().includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
@@ -90,11 +91,11 @@ export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return Object.keys(struct.values)
+      return struct.myKeys()
     },
   }
 
-  return new Proxy(struct.values, handler) as ProxyfiedStruct
+  return new Proxy(struct.ownValues, handler) as ProxyfiedStruct
 }
 
 
@@ -106,16 +107,20 @@ export class SuperStruct<T = Record<string, AllTypes>>
   // It assumes that you will not change it after initialization
   readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
   // current values
-  readonly values = {} as T
+  readonly ownValues = {} as T
+  readonly layeredValues: T
   protected proxyFn = proxyStruct
 
 
   constructor(
     scope: SuperScope,
     definition: Record<keyof T, SuperItemInitDefinition>,
-    defaultRo: boolean = false
+    defaultRo: boolean = false,
+    lowLayer?: SuperValueBase
   ) {
-    super(scope)
+    super(scope, lowLayer)
+
+    this.layeredValues = proxifyLayeredValue(this.ownValues as any, lowLayer)
 
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr as keyof T])
@@ -143,7 +148,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
 
-      this.values[keyName] = this.setupChildValue(
+      this.ownValues[keyName] = this.setupChildValue(
         this.definition[keyName],
         keyStr,
         initialValues?.[keyName]
@@ -156,12 +161,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
   destroy = () => {
     super.destroy()
 
-    for (const key of Object.keys(this.values as any)) {
+    for (const key of this.myKeys()) {
       const keyName = key as keyof T
 
-      if (typeof this.values[keyName] === 'object' && (this.values[keyName] as any).destroy) {
+      if (typeof this.ownValues[keyName] === 'object' && (this.ownValues[keyName] as any).destroy) {
         // it will destroy itself and its children
-        (this.values[keyName] as SuperValueBase).destroy()
+        (this.ownValues[keyName] as SuperValueBase).destroy()
       }
     }
   }
@@ -178,13 +183,13 @@ export class SuperStruct<T = Record<string, AllTypes>>
   myKeys(): string[] {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return Object.keys(this.values as any)
+    return Object.keys(this.ownValues as any)
   }
 
   getOwnValue(key: string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return this.values[key as keyof T] as any
+    return this.ownValues[key as keyof T] as any
   }
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false) {
@@ -192,7 +197,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     this.validateItem(name, value, ignoreRo)
 
-    this.values[name] = this.setupChildValue(this.definition[name], keyStr, value)
+    this.ownValues[name] = this.setupChildValue(this.definition[name], keyStr, value)
 
     this.riseChildrenChangeEvent(keyStr)
   }

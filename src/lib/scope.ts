@@ -84,7 +84,7 @@ export function proxyScope(data: SuperData): SuperScope {
         return scopeFunctions[prop].bind(proxyfied)
       }
       // else var of scope
-      return data.values[prop]
+      return data.layeredValues[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -92,7 +92,7 @@ export function proxyScope(data: SuperData): SuperScope {
         return true
       }
 
-      return data.myKeys().includes(prop)
+      return data.allKeys().includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
@@ -111,11 +111,11 @@ export function proxyScope(data: SuperData): SuperScope {
 
       // TODO: Object.keys(data.values) поменять на data.myKeys()
 
-      return Object.keys(data.values)
+      return data.myKeys()
     },
   }
 
-  const proxyfied = new Proxy(data.values, handler) as SuperScope
+  const proxyfied = new Proxy(data.layeredValues, handler) as SuperScope
 
   return proxyfied
 }
@@ -128,18 +128,18 @@ export function proxyScope(data: SuperData): SuperScope {
  * @param previousScope
  */
 export function newScope<T = any>(initialVars: T = {} as T, previousScope?: SuperScope): T & SuperScope {
-  if (previousScope) {
-    // if previous scope set then use it
-    previousScope.$super.batchSet(initialVars as any)
-
-    return previousScope as T & SuperScope
-  }
+  // if (previousScope) {
+  //   // if previous scope set then use it
+  //   previousScope.$super.batchSet(initialVars as any)
+  //
+  //   return previousScope as T & SuperScope
+  // }
 
   const data = new SuperData(
     {} as any,
     undefined,
     undefined,
-    //previousScope?.$super
+    previousScope?.$super
   )
   const scope: SuperScope = proxyScope(data)
 

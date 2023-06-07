@@ -5,9 +5,9 @@ import {
   deepSet,
   deepClone,
   splitDeepPath,
-  joinDeepPath
+  joinDeepPath,
+  deduplicate
 } from 'squidlet-lib';
-import {SuperScope} from './scope.js';
 import {All_TYPES, AllTypes, SIMPLE_TYPES, SimpleType, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
@@ -17,6 +17,7 @@ import {
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 import {SuperBase} from './SuperBase.js';
+import {SuperScope} from './scope.js';
 
 
 export interface SuperValuePublic {
@@ -150,15 +151,25 @@ export abstract class SuperValueBase<T = any | any[]>
   implements SuperValuePublic
 {
   readonly isSuperValue = true
-  readonly abstract values: T
+  // values only of this layer. Do not use it, use setValue, getValue instead
+  readonly abstract ownValues: T
+  // proxy which allows to manipulate with all layers. Do not use it at all.
+  // it only for getValue and setValue and other inner methods.
+  readonly abstract layeredValues: T
   events = new IndexedEventEmitter()
-
+  readonly lowLayer?: SuperValueBase
   protected links: SuperLinkItem[] = []
 
   get isDestroyed(): boolean {
     return this.events.isDestroyed
   }
 
+
+  protected constructor(scope: SuperScope, lowLayer?: SuperValueBase) {
+    super(scope);
+
+    this.lowLayer = lowLayer
+  }
 
   init(): any {
     super.init()
@@ -198,8 +209,8 @@ export abstract class SuperValueBase<T = any | any[]>
     super.$$setParent(parent, myPath)
     // reregister path of all the super children
     for (const childId of this.myKeys()) {
-      const item = this.values[childId as keyof T] as SuperValueBase
-
+      const item = this.ownValues[childId as keyof T] as SuperValueBase
+      // TODO: нужно тоже делать для слоя ниже!!!!
       // TODO: check isSuper instead
       if (isSuperValue(item)) item.$$setParent(this, this.makeChildPath(childId))
     }
@@ -215,10 +226,14 @@ export abstract class SuperValueBase<T = any | any[]>
    */
   abstract myKeys(): (string | number)[]
 
+  /**
+   * Get only own value not bottom layer and not deep
+   * @param key
+   */
   abstract getOwnValue(key: string | number): AllTypes
 
   /**
-   * Set value to own child, not deeper.
+   * Set value to own child, not deeper and not to bottom layer.
    * And rise an event of it child
    * @param key
    * @param value
@@ -236,6 +251,13 @@ export abstract class SuperValueBase<T = any | any[]>
     this.events.removeListener(handlerIndex, SUPER_VALUE_EVENTS.change)
   }
 
+  allKeys(): string[] {
+    return deduplicate([
+      ...(this.lowLayer?.allKeys() || []),
+      ...this.myKeys(),
+    ])
+  }
+
   /**
    * It checks does the last parent or myself has key
    * @param pathTo
@@ -244,7 +266,7 @@ export abstract class SuperValueBase<T = any | any[]>
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    return deepHas(this.values as any, pathTo)
+    return deepHas(this.layeredValues as any, pathTo)
   }
 
   /**
@@ -256,7 +278,10 @@ export abstract class SuperValueBase<T = any | any[]>
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    return deepGet(this.values as any, pathTo, defaultValue)
+
+    //return (this.layeredValues as any)[pathTo]
+
+    return deepGet(this.layeredValues as any, pathTo, defaultValue)
   }
 
   /**
@@ -276,7 +301,7 @@ export abstract class SuperValueBase<T = any | any[]>
     }
     else {
       // deep value
-      deepSet(this.values as any, pathTo, newValue)
+      deepSet(this.layeredValues as any, pathTo, newValue)
     }
   }
 
@@ -302,6 +327,9 @@ export abstract class SuperValueBase<T = any | any[]>
     externalKey: string | number,
     myKey: string | number
   ): number => {
+
+    // TODO: если личного значения нет то направить на слой ниже
+
     const linkId = this.links.length
     const externalKeyPath = externalSuperValue.makeChildPath(externalKey)
     const myKeyPath = this.makeChildPath(myKey)
@@ -351,6 +379,9 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   unlink(linkId: number) {
+
+    // TODO: если личного значения нет то направить на слой ниже
+
     const link = this.links[linkId]
 
     if (!link) return
@@ -375,7 +406,7 @@ export abstract class SuperValueBase<T = any | any[]>
   clone = (): T => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return deepClone(this.values)
+    return deepClone(this.layeredValues)
   }
 
   detachedCopy() {
@@ -410,7 +441,7 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * Setup child value according the definition and init it.
+   * Setup onw child value according the definition and init it.
    * It is the value is primitive then it checks its type and returns
    * default or initial value.
    * If the child is Super Struct or Array
@@ -569,7 +600,8 @@ export abstract class SuperValueBase<T = any | any[]>
     //    то надо отписаться от старых событий - зайти в старого родителя и отписаться
 
     for (const key of this.myKeys()) {
-      const value: SuperValueBase = (this.values as any)[key]
+      // TODO: тут должны быть ownValues или layered???
+      const value: SuperValueBase = (this.ownValues as any)[key]
 
       if (typeof value !== 'object' || !value.isSuperValue) continue
 

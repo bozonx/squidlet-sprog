@@ -1,6 +1,6 @@
-import {deepClone, spliceItem, omitObj, concatUniqStrArrays} from 'squidlet-lib';
+import {deepClone, spliceItem, omitObj, concatUniqStrArrays, deduplicate} from 'squidlet-lib';
 import {
-  checkDefinition, isSuperValue,
+  checkDefinition,
   prepareDefinitionItem,
   SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
   SUPER_VALUE_PROP,
@@ -52,7 +52,7 @@ export function proxyData(data: SuperData): ProxyfiedData {
         return (data as any)[prop]
       }
       // else prop or object itself
-      return data.values[prop]
+      return data.layeredValues[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -60,10 +60,12 @@ export function proxyData(data: SuperData): ProxyfiedData {
         return true
       }
 
-      return Object.keys(data.values).includes(prop)
+      return data.allKeys().includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
+
+      // TODO: а почему не в слой???
       data.setOwnValue(prop, newValue)
 
       return true
@@ -76,11 +78,63 @@ export function proxyData(data: SuperData): ProxyfiedData {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return Object.keys(data.values)
+      return data.myKeys()
     },
   }
 
-  return new Proxy(data.values, handler) as ProxyfiedData
+  return new Proxy(data.ownValues, handler) as ProxyfiedData
+}
+
+export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: SuperValueBase) {
+  const handler: ProxyHandler<Record<any, any>> = {
+    get(target: any, prop: string) {
+      if (Object.keys(topValue).includes(prop)) return topValue[prop]
+
+      return bottomData?.getValue(prop)
+    },
+
+    has(target: any, prop: string): boolean {
+      return Object.keys(topValue).includes(prop)
+        || (bottomData?.allKeys() || []).includes(prop)
+    },
+
+    set(target: any, prop: string, newValue: any): boolean {
+      if (Object.keys(topValue).includes(prop)) {
+        // if var is defined in top value - set to it
+        topValue[prop] = newValue
+      }
+      else if (bottomData && Object.keys(bottomData.ownValues).includes(prop)) {
+        // TODO: почему own ???
+        // if var is defined in bottom value - set to it
+        bottomData.setOwnValue(prop, newValue)
+      }
+      else {
+        // otherwise just define a new var in top value
+        topValue[prop] = newValue
+      }
+
+      return true
+    },
+
+    deleteProperty(target: any, prop: string): boolean {
+      throw new Error(`Don't delete via value proxy!`)
+      // delete topValue[prop]
+      //
+      // if (bottomData) bottomData.forget(prop)
+      //
+      // return true
+    },
+
+    ownKeys(): ArrayLike<string | symbol> {
+      // it has to return all the keys on Reflect.ownKeys()
+      return deduplicate([
+        ...(bottomData?.allKeys() || []),
+        ...Object.keys(topValue),
+      ])
+    },
+  }
+
+  return new Proxy(topValue, handler)
 }
 
 
@@ -92,29 +146,30 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   // put definition via special method, not straight
   readonly definition: Record<string, SuperItemDefinition> = {} as any
   // current values
-  readonly values: Record<string, any> = {}
+  readonly ownValues: Record<string, any> = {}
+  readonly layeredValues: Record<string, any>
   // ordered keys
   readonly keys: string[] = []
   readonly defaultRo: boolean
   protected proxyFn = proxyData
-  private lowLayer?: SuperData
 
 
   get defaultDefinition(): SuperItemDefinition | undefined {
     return this.definition[DEFAULT_DEFINITION_KEY]
   }
 
+  // TODO: а зачем нужен scope, вместо него можно просто передавать low layer ???
 
   constructor(
     scope: SuperScope,
     definition: Record<string, SuperItemInitDefinition> = {},
     defaultRo: boolean = false,
-    lowLayer?: SuperData
+    lowLayer?: SuperValueBase
   ) {
-    super(scope)
+    super(scope, lowLayer)
     // save it to use later to define a new props
     this.defaultRo = defaultRo
-    this.lowLayer = lowLayer
+    this.layeredValues = proxifyLayeredValue(this.ownValues, lowLayer)
 
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition
@@ -154,8 +209,10 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       if (!def) {
         throw new Error(`Can't resolve definition of key "${key}"`)
       }
-
-      this.values[key] = this.setupChildValue(def, key, initialValues?.[key])
+      // add key
+      if (!this.keys.includes(key)) this.keys.push(key)
+      // set value
+      this.ownValues[key] = this.setupChildValue(def, key, initialValues?.[key])
     }
 
     return super.init()
@@ -164,16 +221,19 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   destroy = () => {
     super.destroy()
 
-    for (const key of Object.keys(this.values)) {
-      if (typeof this.values[key] === 'object' && this.values[key].destroy) {
+    for (const key of Object.keys(this.ownValues)) {
+      if (typeof this.ownValues[key] === 'object' && this.ownValues[key].destroy) {
         // it will destroy itself and its children
-        (this.values[key] as SuperValueBase).destroy()
+        (this.ownValues[key] as SuperValueBase).destroy()
       }
     }
   }
 
 
   isKeyReadonly(key: string | number): boolean {
+
+    // TODO: лучше ещё и в нижнем слое спросить
+
     // TODO: что  случае с элементом массива???
     if (!this.definition[key]) {
       throw new Error(`Data doesn't have key ${key}`)
@@ -182,16 +242,18 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return Boolean(this.definition?.[key].readonly)
   }
 
+  // TODO: rename to ownKeys
   myKeys(): string[] {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     return [...this.keys]
   }
 
+
   getOwnValue(key: string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return this.values[key] as any
+    return this.ownValues[key] as any
   }
 
   setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean) {
@@ -207,7 +269,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     // TODO: для массивов разрешать устанавливать value без definition
 
-    this.values[key] = this.setupChildValue(definition, key, value)
+    this.ownValues[key] = this.setupChildValue(definition, key, value)
 
     if (!this.keys.includes(key)) this.keys.push(key)
 
@@ -320,7 +382,13 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     delete this.definition[key]
 
     if (key !== DEFAULT_DEFINITION_KEY) {
-      delete this.values[key]
+      delete this.ownValues[key]
+
+      if (this.lowLayer) {
+        const lowLayer = this.lowLayer as SuperData
+
+        if (lowLayer.forget) lowLayer.forget(key)
+      }
 
       // TODO: надо тогда вернуть на any иначе непонятно как проверять значения массива
       // TODO: либо реально удалить просто
@@ -352,7 +420,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   private makeOrderedObject(): Record<string, any> {
     const res: Record<string, any> = {}
 
-    for (const key of this.keys) res[key] = this.values[key]
+    for (const key of this.allKeys()) res[key] = this.layeredValues[key]
 
     return res
   }
