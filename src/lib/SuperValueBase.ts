@@ -305,13 +305,7 @@ export abstract class SuperValueBase<T = any | any[]>
       else if (this.lowLayer && this.lowLayer.allKeys().includes(splat[0])) {
         const lowPath = joinDeepPath([splat[0]])
 
-        const wasSet = this.lowLayer.setValue(lowPath, newValue)
-
-        if (wasSet) {
-          this.riseChildrenChangeEvent(lowPath)
-        }
-
-        return wasSet
+        return this.lowLayer.setValue(lowPath, newValue)
       }
       else {
         // if it is a new var then set it to top layer

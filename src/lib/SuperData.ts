@@ -1,11 +1,18 @@
-import {deepClone, spliceItem, omitObj, concatUniqStrArrays, deduplicate} from 'squidlet-lib';
+import {
+  deepClone,
+  spliceItem,
+  omitObj,
+  concatUniqStrArrays,
+  deduplicate,
+  splitDeepPath
+} from 'squidlet-lib';
 import {
   checkDefinition,
   prepareDefinitionItem,
   SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
   SUPER_VALUE_PROP,
   SuperValueBase,
-  SuperValuePublic
+  SuperValuePublic,
 } from './SuperValueBase.js';
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
@@ -218,6 +225,23 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       if (!this.keys.includes(key)) this.keys.push(key)
       // set value
       this.ownValues[key] = this.setupChildValue(def, key, initialValues?.[key])
+    }
+
+    if (this.lowLayer) {
+      this.lowLayer.subscribe((target: SuperValueBase, path) => {
+        if (!this.lowLayer?.isInitialized) return
+
+
+        if (typeof path === 'undefined') {
+          return
+        }
+        const splatPath = splitDeepPath(path)
+        const childKey = splatPath[0]
+
+        if (!this.myKeys().includes(String(childKey))) {
+          this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
+        }
+      })
     }
 
     return super.init()

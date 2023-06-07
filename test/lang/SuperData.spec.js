@@ -590,7 +590,7 @@ describe('SuperData', () => {
     assert.equal(dataTop.getValue('a.d'), 1)
   })
 
-  it('layers events', async () => {
+  it('layers events whe set via top layer', async () => {
     const scope = {}
     const spy1 = sinon.spy()
     const spy2 = sinon.spy()
@@ -610,6 +610,34 @@ describe('SuperData', () => {
     dataTop.init()
 
     dataTop.setValue('a', 2)
+
+    assert.equal(dataBottom.getValue('a'), 2)
+    assert.equal(dataTop.getValue('a'), 2)
+    spy1.should.have.been.calledTwice
+    // it have to rise an event too
+    spy2.should.have.been.calledTwice
+  })
+
+  it('layers events whe set via bottom layer', async () => {
+    const scope = {}
+    const spy1 = sinon.spy()
+    const spy2 = sinon.spy()
+    const dataBottom = new SuperData(scope)
+
+    dataBottom.subscribe(spy1)
+    dataBottom.init({a: 1})
+
+    const dataTop = new SuperData(
+      scope,
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.subscribe(spy2)
+    dataTop.init()
+
+    dataBottom.setValue('a', 2)
 
     assert.equal(dataBottom.getValue('a'), 2)
     assert.equal(dataTop.getValue('a'), 2)
