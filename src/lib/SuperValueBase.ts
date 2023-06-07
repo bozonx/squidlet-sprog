@@ -251,7 +251,7 @@ export abstract class SuperValueBase<T = any | any[]>
     this.events.removeListener(handlerIndex, SUPER_VALUE_EVENTS.change)
   }
 
-  allKeys(): string[] {
+  allKeys(): (string | number)[] {
     return deduplicate([
       ...(this.lowLayer?.allKeys() || []),
       ...this.myKeys(),
@@ -297,7 +297,18 @@ export abstract class SuperValueBase<T = any | any[]>
 
     if (splat.length === 1) {
       // own value - there splat[0] is number or string
-      this.setOwnValue(splat[0], newValue)
+      if (this.myKeys().includes(splat[0])) {
+        this.setOwnValue(splat[0], newValue)
+      }
+      else if (this.lowLayer && this.lowLayer.allKeys().includes(splat[0])) {
+        const lowPath = joinDeepPath([splat[0]])
+
+        this.lowLayer.setValue(lowPath, newValue)
+      }
+      else {
+        // if it is a new var then set it to top layer
+        this.setOwnValue(splat[0], newValue)
+      }
     }
     else {
       // deep value

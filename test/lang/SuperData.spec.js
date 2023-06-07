@@ -467,7 +467,7 @@ describe('SuperData', () => {
     assert.deepEqual(dataTop.allKeys(), ['b', 'c'])
     // setValue
     dataTop.setValue('a', 7)
-    assert.deepEqual(dataBottom.myKeys(), ['b'])
+    assert.deepEqual(dataBottom.allKeys(), ['b'])
     assert.deepEqual(dataTop.myKeys(), ['c', 'a'])
     assert.deepEqual(dataTop.allKeys(), ['b', 'c', 'a'])
     assert.isUndefined(dataBottom.getValue('a'))
@@ -526,9 +526,6 @@ describe('SuperData', () => {
     assert.equal(dataTop.getValue('a.cc'), 1)
     assert.isFalse(dataBottom.hasKey('a.cc'))
     assert.isTrue(dataTop.hasKey('a.cc'))
-
-    // TODO: если нижнее значение определено, а верхнее нет, то должно устанавливаться на нижнее
-    // TODO: forget deep
   })
 
   it('get from bottom layer', async () => {
@@ -559,7 +556,30 @@ describe('SuperData', () => {
     assert.isFalse(dataTop.hasKey('a.bb'))
   })
 
-  // TODO: test deep with super
+  it('set to bottom layer from top if value has not defined on top', async () => {
+    const scope = {}
+    const dataBottom = new SuperData(scope)
+
+    dataBottom.init({a: 1})
+
+    const dataTop = new SuperData(
+      scope,
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.init()
+
+    dataTop.setValue('a', 2)
+
+    assert.equal(dataBottom.getValue('a'), 2)
+    assert.equal(dataTop.getValue('a'), 2)
+    assert.isUndefined(dataTop.getOwnValue('a'))
+  })
+
+
+  // TODO: test deep with super. test forget
 
 
 

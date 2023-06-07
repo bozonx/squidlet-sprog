@@ -96,22 +96,19 @@ export function proxyScope(data: SuperData): SuperScope {
     },
 
     set(target: any, prop: string, newValue: any): boolean {
-      data.setOwnValue(prop, newValue)
+      data.setValue(prop, newValue)
 
       return true
     },
 
     deleteProperty(target: any, prop: string): boolean {
-      data.forget(prop)
-
-      return true
+      throw new Error(`It is forbidden to delete variables from scope`)
+      //data.forget(prop)
+      //return true
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-
-      // TODO: Object.keys(data.values) поменять на data.myKeys()
-
-      return data.myKeys()
+      return data.allKeys() as string[]
     },
   }
 
@@ -128,13 +125,6 @@ export function proxyScope(data: SuperData): SuperScope {
  * @param previousScope
  */
 export function newScope<T = any>(initialVars: T = {} as T, previousScope?: SuperScope): T & SuperScope {
-  // if (previousScope) {
-  //   // if previous scope set then use it
-  //   previousScope.$super.batchSet(initialVars as any)
-  //
-  //   return previousScope as T & SuperScope
-  // }
-
   const data = new SuperData(
     {} as any,
     undefined,
