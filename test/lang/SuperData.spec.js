@@ -455,7 +455,7 @@ describe('SuperData', () => {
     assert.deepEqual(dataTop.ownValues, {a: 5, c: 3})
     assert.deepEqual(dataBottom.myKeys(), ['a', 'b'])
     assert.deepEqual(dataTop.myKeys(), ['a', 'c'])
-    assert.deepEqual(dataTop.allKeys(), ['a', 'c', 'b'])
+    assert.deepEqual(dataTop.allKeys(), ['a', 'b', 'c'])
     assert.deepEqual(dataTop.clone(), {a: 5, b: 2, c: 3})
     assert.equal(dataBottom.getValue('a'), 1)
     assert.equal(dataTop.getValue('a'), 5)
@@ -464,12 +464,32 @@ describe('SuperData', () => {
     dataTop.forget('a')
     assert.deepEqual(dataBottom.myKeys(), ['b'])
     assert.deepEqual(dataTop.myKeys(), ['c'])
-    assert.deepEqual(dataTop.allKeys(), ['c', 'b'])
+    assert.deepEqual(dataTop.allKeys(), ['b', 'c'])
+    // setValue
+    dataTop.setValue('a', 7)
+    assert.deepEqual(dataBottom.myKeys(), ['b'])
+    assert.deepEqual(dataTop.myKeys(), ['c', 'a'])
+    assert.deepEqual(dataTop.allKeys(), ['b', 'c', 'a'])
+    assert.isUndefined(dataBottom.getValue('a'))
+    assert.equal(dataTop.getValue('a'), 7)
+    assert.isFalse(dataBottom.hasKey('a'))
+    assert.isTrue(dataTop.hasKey('a'))
+    // setOwnValue
+    dataTop.setOwnValue('d', 1)
+    assert.isUndefined(dataBottom.getValue('d'))
+    assert.equal(dataTop.getValue('d'), 1)
+    assert.isFalse(dataBottom.hasKey('d'))
+    assert.isTrue(dataTop.hasKey('d'))
+    // define
+    dataBottom.define('e', {type: "number", default: 2})
+    dataTop.define('e', {type: "string", default: 's'})
+    assert.equal(dataBottom.getValue('e'), 2)
+    assert.equal(dataTop.getValue('e'), 's')
+    dataTop.setValue('e', 'a')
+    assert.equal(dataBottom.getValue('e'), 2)
+    assert.equal(dataTop.getValue('e'), 'a')
 
-    // TODO: define
-    // TODO: check set own value
-    // TODO: check setValue
-    // TODO: check hasKey
+
     // TODO: change events
     // TODO: deep getValue, setValue
   })
