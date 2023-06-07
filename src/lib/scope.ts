@@ -126,6 +126,7 @@ export function proxyScope(data: SuperData): SuperScope {
  */
 export function newScope<T = any>(initialVars: T = {} as T, previousScope?: SuperScope): T & SuperScope {
   const data = new SuperData(
+    // TODO: для data наверное вообще не нужна scope
     {} as any,
     undefined,
     undefined,

@@ -579,6 +579,7 @@ describe('SuperData', () => {
   })
 
 
+  // TODO: test deep definition - если нет в верхнем то взять из нижнего
   // TODO: test deep with super. test forget
 
 

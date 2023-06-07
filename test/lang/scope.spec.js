@@ -24,7 +24,7 @@ describe('scope', () => {
       value: 2,
     })
 
-    assert.deepEqual(scope2.$super.values, {v0: 0, v1: 1, v2: 2, v3: 3})
+    assert.deepEqual(scope2.$super.clone(), {v0: 0, v1: 1, v2: 2, v3: 3})
     assert.deepEqual(scope2.$super.definition['v1'].type, 'number')
     // catch changes from scope2
     scope1.$super.subscribe(spy)
@@ -42,8 +42,8 @@ describe('scope', () => {
       value: 1,
     })
 
-    assert.deepEqual(scope1.$super.values, {v0: 0})
-    assert.deepEqual(scope2.$super.values, {v0: 1})
+    assert.deepEqual(scope1.$super.clone(), {v0: 0})
+    assert.deepEqual(scope2.$super.clone(), {v0: 1})
   })
 
 
