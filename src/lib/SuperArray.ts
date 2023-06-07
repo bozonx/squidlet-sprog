@@ -137,7 +137,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   // definition for all the items of array
   readonly definition: SuperArrayDefinition
   readonly ownValues: T[] = []
-  //readonly layeredValues: T[]
+  //protected readonly layeredValues: T[]
   protected proxyFn = proxyArray
 
 

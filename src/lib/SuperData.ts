@@ -147,6 +147,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly definition: Record<string, SuperItemDefinition> = {} as any
   // current values
   readonly ownValues: Record<string, any> = {}
+  // TODO: сделать protected
   readonly layeredValues: Record<string, any>
   // ordered keys
   readonly keys: string[] = []
