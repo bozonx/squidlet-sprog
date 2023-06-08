@@ -216,4 +216,34 @@ describe('ifElse', () => {
     assert.equal(scope['topVal'], 2)
   })
 
+  //////// SWITCH CASE
+
+  it('nested', async () => {
+    const scope = newScope({a: 'b', b: 'b'})
+
+    const res = await scope.$run({
+      $exp: 'ifElse',
+      switch: {
+        $exp: 'getValue',
+        path: 'a',
+      },
+      items: [
+        {
+          case: {
+            $exp: 'getValue',
+            path: 'b'
+          },
+          lines: [
+            {
+              $exp: 'superReturn',
+              value: 1,
+            }
+          ]
+        },
+      ]
+    })
+
+    assert.equal(res, 1)
+  })
+
 })

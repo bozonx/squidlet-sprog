@@ -5,19 +5,25 @@ import {SprogDefinition} from '../types/types.js';
 import {EXP_MARKER} from '../constants.js';
 import {SUPER_RETURN} from '../lib/SuperFunc.js';
 import {BREAK_CYCLE, CONTINUE_CYCLE} from './forEach.js';
+import {PrimitiveType} from '../types/valueTypes.js';
 
 
 interface IfElseItem {
-  condition: SprogDefinition[]
+  condition?: SprogDefinition[]
+  case: SprogDefinition[] | PrimitiveType
   lines: SprogDefinition[]
 }
 
 // TODO: add switch into isElse - можно даже смешивать
+// TODO: add default
 
 /**
  * If else conditions blocks
  * params:
  *   $exp: ifElse
+ *   switch:
+ *     $exp: getValue
+ *     path: myValue
  *   # The first is IF, the last is ELSE or ELSE IF and in the middle always ELSE IF
  *   items:
  *     # at top level condition is logic and
@@ -31,14 +37,31 @@ interface IfElseItem {
  *         - $exp: setValue
  *           path: someVar
  *           value: 5
+ *     - case:
+ *         $exp: getValue
+ *         path: comparedValue
+ *       lines:
+ *         - ...
  */
 export function ifElse(scope: SuperScope) {
-  return async (p: { items: IfElseItem[] }) => {
+  return async (p: {
+    switch?: SprogDefinition | PrimitiveType,
+    items: IfElseItem[]
+  }) => {
+    let switchPrimitive: PrimitiveType | undefined
+
+    if (p.switch) switchPrimitive = await scope.$resolve(p.switch)
+
     for (const itemIndex in p.items) {
       const item = p.items[itemIndex]
       // all the item has to have line. But it can be an empty array
       if (!item.lines) {
         throw new Error(`ifElse statement has to have lines`)
+      }
+      else if (typeof item.case !== 'undefined') {
+        const resolvedCase = await scope.$resolve(item.case)
+        // if "case" doesn't match "switch" do not execute lines
+        if (resolvedCase !== switchPrimitive) continue
       }
       // the first item is IF()
       else if (Number(itemIndex) === 0 && !item.condition) {
