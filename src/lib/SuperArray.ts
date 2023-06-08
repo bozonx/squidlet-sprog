@@ -236,7 +236,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return this.isReadOnly
   }
 
-  myKeys(): number[] {
+  ownKeys(): number[] {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     return arrayKeys(this.ownValues)

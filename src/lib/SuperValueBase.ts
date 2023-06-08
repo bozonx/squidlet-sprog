@@ -208,7 +208,7 @@ export abstract class SuperValueBase<T = any | any[]>
   $$setParent(parent: SuperValueBase, myPath: string) {
     super.$$setParent(parent, myPath)
     // reregister path of all the super children
-    for (const childId of this.myKeys()) {
+    for (const childId of this.ownKeys()) {
       const item = this.ownValues[childId as keyof T] as SuperValueBase
       // TODO: нужно тоже делать для слоя ниже!!!!
       // TODO: check isSuper instead
@@ -224,7 +224,7 @@ export abstract class SuperValueBase<T = any | any[]>
   /**
    * Get own keys or indexes
    */
-  abstract myKeys(): (string | number)[]
+  abstract ownKeys(): (string | number)[]
 
   /**
    * Get only own value not bottom layer and not deep
@@ -255,7 +255,7 @@ export abstract class SuperValueBase<T = any | any[]>
   allKeys(): (string | number)[] {
     return deduplicate([
       ...(this.lowLayer?.allKeys() || []),
-      ...this.myKeys(),
+      ...this.ownKeys(),
     ])
   }
 
@@ -299,7 +299,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
     if (splat.length === 1) {
       // own value - there splat[0] is number or string
-      if (this.myKeys().includes(splat[0])) {
+      if (this.ownKeys().includes(splat[0])) {
         return this.setOwnValue(splat[0], newValue)
       }
       else if (this.lowLayer && this.lowLayer.allKeys().includes(splat[0])) {
@@ -612,7 +612,7 @@ export abstract class SuperValueBase<T = any | any[]>
     //    Но при этом если объект был переназначен другому родителю
     //    то надо отписаться от старых событий - зайти в старого родителя и отписаться
 
-    for (const key of this.myKeys()) {
+    for (const key of this.ownKeys()) {
       // TODO: тут должны быть ownValues или layered???
       const value: SuperValueBase = (this.ownValues as any)[key]
 

@@ -85,7 +85,7 @@ export function proxyData(data: SuperData): ProxyfiedData {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return data.myKeys()
+      return data.ownKeys()
     },
   }
 
@@ -228,7 +228,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
         const splatPath = splitDeepPath(path)
         const childKeyStr = String(splatPath[0])
         // if it is another key not I have then rise an event of my level
-        if (!this.myKeys().includes(childKeyStr)) {
+        if (!this.ownKeys().includes(childKeyStr)) {
           this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
         }
       })
@@ -259,8 +259,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return def.readonly
   }
 
-  // TODO: rename to ownKeys
-  myKeys(): string[] {
+  ownKeys(): string[] {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     return [...this.keys]

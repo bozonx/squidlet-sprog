@@ -91,7 +91,7 @@ export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return struct.myKeys()
+      return struct.ownKeys()
     },
   }
 
@@ -167,7 +167,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   destroy = () => {
     super.destroy()
 
-    for (const key of this.myKeys()) {
+    for (const key of this.ownKeys()) {
       const keyName = key as keyof T
 
       if (typeof this.ownValues[keyName] === 'object' && (this.ownValues[keyName] as any).destroy) {
@@ -186,7 +186,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     return Boolean(this.definition?.[key as keyof T].readonly)
   }
 
-  myKeys(): string[] {
+  ownKeys(): string[] {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     return Object.keys(this.ownValues as any)

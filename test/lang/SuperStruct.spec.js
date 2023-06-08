@@ -47,7 +47,7 @@ describe('SuperStruct', () => {
     assert.throws(() => struct.setNull('p1'))
     assert.throws(() => struct.clone())
     // from struct
-    assert.throws(() => struct.myKeys())
+    assert.throws(() => struct.ownKeys())
     assert.throws(() => struct.getOwnValue('p1'))
     assert.throws(() => struct.setOwnValue('p1', 7))
     assert.throws(() => struct.toDefaultValue('p1'))
@@ -313,7 +313,7 @@ describe('SuperStruct', () => {
     assert.equal(struct.$super.getOwnValue('p1'), 5)
     assert.isTrue(struct.$super.isKeyReadonly('p1'))
     assert.isTrue(struct.$super.hasKey('p1'))
-    assert.deepEqual(struct.$super.myKeys(), ['p1', 'p2'])
+    assert.deepEqual(struct.$super.ownKeys(), ['p1', 'p2'])
     spy.should.have.been.calledOnce
 
     struct.$super.setNull('p2')
