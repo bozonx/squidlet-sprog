@@ -10,12 +10,10 @@ import {PrimitiveType} from '../types/valueTypes.js';
 
 interface IfElseItem {
   condition?: SprogDefinition[]
-  case: SprogDefinition[] | PrimitiveType
+  case?: SprogDefinition[] | PrimitiveType
+  default?: true
   lines: SprogDefinition[]
 }
-
-// TODO: add switch into isElse - можно даже смешивать
-// TODO: add default
 
 /**
  * If else conditions blocks
@@ -42,6 +40,9 @@ interface IfElseItem {
  *         path: comparedValue
  *       lines:
  *         - ...
+ *     - default: true
+ *       lines:
+ *         - ...
  */
 export function ifElse(scope: SuperScope) {
   return async (p: {
@@ -57,6 +58,9 @@ export function ifElse(scope: SuperScope) {
       // all the item has to have line. But it can be an empty array
       if (!item.lines) {
         throw new Error(`ifElse statement has to have lines`)
+      }
+      else if (item.default === true) {
+        // just skip other checks
       }
       else if (typeof item.case !== 'undefined') {
         const resolvedCase = await scope.$resolve(item.case)
@@ -86,29 +90,33 @@ export function ifElse(scope: SuperScope) {
       }
 
       ////// Condition is true - execute lines
-
-      if (!item.lines.length) return
-      // new scope layer for block of code
-      const exeScope: SuperScope = newScope(undefined, scope)
-      // just execute a block if condition is true
-      for (const line of item.lines) {
-        if ((line[EXP_MARKER] as any) === CONTINUE_CYCLE) {
-          return '$$' + CONTINUE_CYCLE
-        }
-        else if ((line[EXP_MARKER] as any) === BREAK_CYCLE) {
-          return '$$' + BREAK_CYCLE
-        }
-        else if (line[EXP_MARKER] === SUPER_RETURN) {
-          const res = await exeScope.$run(line)
-
-          if (typeof res === 'undefined') return '$$' + BREAK_CYCLE
-          else return res
-        }
-
-        await exeScope.$run(line)
-      }
-      // Stop executing
-      return
+      return executeLines(scope, item)
     }
   }
+}
+
+
+async function executeLines(scope: SuperScope, item: IfElseItem) {
+  if (!item.lines.length) return
+  // new scope layer for block of code
+  const exeScope: SuperScope = newScope(undefined, scope)
+  // just execute a block if condition is true
+  for (const line of item.lines) {
+    if ((line[EXP_MARKER] as any) === CONTINUE_CYCLE) {
+      return '$$' + CONTINUE_CYCLE
+    }
+    else if ((line[EXP_MARKER] as any) === BREAK_CYCLE) {
+      return '$$' + BREAK_CYCLE
+    }
+    else if (line[EXP_MARKER] === SUPER_RETURN) {
+      const res = await exeScope.$run(line)
+
+      if (typeof res === 'undefined') return '$$' + BREAK_CYCLE
+      else return res
+    }
+
+    await exeScope.$run(line)
+  }
+  // Stop executing
+  return
 }

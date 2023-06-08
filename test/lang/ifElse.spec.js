@@ -276,4 +276,34 @@ describe('ifElse', () => {
     assert.equal(res, 2)
   })
 
+  it('switch case - default', async () => {
+    const scope = newScope()
+    const res = await scope.$run({
+      $exp: 'ifElse',
+      switch: 'b',
+      items: [
+        {
+          case: 'a',
+          lines: [
+            {
+              $exp: 'superReturn',
+              value: 1,
+            }
+          ]
+        },
+        {
+          default: true,
+          lines: [
+            {
+              $exp: 'superReturn',
+              value: 2,
+            }
+          ]
+        },
+      ]
+    })
+
+    assert.equal(res, 2)
+  })
+
 })
