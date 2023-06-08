@@ -20,7 +20,6 @@ import {
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
-import {SuperScope} from './scope.js';
 import {checkValueBeforeSet} from './SuperStruct.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 
@@ -275,17 +274,11 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean): boolean {
     const definition = (this.definition[key])
       ? (this.definition[key])
-      : this.definition[DEFAULT_DEFINITION_KEY]
-
-    if (!definition) {
-      throw new Error(`Doesn't have key ${key}`)
-    }
+      : this.defaultDefinition
 
     checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
 
-    // TODO: для массивов разрешать устанавливать value без definition
-
-    this.ownValues[key] = this.setupChildValue(definition, key, value)
+    this.ownValues[key] = this.setupChildValue(definition!, key, value)
 
     if (!this.myKeys.includes(key)) this.myKeys.push(key)
 

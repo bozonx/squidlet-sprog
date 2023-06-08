@@ -36,12 +36,13 @@ export const STRUCT_PUBLIC_MEMBERS = [
 
 export function checkValueBeforeSet(
   isInitialized: boolean,
-  definition: SuperItemDefinition,
+  definition: SuperItemDefinition | undefined,
   key: string,
   value?: AllTypes,
   ignoreRo: boolean = false
 ) {
   if (!isInitialized) throw new Error(`Init it first`)
+  else if (!definition) throw new Error(`Doesn't have key ${key}`)
   // obviously check it otherwise it will be set to default
   else if (typeof value === 'undefined') {
     throw new Error(`It isn't possible to set undefined to data child`)
@@ -258,10 +259,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
     const definition = this.definition[name]
 
     checkValueBeforeSet(this.isInitialized, definition, keyStr, value, ignoreRo)
-
-    if (!definition) {
-      throw new Error(`Doesn't have key ${keyStr}`)
-    }
 
     validateChildValue(name as string, definition, value)
   }
