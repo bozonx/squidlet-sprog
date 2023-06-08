@@ -403,9 +403,9 @@ export abstract class SuperValueBase<T = any | any[]>
 
   /**
    * Resolve onw child value according the definition and init it.
-   * It is the value is primitive then it checks its type and returns
-   * default or initial value.
-   * If the child is Super Struct or Array
+   * If the child is simple type then it checks its type and returns
+   * default or initial value for type.
+   * If the child is Super type then it init it if need
    */
   protected resolveChildValue(
     definition: SuperItemDefinition,
@@ -413,32 +413,24 @@ export abstract class SuperValueBase<T = any | any[]>
     value?: any
   ): any {
 
-    // TODO: убрать от сюда проверки, вызывать validateItem перед вызовом этой ф-и
+    // TODO: вызывать validateItem перед вызовом этой ф-и
 
     if (!definition) throw new Error(`no definition`)
-    else if (definition.type === 'any') {
-      // TODO: правильно???
-      return value
-    }
     else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       return this.setupSuperChild(definition, childKeyOrIndex, value)
     }
-    else if (definition.type === SUPER_TYPES.SuperFunc) {
-      // super function
-      // TODO: do it
-    }
-
-    // TODO: обычная ф-я ???
-    // TODO: инстанс класса ???
-
     else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
       return this.setupSimpleChild(definition, childKeyOrIndex, value)
     }
     else {
-      throw new Error(`Not supported type as super value child: ${definition.type}`)
-    }
+      // for any, simple function, super function, classes and other.
+      // return initial value or default
+      if (typeof value === 'undefined') {
+        return definition.default
+      }
 
-    throw new Error(`Can't setup a value of ${childKeyOrIndex}`)
+      return value
+    }
   }
 
 

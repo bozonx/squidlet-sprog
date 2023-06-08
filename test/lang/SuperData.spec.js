@@ -655,6 +655,8 @@ describe('SuperData', () => {
     spy2.should.have.been.calledTwice
   })
 
+  // TODO: указать super data в definition и она должна сама создаться
+
 
   // TODO: с учётом порядка ключей
   // it('clone', async () => {
