@@ -32,6 +32,7 @@ import {resolveInitialSimpleValue} from './helpers.js';
 // TODO: добавление нового элемента это push
 // TODO: добавить методы array - push, filter и итд
 // TODO: add ability to delete array value
+// TODO: $$setParent должен ли ставить родителя на bottomLayer ???
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -69,7 +70,7 @@ export function proxyData(data: SuperData): ProxyfiedData {
         return true
       }
 
-      return data.allKeys().includes(prop)
+      return data.allKeys.includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
@@ -104,7 +105,7 @@ export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: 
 
     has(target: any, prop: string): boolean {
       return Object.keys(topValue).includes(prop)
-        || (bottomData?.allKeys() || []).includes(prop)
+        || (bottomData?.allKeys || []).includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
@@ -132,7 +133,7 @@ export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: 
     ownKeys(): ArrayLike<string | symbol> {
       // it has to return all the keys on Reflect.ownKeys()
       return deduplicate([
-        ...(bottomData?.allKeys() || []),
+        ...(bottomData?.allKeys || []),
         ...Object.keys(topValue),
       ])
     },
@@ -169,6 +170,13 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
    */
   get ownKeys(): string[] {
     return [...this.myKeys]
+  }
+
+  get allKeys(): (string | number)[] {
+    return deduplicate([
+      ...(this.bottomLayer?.allKeys || []),
+      ...this.ownKeys,
+    ])
   }
 
 
@@ -292,9 +300,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return true
   }
 
-  // TODO: $$setParent должен ли ставить родителя на bottomLayer ???
 
-  // TODO: review - see in base class
   /**
    * Set value deeply.
    * You can set own value or value of some deep object.
@@ -311,7 +317,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (splat.length === 1) {
       if (
         !this.ownKeys.includes(keyStr)
-        && this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])
+        && this.bottomLayer && this.bottomLayer.allKeys.includes(splat[0])
       ) {
         // if not own key but layered key
         const lowPath = joinDeepPath([splat[0]])
@@ -378,14 +384,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   }
 
   /////// Data specific
-
-  // TODO: make getter
-  allKeys(): (string | number)[] {
-    return deduplicate([
-      ...(this.bottomLayer?.allKeys() || []),
-      ...this.ownKeys,
-    ])
-  }
 
   // TODO: test
   batchSet(values?: Record<string, any>) {
@@ -499,7 +497,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   private makeOrderedObject(): Record<string, any> {
     const res: Record<string, any> = {}
 
-    for (const key of this.allKeys()) res[key] = this.layeredValues[key]
+    for (const key of this.allKeys) res[key] = this.layeredValues[key]
 
     return res
   }
