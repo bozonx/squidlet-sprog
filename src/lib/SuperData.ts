@@ -179,7 +179,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     // save it to use later to define a new props
     this.defaultRo = defaultRo
     this.layeredValues = proxifyLayeredValue(this.ownValues, lowLayer as SuperValueBase | undefined)
-
+    // setup definitions
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition
       if (definition[keyStr] === null) continue
@@ -194,9 +194,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       this.definition[DEFAULT_DEFINITION_KEY] = DEFAULT_INIT_SUPER_DEFINITION
     }
     // else if null then do not register it at all
-    // if (!this.definition[DEFAULT_DEFINITION_KEY]) {
-    //   delete this.definition[DEFAULT_DEFINITION_KEY]
-    // }
   }
 
 
@@ -211,13 +208,11 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       Object.keys(omitObj(this.definition, DEFAULT_DEFINITION_KEY)),
       Object.keys(initialValues || {})
     )
-    // set initial values
+    // set initial values of my layer
     for (const key of keys) {
-      const def = this.definition[key] || this.definition[DEFAULT_DEFINITION_KEY]
+      const def = this.definition[key] || this.defaultDefinition
 
-      if (!def) {
-        throw new Error(`Can't resolve definition of key "${key}"`)
-      }
+      if (!def) throw new Error(`Can't resolve definition of key "${key}"`)
       // add key
       if (!this.keys.includes(key)) this.keys.push(key)
       // set value
@@ -228,12 +223,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       this.lowLayer.subscribe((target: SuperValueBase, path) => {
         if (!this.lowLayer?.isInitialized) return
         // skip events of whole super data
-        else if (typeof path === 'undefined' || path === this.myPath) return
+        else if (!path || path === this.myPath) return
 
         const splatPath = splitDeepPath(path)
-        const childKey = splatPath[0]
-
-        if (!this.myKeys().includes(String(childKey))) {
+        const childKeyStr = String(splatPath[0])
+        // if it is another key not I have then rise an event of my level
+        if (!this.myKeys().includes(childKeyStr)) {
           this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
         }
       })
@@ -255,13 +250,10 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
 
   isKeyReadonly(key: string | number): boolean {
-
-    // TODO: что  случае с элементом массива???
-
     const def = this.getDefinition(key)
 
     if (!def) {
-      throw new Error(`Data doesn't have key ${key}`)
+      throw new Error(`Data doesn't have definition of key "${key}"`)
     }
 
     return def.readonly
@@ -404,7 +396,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   // TODO: можно переместить в SuperValueBase
   getDefinition(key: string | number): SuperItemDefinition | undefined {
     if (this.definition[key]) {
-      return this.definition[key]
+      return this.definition[key] || this.defaultDefinition
     }
     else if (this.lowLayer) {
       return (this.lowLayer as SuperData).getDefinition(key)
