@@ -52,7 +52,7 @@ export const DATA_MEMBERS = [
 export const DEFAULT_DEFINITION_KEY = '$DEFAULT'
 
 
-export function proxyData(data: SuperData): ProxyfiedData {
+export function proxifyData(data: SuperData): ProxyfiedData {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
       if (prop === SUPER_VALUE_PROP) {
@@ -160,7 +160,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly myKeys: string[] = []
   readonly defaultRo: boolean
   readonly bottomLayer?: SuperData
-  protected proxyFn = proxyData
+  protected proxyFn = proxifyData
 
   get defaultDefinition(): SuperItemDefinition | undefined {
     return this.definition[DEFAULT_DEFINITION_KEY]

@@ -88,7 +88,7 @@ export function validateChildValue(
  * * struct.$super - instance of SuperStruct
  * * struct... - see other methods in STRUCT_PUBLIC_MEMBERS
  */
-export function proxyStruct(struct: SuperStruct): ProxyfiedStruct {
+export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
       if (prop === SUPER_VALUE_PROP) {
@@ -138,7 +138,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
   // current values
   readonly layeredValues = {} as T
-  protected proxyFn = proxyStruct
+  protected proxyFn = proxifyStruct
 
   get ownKeys(): string[] {
     return Object.keys(this.layeredValues as any)

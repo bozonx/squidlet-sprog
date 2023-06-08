@@ -76,7 +76,7 @@ const ARR_PUBLIC_MEMBERS = [
  * * arr... - see other methods in ARR_PUBLIC_MEMBERS
  * @param arr
  */
-export function proxyArray(arr: SuperArray): ProxyfiedArray {
+export function proxifyArray(arr: SuperArray): ProxyfiedArray {
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: string | symbol) {
       if (prop === SUPER_VALUE_PROP) {
@@ -137,7 +137,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   // definition for all the items of array
   readonly definition: SuperArrayDefinition
   readonly layeredValues: T[] = []
-  protected proxyFn = proxyArray
+  protected proxyFn = proxifyArray
 
 
   get isReadOnly(): boolean {
