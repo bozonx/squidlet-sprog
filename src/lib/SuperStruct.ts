@@ -5,7 +5,10 @@ import {
   isSuperValue,
   SUPER_VALUE_PROP,
   SUPER_PROXY_PUBLIC_MEMBERS,
-  SuperValuePublic, checkDefinition, prepareDefinitionItem, SUPER_VALUE_EVENTS, validateChildValue
+  SuperValuePublic,
+  checkDefinition,
+  prepareDefinitionItem,
+  SUPER_VALUE_EVENTS,
 } from './SuperValueBase.js';
 import {
   SuperItemDefinition,
@@ -50,6 +53,32 @@ export function checkValueBeforeSet(
   else if (!ignoreRo && definition.readonly) {
     throw new Error(`Can't set readonly value of name ${key}`)
   }
+}
+
+// TODO: почему только в struct а не в data??
+export function validateChildValue(
+  key: string,
+  definition: SuperItemDefinition,
+  value?: AllTypes
+) {
+  if (definition.type === 'any') {
+    return
+  }
+  else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
+    // TODO: validate super value
+  }
+  else if (definition.type === SUPER_TYPES.SuperFunc) {
+    // TODO: validate super func
+  }
+  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+    if (!isCorrespondingType(value, definition.type, definition.nullable)) {
+      throw new Error(
+        `The value of ${name} has type ${typeof value}, `
+        + `but not ${definition.type}`
+      )
+    }
+  }
+  // TODO: check other types
 }
 
 
@@ -122,8 +151,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
     defaultRo: boolean = false,
     bottomLayer?: SuperStruct
   ) {
-    if (bottomLayer && !bottomLayer.isStruct) {
-      throw new Error(`Struct can inherit only other struct`)
+    if (bottomLayer) {
+      throw new Error(`Struct doesn't support of layering at the moment`)
     }
 
     super(bottomLayer as SuperValueBase | undefined)

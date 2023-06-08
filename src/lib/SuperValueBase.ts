@@ -17,7 +17,6 @@ import {
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 import {SuperBase} from './SuperBase.js';
-import {SuperScope} from './scope.js';
 
 
 export interface SuperValuePublic {
@@ -118,31 +117,6 @@ export function checkDefinition(definition: SuperItemInitDefinition) {
       `Default value ${defaultValue} doesn't meet type: ${type}`
     )
   }
-}
-
-export function validateChildValue(
-  key: string,
-  definition: SuperItemDefinition,
-  value?: AllTypes
-) {
-  if (definition.type === 'any') {
-    return
-  }
-  else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-    // TODO: validate super value
-  }
-  else if (definition.type === SUPER_TYPES.SuperFunc) {
-    // TODO: validate super func
-  }
-  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-    if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-      throw new Error(
-        `The value of ${name} has type ${typeof value}, `
-        + `but not ${definition.type}`
-      )
-    }
-  }
-  // TODO: check other types
 }
 
 
