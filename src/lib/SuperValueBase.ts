@@ -422,7 +422,7 @@ export abstract class SuperValueBase<T = any | any[]>
     else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
       return this.setupSimpleChild(definition, childKeyOrIndex, value)
     }
-    else {
+    else if (Object.keys(All_TYPES).includes(definition.type)) {
       // for any, simple function, super function, classes and other.
       // return initial value or default
       if (typeof value === 'undefined') {
@@ -431,6 +431,8 @@ export abstract class SuperValueBase<T = any | any[]>
 
       return value
     }
+
+    throw new Error(`Unsupported definition type of ${childKeyOrIndex}`)
   }
 
 

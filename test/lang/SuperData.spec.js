@@ -656,6 +656,10 @@ describe('SuperData', () => {
   })
 
   // TODO: указать super data в definition и она должна сама создаться
+  // TODO: потомок - super func
+  // TODO: потомок - jsExp
+  // TODO: потомок - forEach ???
+  // TODO: потомок - ifElse ???
 
 
   // TODO: с учётом порядка ключей
