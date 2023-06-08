@@ -463,7 +463,7 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * Setup onw child value according the definition and init it.
+   * Resolve onw child value according the definition and init it.
    * It is the value is primitive then it checks its type and returns
    * default or initial value.
    * If the child is Super Struct or Array

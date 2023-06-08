@@ -357,7 +357,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       this.definition[key] = prepareDefinitionItem(definition, this.defaultRo)
     }
     // do not set value if it is a default definition
-    if (key === DEFAULT_DEFINITION_KEY) return
+    if (key === DEFAULT_DEFINITION_KEY) {
+      // rise definition change event
+      this.events.emit(SUPER_VALUE_EVENTS.definition, key)
+
+      return
+    }
     // set the default value
     let finalDef = this.definition[key] || this.defaultDefinition
 
@@ -368,10 +373,10 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     const defaultValue = this.resolveChildValue(finalDef, key, initialValue)
 
     if (typeof defaultValue !== 'undefined') {
-      // set value and rise an event
+      // set value and rise a child change event
       this.setOwnValue(key, defaultValue, true)
     }
-
+    // rise definition change event
     this.events.emit(SUPER_VALUE_EVENTS.definition, key)
   }
 
