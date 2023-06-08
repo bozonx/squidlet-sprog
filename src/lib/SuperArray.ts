@@ -208,7 +208,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
         required: false,
       }
 
-      this.ownValues[index] = this.setupChildValue(childDefinition, index, value)
+      this.ownValues[index] = this.resolveChildValue(childDefinition, index, value)
     })
 
     return super.init()
@@ -251,7 +251,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const index = Number(key)
 
-    this.ownValues[index] = this.setupChildValue(this.itemDefinition, index, value)
+    this.ownValues[index] = this.resolveChildValue(this.itemDefinition, index, value)
 
     this.riseChildrenChangeEvent(index)
 

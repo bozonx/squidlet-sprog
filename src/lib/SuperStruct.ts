@@ -159,7 +159,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
 
-      this.ownValues[keyName] = this.setupChildValue(
+      this.ownValues[keyName] = this.resolveChildValue(
         this.definition[keyName],
         keyStr,
         initialValues?.[keyName]
@@ -202,7 +202,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     this.validateItem(name, value, ignoreRo)
 
-    this.ownValues[name] = this.setupChildValue(this.definition[name], keyStr, value)
+    this.ownValues[name] = this.resolveChildValue(this.definition[name], keyStr, value)
 
     this.riseChildrenChangeEvent(keyStr)
 

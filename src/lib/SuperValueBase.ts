@@ -468,7 +468,7 @@ export abstract class SuperValueBase<T = any | any[]>
    * default or initial value.
    * If the child is Super Struct or Array
    */
-  protected setupChildValue(
+  protected resolveChildValue(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     value?: any

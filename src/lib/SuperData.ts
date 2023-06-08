@@ -222,7 +222,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       // add key
       if (!this.myKeys.includes(key)) this.myKeys.push(key)
       // set value
-      this.ownValues[key] = this.setupChildValue(def, key, initialValues?.[key])
+      this.ownValues[key] = this.resolveChildValue(def, key, initialValues?.[key])
     }
     // listen to bottom layer changes of which children which upper layer doesn't have
     if (this.lowLayer) {
@@ -278,7 +278,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
 
-    this.ownValues[key] = this.setupChildValue(definition!, key, value)
+    this.ownValues[key] = this.resolveChildValue(definition!, key, value)
 
     if (!this.myKeys.includes(key)) this.myKeys.push(key)
 
@@ -365,7 +365,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (!this.ownKeys.includes(key)) this.myKeys.push(key)
     // resolve default or initial value as value
-    const defaultValue = this.setupChildValue(finalDef, key, initialValue)
+    const defaultValue = this.resolveChildValue(finalDef, key, initialValue)
 
     if (typeof defaultValue !== 'undefined') {
       // set value and rise an event
