@@ -133,11 +133,10 @@ export function proxifyArray(arr: SuperArray): ProxyfiedArray {
 
 export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
   readonly isArray = true
-  // definition for all the items of array
-  readonly definition: SuperArrayDefinition
   readonly values: T[] = []
   protected proxyFn = proxifyArray
-
+  // definition for all the items of array
+  private readonly definition: SuperArrayDefinition
 
   get isReadOnly(): boolean {
     return Boolean(this.definition.readonly)

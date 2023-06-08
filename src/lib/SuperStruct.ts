@@ -132,11 +132,11 @@ export class SuperStruct<T = Record<string, AllTypes>>
   implements SuperStructPublic
 {
   readonly isStruct = true
-  // It assumes that you will not change it after initialization
-  readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
   // current values
   readonly values = {} as T
   protected proxyFn = proxifyStruct
+  // It assumes that you will not change it after initialization
+  private readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
 
   get ownKeys(): string[] {
     return Object.keys(this.values as any)

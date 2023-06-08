@@ -376,12 +376,6 @@ export abstract class SuperValueBase<T = any | any[]>
     return deepClone(this.values)
   }
 
-  detachedCopy() {
-    // TODO: копирование себя, но без родителя и его пути
-    //  и со сброшенными обработчиками событий
-    //  поидее потомков надо тоже отсоединить от дерева и присоединить к себе
-  }
-
   makeChildPath(childKeyOrIndex: string | number): string {
     return joinDeepPath([this.pathToMe, childKeyOrIndex])
   }

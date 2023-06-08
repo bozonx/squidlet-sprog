@@ -140,8 +140,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   implements SuperDataPublic
 {
   readonly isData = true
-  // put definition via special method, not straight
-  readonly definition: Record<string, SuperItemDefinition> = {} as any
   // values only of this layer. Do not use it, use setValue, getValue instead
   readonly ownValues: Record<string, any> = {}
   // proxy which allows to manipulate with all layers. Do not use it at all.
@@ -151,6 +149,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly bottomLayer?: SuperData
   protected proxyFn = proxifyData
   private readonly ownOrderedKeys: string[] = []
+  // put definition via special method, not straight
+  private readonly definition: Record<string, SuperItemDefinition> = {} as any
 
   get defaultDefinition(): SuperItemDefinition | undefined {
     return this.definition[DEFAULT_DEFINITION_KEY]
@@ -365,6 +365,9 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       this.setOwnValue(key, defaultValue)
     }
     else {
+
+      // TODO: а должна быть поддержка нижнего слоя ???
+      // TODO: может toDefaults() должен учитывать нижний слой ??
       // some super types
       if (this.ownValues[key]?.toDefaults) this.ownValues[key].toDefaults()
       // if doesn't have toDefaults() then do nothing
