@@ -1,11 +1,11 @@
 import {arrayKeys, spliceItem, omitObj} from 'squidlet-lib';
 import {
-  SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
+  SUPER_PROXY_PUBLIC_MEMBERS,
+  SUPER_VALUE_EVENTS,
   SUPER_VALUE_PROP,
   SuperValueBase,
   SuperValuePublic
 } from './SuperValueBase.js';
-import {SuperScope} from './scope.js';
 import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {
@@ -246,7 +246,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     this.values[index] = this.resolveChildValue(this.itemDefinition, index, value)
 
-    this.riseChildChangeEvent(index)
+    this.emitChildChangeEvent(index)
 
     return true
   }
@@ -297,7 +297,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     delete this.values[index]
 
-    this.riseChildChangeEvent(index)
+    this.emitChildChangeEvent(index)
   }
 
   /**
@@ -314,7 +314,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     // TODO: в тестах не учавствует
     spliceItem(this.values, index)
-    this.riseChildChangeEvent(index)
+    this.emitChildChangeEvent(index)
   }
 
   getDefinition(index: number): SuperItemDefinition | undefined {
@@ -337,7 +337,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     }
 
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     return newLength
   }
@@ -347,9 +347,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
-    //this.riseChildChangeEvent(lastIndex)
+    //this.emitChildChangeEvent(lastIndex)
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -361,9 +361,9 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const res = this.values.shift()
 
-    //this.riseChildChangeEvent(0)
+    //this.emitChildChangeEvent(0)
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -375,13 +375,13 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const res = this.values.unshift(...items)
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     // const arr = (new Array(items.length)).fill(true)
     //
     // // TODO: test
     // // rise events for all the new children
-    // arr.forEach((el: true, index: number) => this.riseChildChangeEvent(index))
+    // arr.forEach((el: true, index: number) => this.emitChildChangeEvent(index))
 
     // TODO: наверное надо инициализировать super value и проверить значения
 
@@ -393,7 +393,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     this.values.fill(value, start, end)
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     // TODO: наверное надо проверить значения
 
@@ -405,7 +405,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const res = this.values.splice(start, deleteCount, ...items)
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -417,7 +417,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const res = this.values.reverse()
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     return res
   }
@@ -427,7 +427,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     this.values.sort(compareFn)
     // emit event for whole array
-    this.riseMyEvent()
+    this.emitMyEvent()
 
     return this.proxyfiedInstance
   }

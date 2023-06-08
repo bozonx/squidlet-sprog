@@ -293,7 +293,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (!this.ownOrderedKeys.includes(key)) this.ownOrderedKeys.push(key)
 
-    this.riseChildChangeEvent(key)
+    this.emitChildChangeEvent(key)
 
     return true
   }
@@ -482,7 +482,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     // rise definition change event
     this.events.emit(SUPER_VALUE_EVENTS.definition, key)
     // rise child change event
-    this.riseChildChangeEvent(key)
+    this.emitChildChangeEvent(key)
   }
 
 

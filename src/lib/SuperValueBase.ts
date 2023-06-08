@@ -387,7 +387,7 @@ export abstract class SuperValueBase<T = any | any[]>
    */
   protected abstract myRoSetter: Function
 
-  protected riseChildChangeEvent(childKeyOrIndex: string | number) {
+  protected emitChildChangeEvent(childKeyOrIndex: string | number) {
     const fullPath = this.makeChildPath(childKeyOrIndex)
 
     this.events.emit(SUPER_VALUE_EVENTS.change, this, fullPath)
@@ -397,7 +397,7 @@ export abstract class SuperValueBase<T = any | any[]>
    * Rise an event of whole my instance
    * @protected
    */
-  protected riseMyEvent() {
+  protected emitMyEvent() {
     this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
   }
 

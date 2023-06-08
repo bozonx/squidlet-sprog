@@ -1,8 +1,6 @@
-import {SuperScope} from './scope.js';
 import {AllTypes, SIMPLE_TYPES, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
-  isSuperValue,
   SUPER_VALUE_PROP,
   SUPER_PROXY_PUBLIC_MEMBERS,
   SuperValuePublic,
@@ -16,11 +14,6 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {resolveInitialSimpleValue} from './helpers.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {proxifyLayeredValue} from './SuperData.js';
-
-
-
-// TODO: наверное в default запретить пока super value
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -220,10 +213,13 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     this.values[name] = this.resolveChildValue(this.definition[name], keyStr, value)
 
-    this.riseChildChangeEvent(keyStr)
+    this.emitChildChangeEvent(keyStr)
 
     return true
   }
+
+
+  // TODO: наверное в default запретить пока super value
 
   /**
    * Set default value or null if the key doesn't have a default value
