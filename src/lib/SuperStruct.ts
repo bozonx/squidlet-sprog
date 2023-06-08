@@ -220,7 +220,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     this.values[name] = this.resolveChildValue(this.definition[name], keyStr, value)
 
-    this.riseChildrenChangeEvent(keyStr)
+    this.riseChildChangeEvent(keyStr)
 
     return true
   }

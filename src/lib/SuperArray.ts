@@ -246,7 +246,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     this.values[index] = this.resolveChildValue(this.itemDefinition, index, value)
 
-    this.riseChildrenChangeEvent(index)
+    this.riseChildChangeEvent(index)
 
     return true
   }
@@ -297,7 +297,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     delete this.values[index]
 
-    this.riseChildrenChangeEvent(index)
+    this.riseChildChangeEvent(index)
   }
 
   /**
@@ -314,7 +314,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     // TODO: в тестах не учавствует
     spliceItem(this.values, index)
-    this.riseChildrenChangeEvent(index)
+    this.riseChildChangeEvent(index)
   }
 
   getDefinition(index: number): SuperItemDefinition | undefined {
@@ -347,7 +347,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
-    //this.riseChildrenChangeEvent(lastIndex)
+    //this.riseChildChangeEvent(lastIndex)
     // emit event for whole array
     this.riseMyEvent()
 
@@ -361,7 +361,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const res = this.values.shift()
 
-    //this.riseChildrenChangeEvent(0)
+    //this.riseChildChangeEvent(0)
     // emit event for whole array
     this.riseMyEvent()
 
@@ -381,7 +381,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     //
     // // TODO: test
     // // rise events for all the new children
-    // arr.forEach((el: true, index: number) => this.riseChildrenChangeEvent(index))
+    // arr.forEach((el: true, index: number) => this.riseChildChangeEvent(index))
 
     // TODO: наверное надо инициализировать super value и проверить значения
 
