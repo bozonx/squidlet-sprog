@@ -124,12 +124,7 @@ export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: 
     },
 
     deleteProperty(target: any, prop: string): boolean {
-      throw new Error(`Don't delete via value proxy!`)
-      // delete topValue[prop]
-      //
-      // if (bottomData) bottomData.forget(prop)
-      //
-      // return true
+      throw new Error(`Don't delete via value proxy! User forget() instead`)
     },
 
     ownKeys(): ArrayLike<string | symbol> {

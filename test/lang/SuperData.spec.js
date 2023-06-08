@@ -632,6 +632,29 @@ describe('SuperData', () => {
     spy2.should.have.been.calledTwice
   })
 
+  //////////// Super children
+
+  it('children is SuperData', async () => {
+    const spy1 = sinon.spy()
+    const spy2 = sinon.spy()
+    const rootProxy = (new SuperData()).getProxy()
+    const childProxy = (new SuperData()).getProxy()
+
+    rootProxy.subscribe((target, path) => spy1(path))
+    rootProxy.subscribe((target, path) => spy2(path))
+    childProxy.$super.init({a: 1})
+    rootProxy.$super.init({ch: childProxy})
+
+    assert.equal(rootProxy.getValue('ch.a'), 1)
+    spy1.should.have.been.calledOnce
+    spy2.should.have.been.calledOnce
+    // set value to child
+    rootProxy.setValue('ch.a', 2)
+    assert.equal(rootProxy.getValue('ch.a'), 2)
+    assert.equal(childProxy.getValue('a'), 2)
+    spy1.should.have.been.calledTwice
+    spy2.should.have.been.calledTwice
+  })
 
 
   // TODO: с учётом порядка ключей
