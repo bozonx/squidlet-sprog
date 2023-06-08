@@ -29,6 +29,7 @@ import {resolveInitialSimpleValue} from './helpers.js';
 // TODO: можно сортировать ключи, reverse, pop, etc
 // TODO: добавление нового элемента это push
 // TODO: добавить методы array - push, filter и итд
+// TODO: add ability to delete array value
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -409,38 +410,30 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
   /**
    * Remove value and definition in that way as they never exist.
-   * It remove value and definition from bottom layer too
+   * It removes value and definition from bottom layer too.
    * @param key
    */
   forget(key: string) {
-    delete this.definition[key]
-
-    if (key !== DEFAULT_DEFINITION_KEY) {
-      delete this.ownValues[key]
-
-      if (this.bottomLayer) {
-        const bottomLayer = this.bottomLayer as SuperData
-
-        if (bottomLayer.forget) bottomLayer.forget(key)
-      }
-
-      // TODO: надо тогда вернуть на any иначе непонятно как проверять значения массива
-      // TODO: либо реально удалить просто
-      //if (key === DEFAULT_DEFINITION_KEY) return
-
-      spliceItem(this.myKeys, key)
-
-      // TODO: rise an change event
+    if (key === DEFAULT_DEFINITION_KEY) {
+      throw new Error(`Can't remove the default definition`)
     }
+    // else remove definition for non array-like child
+    delete this.definition[key]
+    // remove own value
+    delete this.ownValues[key]
+    // remove key
+    spliceItem(this.myKeys, key)
 
-
-    // TODO: без учёта массива происходит
-
-
+    if (this.bottomLayer) {
+      const bottomLayer = this.bottomLayer as SuperData
+      // if bottom layer has forget() method - then do it
+      if (bottomLayer.forget) bottomLayer.forget(key)
+    }
+    // rise definition change event
     this.events.emit(SUPER_VALUE_EVENTS.definition, key)
+    // rise child change event
+    this.riseChildrenChangeEvent(key)
   }
-
-  // TODO: add delete array value
 
 
   /**
