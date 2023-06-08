@@ -29,6 +29,7 @@ export const SIMPLE_TYPES = {
 export const SUPER_VALUES = {
   SuperStruct: 'SuperStruct',
   SuperArray: 'SuperArray',
+  SuperData: 'SuperData',
 }
 export const SUPER_TYPES = {
   ...SUPER_VALUES,

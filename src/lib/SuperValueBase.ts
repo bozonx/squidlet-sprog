@@ -327,6 +327,15 @@ export abstract class SuperValueBase<T = any | any[]>
     this.setValue(pathTo, null)
   }
 
+  /**
+   * Set all the values to default ones
+   */
+  toDefaults() {
+    for (const key of this.ownKeys) {
+      this.toDefaultValue(key)
+    }
+  }
+
   // TODO: review - нужно учитывать что тот элемент может задестроиться
   // TODO: если задестроится external элемент то у нас ещё link останется - это плохо
   //       тогда либо надо проверять в событии живой ли элемент

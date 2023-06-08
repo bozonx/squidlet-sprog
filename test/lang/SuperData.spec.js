@@ -681,7 +681,9 @@ describe('SuperData', () => {
   // })
 
   // TODO: test all the events
-  // TODO: test default definition
+  // TODO: test toDefaultValue
+  // TODO: test toDefaultValue when child is super data
+  // TODO: test batchSet
   // TODO: test array like
   // TODO: test init array like values
 

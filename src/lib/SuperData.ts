@@ -14,7 +14,7 @@ import {
   SuperValueBase,
   SuperValuePublic,
 } from './SuperValueBase.js';
-import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES, SUPER_TYPES} from '../types/valueTypes.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
@@ -292,29 +292,35 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
    * @param key
    */
   toDefaultValue = (key: string) => {
+    const definition = (this.definition[key])
+      ? (this.definition[key])
+      : this.defaultDefinition
+
     if (!this.isInitialized) throw new Error(`Init it first`)
-      // TODO: а если массив?
-    else if (!this.definition[key]) {
-      throw new Error(`Struct doesn't have key ${key}`)
+    else if (!definition) {
+      throw new Error(`Data doesn't have definition for key "${key}"`)
     }
 
-    let defaultValue = this.definition[key]?.default
-
-    // TODO: а если super type??? То надо вызвать default value у него ???
-    //       или ничего не делать? Если менять заного то надо дестроить предыдущий
-
-    // if no default value then make it from type
     if (
-      Object.keys(SIMPLE_TYPES).includes(this.definition[key].type)
-      && typeof defaultValue === 'undefined'
+      Object.keys(SIMPLE_TYPES).includes(definition.type)
     ) {
-      defaultValue = resolveInitialSimpleValue(
-        this.definition[key].type as keyof typeof SIMPLE_TYPES,
-        this.definition[key].nullable,
-      )
-    }
+      let defaultValue = definition.default
 
-    this.setOwnValue(key, defaultValue)
+      if (typeof defaultValue === 'undefined') {
+        // if no default value then make it from type
+        defaultValue = resolveInitialSimpleValue(
+          definition.type as keyof typeof SIMPLE_TYPES,
+          definition.nullable,
+        )
+      }
+      // set default value to simple child
+      this.setOwnValue(key, defaultValue)
+    }
+    else {
+      // some super types
+      if (this.ownValues[key]?.toDefaults) this.ownValues[key].toDefaults()
+      // if doesn't have toDefaults() then do nothing
+    }
   }
 
   getProxy(): T & ProxyfiedData<T> {
