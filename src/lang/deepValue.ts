@@ -61,6 +61,7 @@ export function deleteValue(scope: SuperScope) {
 
     if (parent && typeof lastPathPart !== 'undefined') {
       if (isSuperValue(parent)) {
+        // TODO: WTF ???
         parent.$super.forget(lastPathPart)
       }
       else {

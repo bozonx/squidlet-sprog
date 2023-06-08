@@ -26,6 +26,8 @@ export function newVar(scope: SuperScope) {
     else if (SCOPE_FUNCTIONS.includes(name)) {
       throw new Error(`Can't create reserved function ${name}`)
     }
+    // TODO: проверить $super и методы SuperData
+    // TODO: правильно ли проверится наличие defintion в define ?
 
     scope.$super.define(name, definition, value)
   }
