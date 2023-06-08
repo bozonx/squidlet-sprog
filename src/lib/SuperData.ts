@@ -33,6 +33,7 @@ import {resolveInitialSimpleValue} from './helpers.js';
 // TODO: добавить методы array - push, filter и итд
 // TODO: add ability to delete array value
 // TODO: $$setParent должен ли ставить родителя на bottomLayer ???
+// TODO: test batchSet
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -95,32 +96,32 @@ export function proxyData(data: SuperData): ProxyfiedData {
   return new Proxy(data.ownValues, handler) as ProxyfiedData
 }
 
-export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: SuperData) {
+export function proxifyLayeredValue(topOwnValues: Record<string, any>, bottomData?: SuperData) {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
-      if (Object.keys(topValue).includes(prop)) return topValue[prop]
+      if (Object.keys(topOwnValues).includes(prop)) return topOwnValues[prop]
 
       return bottomData?.getValue(prop)
     },
 
     has(target: any, prop: string): boolean {
-      return Object.keys(topValue).includes(prop)
+      return Object.keys(topOwnValues).includes(prop)
         || (bottomData?.allKeys || []).includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
-      if (Object.keys(topValue).includes(prop)) {
-        // if var is defined in top value - set to it
-        topValue[prop] = newValue
-      }
-      else if (bottomData && Object.keys(bottomData.ownValues).includes(prop)) {
-        // TODO: почему own ???
-        // if var is defined in bottom value - set to it
-        bottomData.setOwnValue(prop, newValue)
+      if (
+        !Object.keys(topOwnValues).includes(prop)
+        && bottomData && bottomData.allKeys.includes(prop)
+      ) {
+        // if var is defined only in bottom value and not in top level
+        // set value to it or its lower levels
+        bottomData.setValue(prop, newValue)
       }
       else {
-        // otherwise just define a new var in top value
-        topValue[prop] = newValue
+        // if var is defined in top value - set to it
+        // or just define a new var in top value
+        topOwnValues[prop] = newValue
       }
 
       return true
@@ -134,12 +135,12 @@ export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: 
       // it has to return all the keys on Reflect.ownKeys()
       return deduplicate([
         ...(bottomData?.allKeys || []),
-        ...Object.keys(topValue),
+        ...Object.keys(topOwnValues),
       ])
     },
   }
 
-  return new Proxy(topValue, handler)
+  return new Proxy(topOwnValues, handler)
 }
 
 
@@ -385,7 +386,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
   /////// Data specific
 
-  // TODO: test
   batchSet(values?: Record<string, any>) {
     if (!values) return
 
