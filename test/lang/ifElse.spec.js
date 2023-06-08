@@ -218,7 +218,7 @@ describe('ifElse', () => {
 
   //////// SWITCH CASE
 
-  it('nested', async () => {
+  it('switch case - get from scope', async () => {
     const scope = newScope({a: 'b', b: 'b'})
 
     const res = await scope.$run({
@@ -244,6 +244,36 @@ describe('ifElse', () => {
     })
 
     assert.equal(res, 1)
+  })
+
+  it('switch case - primitives', async () => {
+    const scope = newScope()
+    const res = await scope.$run({
+      $exp: 'ifElse',
+      switch: 'b',
+      items: [
+        {
+          case: 'a',
+          lines: [
+            {
+              $exp: 'superReturn',
+              value: 1,
+            }
+          ]
+        },
+        {
+          case: 'b',
+          lines: [
+            {
+              $exp: 'superReturn',
+              value: 2,
+            }
+          ]
+        },
+      ]
+    })
+
+    assert.equal(res, 2)
   })
 
 })
