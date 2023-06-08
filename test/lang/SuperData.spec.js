@@ -50,7 +50,6 @@ describe('SuperData', () => {
     assert.throws(() => data.setNull('p1'))
     assert.throws(() => data.clone())
     // from data
-    assert.throws(() => data.ownKeys())
     assert.throws(() => data.getOwnValue('p1'))
     assert.throws(() => data.setOwnValue('p1', 7))
     assert.throws(() => data.toDefaultValue('p1'))
@@ -327,7 +326,7 @@ describe('SuperData', () => {
     assert.equal(data.$super.getOwnValue('p1'), 5)
     assert.isTrue(data.$super.isKeyReadonly('p1'))
     assert.isTrue(data.$super.hasKey('p1'))
-    assert.deepEqual(data.$super.ownKeys(), ['p1', 'p2'])
+    assert.deepEqual(data.$super.ownKeys, ['p1', 'p2'])
     spy.should.have.been.calledOnce
 
     data.$super.setNull('p2')
@@ -362,7 +361,7 @@ describe('SuperData', () => {
     })
 
     assert.deepEqual(data, {a1: 5})
-    assert.deepEqual(data.$super.ownKeys(), ['a1'])
+    assert.deepEqual(data.$super.ownKeys, ['a1'])
     data.$super.setOwnValue('a1', 6)
     assert.deepEqual(data, {a1: 6})
     data.$super.toDefaultValue('a1')
@@ -370,7 +369,7 @@ describe('SuperData', () => {
     // remove
     data.$super.forget('a1')
     assert.deepEqual(data, {})
-    assert.deepEqual(data.$super.ownKeys(), [])
+    assert.deepEqual(data.$super.ownKeys, [])
     assert.isUndefined(data.$super.definition['a1'])
   })
 
@@ -451,8 +450,8 @@ describe('SuperData', () => {
 
     assert.deepEqual(dataBottom.ownValues, {a: 1, b: 2})
     assert.deepEqual(dataTop.ownValues, {a: 5, c: 3})
-    assert.deepEqual(dataBottom.ownKeys(), ['a', 'b'])
-    assert.deepEqual(dataTop.ownKeys(), ['a', 'c'])
+    assert.deepEqual(dataBottom.ownKeys, ['a', 'b'])
+    assert.deepEqual(dataTop.ownKeys, ['a', 'c'])
     assert.deepEqual(dataTop.allKeys(), ['a', 'b', 'c'])
     assert.deepEqual(dataTop.clone(), {a: 5, b: 2, c: 3})
     assert.equal(dataBottom.getValue('a'), 1)
@@ -460,13 +459,13 @@ describe('SuperData', () => {
     assert.equal(dataTop.getValue('b'), 2)
     // delete var always from both layers
     dataTop.forget('a')
-    assert.deepEqual(dataBottom.ownKeys(), ['b'])
-    assert.deepEqual(dataTop.ownKeys(), ['c'])
+    assert.deepEqual(dataBottom.ownKeys, ['b'])
+    assert.deepEqual(dataTop.ownKeys, ['c'])
     assert.deepEqual(dataTop.allKeys(), ['b', 'c'])
     // setValue
     dataTop.setValue('a', 7)
     assert.deepEqual(dataBottom.allKeys(), ['b'])
-    assert.deepEqual(dataTop.ownKeys(), ['c', 'a'])
+    assert.deepEqual(dataTop.ownKeys, ['c', 'a'])
     assert.deepEqual(dataTop.allKeys(), ['b', 'c', 'a'])
     assert.isUndefined(dataBottom.getValue('a'))
     assert.equal(dataTop.getValue('a'), 7)

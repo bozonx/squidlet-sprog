@@ -148,7 +148,7 @@ export function newScope<T = any>(initialVars: T = {} as T, previousScope?: Supe
 //   const handler: ProxyHandler<Record<any, any>> = {
 //     get(target: any, prop: string) {
 //
-//       // TODO: Object.keys(data.values) поменять на data.ownKeys()
+//       // TODO: Object.keys(data.values) поменять на data.ownKeys
 //
 //
 //       if (prop === SUPER_VALUE_PROP) {

@@ -59,7 +59,6 @@ describe('SuperArray', () => {
     assert.throws(() => arr.setNull('p1'))
     assert.throws(() => arr.clone())
     // from array class
-    assert.throws(() => arr.ownKeys())
     assert.throws(() => arr.getOwnValue(0))
     assert.throws(() => arr.setOwnValue(0, 6))
     assert.throws(() => arr.toDefaultValue(0))
@@ -261,7 +260,7 @@ describe('SuperArray', () => {
 
     arr.$super.setValue('[2]', 2)
     // TODO: WTF???
-    assert.deepEqual(arr.$super.ownKeys(), [0, undefined, 2])
+    assert.deepEqual(arr.$super.ownKeys, [0, undefined, 2])
 
   })
 

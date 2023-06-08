@@ -85,7 +85,7 @@ export function proxyData(data: SuperData): ProxyfiedData {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return data.ownKeys()
+      return data.ownKeys
     },
   }
 
@@ -152,13 +152,20 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   // TODO: сделать protected
   readonly layeredValues: Record<string, any>
   // ordered keys
-  readonly keys: string[] = []
+  readonly myKeys: string[] = []
   readonly defaultRo: boolean
   protected proxyFn = proxyData
 
 
   get defaultDefinition(): SuperItemDefinition | undefined {
     return this.definition[DEFAULT_DEFINITION_KEY]
+  }
+
+  /**
+   * Keys only of me, not low layer and not children's
+   */
+  get ownKeys(): string[] {
+    return [...this.myKeys]
   }
 
 
@@ -185,7 +192,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       if (definition[keyStr] === null) continue
 
       checkDefinition(definition[keyStr])
-      this.keys.push(keyStr)
+      this.myKeys.push(keyStr)
 
       this.definition[keyStr] = prepareDefinitionItem(definition[keyStr], defaultRo)
     }
@@ -214,7 +221,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
       if (!def) throw new Error(`Can't resolve definition of key "${key}"`)
       // add key
-      if (!this.keys.includes(key)) this.keys.push(key)
+      if (!this.myKeys.includes(key)) this.myKeys.push(key)
       // set value
       this.ownValues[key] = this.setupChildValue(def, key, initialValues?.[key])
     }
@@ -228,7 +235,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
         const splatPath = splitDeepPath(path)
         const childKeyStr = String(splatPath[0])
         // if it is another key not I have then rise an event of my level
-        if (!this.ownKeys().includes(childKeyStr)) {
+        if (!this.ownKeys.includes(childKeyStr)) {
           this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
         }
       })
@@ -259,13 +266,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return def.readonly
   }
 
-  ownKeys(): string[] {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-
-    return [...this.keys]
-  }
-
-
   getOwnValue(key: string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
@@ -287,7 +287,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     this.ownValues[key] = this.setupChildValue(definition, key, value)
 
-    if (!this.keys.includes(key)) this.keys.push(key)
+    if (!this.myKeys.includes(key)) this.myKeys.push(key)
 
     this.riseChildrenChangeEvent(key)
 
@@ -348,7 +348,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
    * Set a new definition for a specific key. You can't replace or change it.
    */
   define(key: string, definition?: SuperItemInitDefinition, initialValue?: any) {
-    if (this.keys.includes(key)) {
+    if (this.myKeys.includes(key)) {
       throw new Error(`Can't redefine a new item. You have to call forget("${key}") first`)
     }
 
@@ -364,7 +364,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (!finalDef) throw new Error(`Can't resolve definition`)
 
-    this.keys.push(key)
+    this.myKeys.push(key)
     // set default value as value
     const defaultValue = this.setupChildValue(finalDef, key, initialValue)
 
@@ -422,7 +422,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       // TODO: либо реально удалить просто
       //if (key === DEFAULT_DEFINITION_KEY) return
 
-      spliceItem(this.keys, key)
+      spliceItem(this.myKeys, key)
 
       // TODO: rise an change event
     }

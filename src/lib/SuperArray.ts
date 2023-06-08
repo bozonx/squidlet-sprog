@@ -157,6 +157,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return this.ownValues
   }
 
+  get ownKeys(): number[] {
+    return arrayKeys(this.ownValues)
+  }
+
 
   constructor(definition: Partial<SuperArrayDefinition>) {
     super()
@@ -234,12 +238,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
   isKeyReadonly(key: string | number): boolean {
     return this.isReadOnly
-  }
-
-  ownKeys(): number[] {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-
-    return arrayKeys(this.ownValues)
   }
 
   getOwnValue(key: number): AllTypes {
