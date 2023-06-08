@@ -161,7 +161,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return this.definition[DEFAULT_DEFINITION_KEY]
   }
 
-  // TODO: а зачем нужен scope, вместо него можно просто передавать low layer ???
 
   constructor(
     definition: Record<string, SuperItemInitDefinition> = {},
@@ -171,8 +170,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (lowLayer && !lowLayer.isData) {
       throw new Error(`Super data can inherit only other super data`)
     }
+    else if (lowLayer && lowLayer.pathToMe) {
+      throw new Error(`Layers can't have paths. It doesn't developed at the moment.`)
+    }
 
     super(lowLayer as SuperValueBase | undefined)
+
     // save it to use later to define a new props
     this.defaultRo = defaultRo
     this.layeredValues = proxifyLayeredValue(this.ownValues, lowLayer as SuperValueBase | undefined)
@@ -220,15 +223,13 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       // set value
       this.ownValues[key] = this.setupChildValue(def, key, initialValues?.[key])
     }
-
+    // listen to bottom layer changes of which children which upper layer doesn't have
     if (this.lowLayer) {
       this.lowLayer.subscribe((target: SuperValueBase, path) => {
         if (!this.lowLayer?.isInitialized) return
+        // skip events of whole super data
+        else if (typeof path === 'undefined' || path === this.myPath) return
 
-
-        if (typeof path === 'undefined') {
-          return
-        }
         const splatPath = splitDeepPath(path)
         const childKey = splatPath[0]
 
