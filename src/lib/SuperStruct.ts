@@ -99,7 +99,7 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
         return (struct as any)[prop]
       }
       // else prop or object itself
-      return struct.layeredValues[prop]
+      return struct.values[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -123,7 +123,7 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
     },
   }
 
-  return new Proxy(struct.layeredValues, handler) as ProxyfiedStruct
+  return new Proxy(struct.values, handler) as ProxyfiedStruct
 }
 
 
@@ -135,11 +135,11 @@ export class SuperStruct<T = Record<string, AllTypes>>
   // It assumes that you will not change it after initialization
   readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
   // current values
-  readonly layeredValues = {} as T
+  readonly values = {} as T
   protected proxyFn = proxifyStruct
 
   get ownKeys(): string[] {
-    return Object.keys(this.layeredValues as any)
+    return Object.keys(this.values as any)
   }
 
 
@@ -175,7 +175,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
 
-      this.layeredValues[keyName] = this.resolveChildValue(
+      this.values[keyName] = this.resolveChildValue(
         this.definition[keyName],
         keyStr,
         initialValues?.[keyName]
@@ -191,9 +191,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const key of this.ownKeys) {
       const keyName = key as keyof T
 
-      if (typeof this.layeredValues[keyName] === 'object' && (this.layeredValues[keyName] as any).destroy) {
+      if (typeof this.values[keyName] === 'object' && (this.values[keyName] as any).destroy) {
         // it will destroy itself and its children
-        (this.layeredValues[keyName] as SuperValueBase).destroy()
+        (this.values[keyName] as SuperValueBase).destroy()
       }
     }
   }
@@ -210,7 +210,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   getOwnValue(key: string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return this.layeredValues[key as keyof T] as any
+    return this.values[key as keyof T] as any
   }
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false): boolean {
@@ -218,7 +218,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     this.validateItem(name, value, ignoreRo)
 
-    this.layeredValues[name] = this.resolveChildValue(this.definition[name], keyStr, value)
+    this.values[name] = this.resolveChildValue(this.definition[name], keyStr, value)
 
     this.riseChildrenChangeEvent(keyStr)
 

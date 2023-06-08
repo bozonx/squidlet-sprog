@@ -84,7 +84,7 @@ export function proxyScope(data: SuperData): SuperScope {
         return scopeFunctions[prop].bind(proxyfied)
       }
       // else var of scope
-      return data.layeredValues[prop]
+      return data.values[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -112,7 +112,7 @@ export function proxyScope(data: SuperData): SuperScope {
     },
   }
 
-  const proxyfied = new Proxy(data.layeredValues, handler) as SuperScope
+  const proxyfied = new Proxy(data.values, handler) as SuperScope
 
   return proxyfied
 }

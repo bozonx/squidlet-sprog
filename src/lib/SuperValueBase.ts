@@ -124,11 +124,8 @@ export abstract class SuperValueBase<T = any | any[]>
   implements SuperValuePublic
 {
   readonly isSuperValue = true
-
-  // TODO: rename to values
-
   // current values
-  readonly abstract layeredValues: T
+  readonly abstract values: T
   events = new IndexedEventEmitter()
   protected links: SuperLinkItem[] = []
 
@@ -180,7 +177,7 @@ export abstract class SuperValueBase<T = any | any[]>
     super.$$setParent(parent, myPath)
     // reregister path of all the super children
     for (const childId of this.ownKeys) {
-      const item = this.layeredValues[childId as keyof T] as SuperValueBase
+      const item = this.values[childId as keyof T] as SuperValueBase
       // TODO: нужно тоже делать для слоя ниже!!!!
       // TODO: check isSuper instead
       if (isSuperValue(item)) item.$$setParent(this, this.makeChildPath(childId))
@@ -228,7 +225,7 @@ export abstract class SuperValueBase<T = any | any[]>
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    return deepHas(this.layeredValues as any, pathTo)
+    return deepHas(this.values as any, pathTo)
   }
 
   /**
@@ -243,7 +240,7 @@ export abstract class SuperValueBase<T = any | any[]>
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    return deepGet(this.layeredValues as any, pathTo, defaultValue)
+    return deepGet(this.values as any, pathTo, defaultValue)
   }
 
   /**
@@ -264,7 +261,7 @@ export abstract class SuperValueBase<T = any | any[]>
     }
     else {
       // deep value
-      return deepSet(this.layeredValues as any, pathTo, newValue)
+      return deepSet(this.values as any, pathTo, newValue)
     }
   }
 
@@ -378,7 +375,7 @@ export abstract class SuperValueBase<T = any | any[]>
   clone = (): T => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return deepClone(this.layeredValues)
+    return deepClone(this.values)
   }
 
   detachedCopy() {
@@ -573,7 +570,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
     for (const key of this.ownKeys) {
       // TODO: тут должны быть ownValues или layered???
-      const value: SuperValueBase = (this.layeredValues as any)[key]
+      const value: SuperValueBase = (this.values as any)[key]
 
       if (typeof value !== 'object' || !value.isSuperValue) continue
 

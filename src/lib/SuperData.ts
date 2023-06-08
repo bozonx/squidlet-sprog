@@ -63,7 +63,7 @@ export function proxifyData(data: SuperData): ProxyfiedData {
         return (data as any)[prop]
       }
       // else prop or object itself or bottom layer
-      return data.layeredValues[prop]
+      return data.values[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -147,7 +147,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly ownValues: Record<string, any> = {}
   // proxy which allows to manipulate with all layers. Do not use it at all.
   // it only for getValue and setValue and other inner methods.
-  readonly layeredValues: Record<string, any>
+  readonly values: Record<string, any>
   // ordered keys
   readonly myKeys: string[] = []
   readonly defaultRo: boolean
@@ -190,7 +190,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     this.bottomLayer = bottomLayer
     // save it to use later to define a new props
     this.defaultRo = defaultRo
-    this.layeredValues = proxifyLayeredValue(this.ownValues, bottomLayer)
+    this.values = proxifyLayeredValue(this.ownValues, bottomLayer)
     // setup definitions
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition
@@ -325,7 +325,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     }
     else {
       // deep value
-      return deepSet(this.layeredValues as any, pathTo, newValue)
+      return deepSet(this.values as any, pathTo, newValue)
     }
   }
 
@@ -489,7 +489,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   private makeOrderedObject(): Record<string, any> {
     const res: Record<string, any> = {}
 
-    for (const key of this.allKeys) res[key] = this.layeredValues[key]
+    for (const key of this.allKeys) res[key] = this.values[key]
 
     return res
   }
