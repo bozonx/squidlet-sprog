@@ -1,8 +1,8 @@
-import { SuperStruct } from '../lib/SuperStruct.js';
+import { SuperData } from '../lib/SuperData.js';
 /**
- * Create a new proxified super struct
+ * Create a new proxified super data
  * Example in yaml:
- *   $exp: newSuperStruct
+ *   $exp: newSuperData
  *   definition:
  *     param1:
  *       type: number
@@ -12,10 +12,10 @@ import { SuperStruct } from '../lib/SuperStruct.js';
  *
  * Call it like this: `scope.$run(parsedYaml)`
  */
-export function newSuperStruct(scope) {
+export function newSuperData(scope) {
     return async (p) => {
         const definition = await scope.$resolve(p.definition);
         const defaultRo = await scope.$resolve(p.defaultRo);
-        return (new SuperStruct(definition, defaultRo)).getProxy();
+        return (new SuperData(definition, defaultRo)).getProxy();
     };
 }

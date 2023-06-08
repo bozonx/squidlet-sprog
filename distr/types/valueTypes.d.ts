@@ -22,19 +22,26 @@ export declare const SIMPLE_TYPES: {
     boolean: string;
     null: string;
 };
-export declare const SUPER_TYPES: {
+export declare const SUPER_VALUES: {
     SuperStruct: string;
     SuperArray: string;
+    SuperData: string;
+};
+export declare const SUPER_TYPES: {
     SuperPromise: string;
     SuperFunc: string;
+    SuperStruct: string;
+    SuperArray: string;
+    SuperData: string;
 };
 export declare const All_TYPES: {
     any: string;
     Promise: string;
-    SuperStruct: string;
-    SuperArray: string;
     SuperPromise: string;
     SuperFunc: string;
+    SuperStruct: string;
+    SuperArray: string;
+    SuperData: string;
     array: string;
     object: string;
     string: string;

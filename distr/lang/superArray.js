@@ -1,9 +1,17 @@
-import { proxyArray, SuperArray } from '../lib/SuperArray.js';
+import { SuperArray } from '../lib/SuperArray.js';
+/**
+ * Create a new proxified super struct
+ * Example in yaml:
+ *   $exp: newSuperArray
+ *   item:
+ *     type: number
+ *   default: [0,1,2,3]
+ *
+ * Call it like this: `scope.$run(parsedYaml)`
+ */
 export function newSuperArray(scope) {
     return async (p) => {
-        const item = await scope.$resolve(p.item);
-        const defaultArray = await scope.$resolve(p.default);
-        const inner = new SuperArray(scope, item, defaultArray);
-        return proxyArray(inner);
+        const definition = await scope.$resolve(p.definition);
+        return (new SuperArray(definition)).getProxy();
     };
 }

@@ -30,7 +30,13 @@ export const callSuperFunc = (scope) => {
  */
 export const newSuperFunc = (scope) => {
     return async (p) => {
-        const newSuperFunc = new SuperFunc(scope, p);
+        const props = await scope.$resolve(p.props);
+        const newSuperFunc = new SuperFunc(scope, props, p.lines);
         return makeFuncProxy(newSuperFunc);
+    };
+};
+export const superReturn = (scope) => {
+    return async (p) => {
+        return await scope.$resolve(p.value);
     };
 };

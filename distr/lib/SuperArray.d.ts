@@ -1,7 +1,9 @@
 import { SuperValueBase, SuperValuePublic } from './SuperValueBase.js';
-import { SuperScope } from '../scope.js';
 import { AllTypes } from '../types/valueTypes.js';
-import { SuperItemDefinition, SuperItemInitDefinition } from '../types/SuperItemDefinition.js';
+import { SuperItemDefinition } from '../types/SuperItemDefinition.js';
+export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
+    defaultArray?: any[];
+}
 export interface SuperArrayPublic extends SuperValuePublic {
     isArray: boolean;
     isReadOnly: boolean;
@@ -27,16 +29,17 @@ export type ProxyfiedArray<T = any> = SuperArrayPublic & {
  * * arr... - see other methods in ARR_PUBLIC_MEMBERS
  * @param arr
  */
-export declare function proxyArray(arr: SuperArray): ProxyfiedArray;
+export declare function proxifyArray(arr: SuperArray): ProxyfiedArray;
 export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
     readonly isArray = true;
-    readonly itemDefinition: SuperItemDefinition;
     readonly values: T[];
-    readonly defaultArray?: any[];
-    protected proxyFn: typeof proxyArray;
+    protected proxyFn: typeof proxifyArray;
+    private readonly definition;
     get isReadOnly(): boolean;
     get length(): number;
-    constructor(scope: SuperScope, itemDefinition?: SuperItemInitDefinition, defaultArray?: any[]);
+    get itemDefinition(): SuperItemDefinition;
+    get ownKeys(): number[];
+    constructor(definition: Partial<SuperArrayDefinition>);
     /**
      * Init with initial values.
      * It returns setter for readonly params
@@ -48,9 +51,8 @@ export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements 
      */
     onArrayChange(handler: () => void): number;
     isKeyReadonly(key: string | number): boolean;
-    myKeys(): number[];
     getOwnValue(key: number): AllTypes;
-    setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): void;
+    setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean;
     /**
      * Set default value of array or undefined if there isn't any default value
      * @param index
@@ -71,6 +73,7 @@ export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements 
      * @param ignoreRo
      */
     deleteItem: (index: number, ignoreRo?: boolean) => void;
+    getDefinition(index: number): SuperItemDefinition | undefined;
     push: (...items: any[]) => number;
     pop: () => T | undefined;
     shift: () => T | undefined;
@@ -83,4 +86,5 @@ export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements 
      * Set value of self readonly value and rise an event
      */
     protected myRoSetter: (index: number, newValue: AllTypes) => void;
+    private checkDefinition;
 }

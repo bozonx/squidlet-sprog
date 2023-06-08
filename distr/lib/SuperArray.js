@@ -1,7 +1,9 @@
-import { arrayKeys } from 'squidlet-lib';
-import { isSuperValue, SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_PROP, SuperValueBase } from './SuperValueBase.js';
+import { arrayKeys, spliceItem, omitObj } from 'squidlet-lib';
+import { SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, SUPER_VALUE_PROP, SuperValueBase } from './SuperValueBase.js';
+import { All_TYPES, SIMPLE_TYPES } from '../types/valueTypes.js';
 import { isCorrespondingType } from './isCorrespondingType.js';
-import { DEFAULT_INIT_SUPER_DEFINITION } from '../types/SuperItemDefinition.js';
+import { DEFAULT_INIT_SUPER_DEFINITION, } from '../types/SuperItemDefinition.js';
+import { resolveInitialSimpleValue } from './helpers.js';
 const ARR_PUBLIC_MEMBERS = [
     ...SUPER_PROXY_PUBLIC_MEMBERS,
     'isArray',
@@ -26,7 +28,7 @@ const ARR_PUBLIC_MEMBERS = [
  * * arr... - see other methods in ARR_PUBLIC_MEMBERS
  * @param arr
  */
-export function proxyArray(arr) {
+export function proxifyArray(arr) {
     const handler = {
         get(target, prop) {
             if (prop === SUPER_VALUE_PROP) {
@@ -65,41 +67,40 @@ export function proxyArray(arr) {
                     prop = String(arr.length + index);
                 }
                 // set value and rise an event
-                arr.setOwnValue(index, value);
+                return arr.setOwnValue(index, value);
             }
-            else {
-                // Set the usual array properties and methods
-                arr.values[index] = value;
-            }
+            // Set the usual array properties and methods
+            arr.values[index] = value;
             return true;
         },
     };
     return new Proxy(arr.values, handler);
 }
-// TODO: add ability to reorder array
-// TODO: при добавлении элементов слушать их события - startListenChildren
-// TODO: при удалении элементов перестать слушать их события
 export class SuperArray extends SuperValueBase {
     isArray = true;
-    // definition for all the items of array
-    itemDefinition;
     values = [];
-    defaultArray;
-    proxyFn = proxyArray;
+    proxyFn = proxifyArray;
+    // definition for all the items of array
+    definition;
     get isReadOnly() {
-        return Boolean(this.itemDefinition.readonly);
+        return Boolean(this.definition.readonly);
     }
     get length() {
         return this.values.length;
     }
-    constructor(scope, itemDefinition, defaultArray) {
-        super(scope);
-        this.itemDefinition = {
-            ...(itemDefinition || DEFAULT_INIT_SUPER_DEFINITION),
-            required: Boolean(itemDefinition?.required),
-            readonly: Boolean(itemDefinition?.readonly),
+    get itemDefinition() {
+        return { ...this.definition, required: false };
+    }
+    get ownKeys() {
+        return arrayKeys(this.values);
+    }
+    constructor(definition) {
+        super();
+        this.checkDefinition(definition);
+        this.definition = {
+            ...omitObj(DEFAULT_INIT_SUPER_DEFINITION, 'required'),
+            ...definition,
         };
-        this.defaultArray = defaultArray;
     }
     /**
      * Init with initial values.
@@ -109,9 +110,10 @@ export class SuperArray extends SuperValueBase {
         if (this.inited) {
             throw new Error(`The array has been already initialized`);
         }
+        this.events.emit(SUPER_VALUE_EVENTS.initStart);
         // set initial values
         const initArrLength = initialArr?.length || 0;
-        const defaultArrLength = this.defaultArray?.length || 0;
+        const defaultArrLength = this.definition.defaultArray?.length || 0;
         const maxLength = Math.max(initArrLength, defaultArrLength);
         const indexArr = (new Array(maxLength)).fill(true);
         // Any way set length to remove odd items. Actually init is allowed to run only once
@@ -121,25 +123,34 @@ export class SuperArray extends SuperValueBase {
             // if index is in range of initalArr then get its item otherwise get from defaultArray
             const value = (index < initArrLength)
                 ? initialArr?.[index]
-                : this.defaultArray?.[index];
-            this.values[index] = this.initChild(this.itemDefinition, index, value);
+                : this.definition.defaultArray?.[index];
+            const childDefinition = {
+                type: this.definition.type,
+                default: (this.definition.defaultArray)
+                    ? this.definition.defaultArray[index]
+                    : this.definition.default,
+                readonly: this.definition.readonly,
+                nullable: this.definition.nullable,
+                required: false,
+            };
+            this.values[index] = this.resolveChildValue(childDefinition, index, value);
         });
-        // TODO: а нужно ли проверять required???
         return super.init();
     };
     destroy = () => {
         super.destroy();
         const values = this.values;
         for (const indexStr of values) {
-            if (isSuperValue(values[indexStr]))
+            if (typeof values[indexStr] === 'object' && values[indexStr].destroy) {
                 values[indexStr].destroy();
+            }
         }
     };
     /**
      * Listen only to add, remove or reorder array changes
      */
     onArrayChange(handler) {
-        return this.changeEvent.addListener((el) => {
+        return this.events.addListener(SUPER_VALUE_EVENTS.change, (el) => {
             if (el === this)
                 handler();
         });
@@ -147,31 +158,35 @@ export class SuperArray extends SuperValueBase {
     isKeyReadonly(key) {
         return this.isReadOnly;
     }
-    myKeys() {
-        return arrayKeys(this.values);
-    }
     getOwnValue(key) {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         return this.values[key];
     }
     setOwnValue(key, value, ignoreRo = false) {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         const index = Number(key);
-        if (!ignoreRo && this.isReadOnly) {
-            throw new Error(`Can't set a value to readonly array`);
-        }
-        else if (!isCorrespondingType(value, this.itemDefinition.type)) {
-            throw new Error(`The value of index ${index} is not corresponding to array type ${this.itemDefinition.type}`);
-        }
-        // TODO: наверное проверить required чтобы не устанавливали undefined and null
-        this.values[index] = value;
-        this.riseChildrenChangeEvent(index);
+        this.values[index] = this.resolveChildValue(this.itemDefinition, index, value);
+        this.emitChildChangeEvent(index);
+        return true;
     }
     /**
      * Set default value of array or undefined if there isn't any default value
      * @param index
      */
     toDefaultValue = (index) => {
-        const defaultValue = this.itemDefinition.default;
-        // TODO: test что установиться undefined если нет значения по умолчанию
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
+        let defaultValue = (this.definition.defaultArray)
+            ? this.definition.defaultArray[index]
+            : this.definition.default;
+        // TODO: а если super type??? То надо вызвать default value у него ???
+        //       или ничего не делать? Если менять заного то надо дестроить предыдущий
+        if (Object.keys(SIMPLE_TYPES).includes(this.definition.type)
+            && typeof defaultValue === 'undefined') {
+            defaultValue = resolveInitialSimpleValue(this.definition.type, this.definition.nullable);
+        }
         this.setOwnValue(index, defaultValue);
     };
     getProxy() {
@@ -185,11 +200,13 @@ export class SuperArray extends SuperValueBase {
      * @param index
      */
     clearItem = (index) => {
-        if (this.isReadOnly) {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
+        else if (this.isReadOnly) {
             throw new Error(`Can't delete item from readonly array`);
         }
         delete this.values[index];
-        this.riseChildrenChangeEvent(index);
+        this.emitChildChangeEvent(index);
     };
     /**
      * Delete item and splice an array
@@ -198,82 +215,100 @@ export class SuperArray extends SuperValueBase {
      * @param ignoreRo
      */
     deleteItem = (index, ignoreRo = false) => {
-        if (!ignoreRo && this.isReadOnly) {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
+        else if (!ignoreRo && this.isReadOnly) {
             throw new Error(`Can't delete item from readonly array`);
         }
-        // TODO: test
-        this.values.splice(index);
-        this.riseChildrenChangeEvent(index);
+        // TODO: в тестах не учавствует
+        spliceItem(this.values, index);
+        this.emitChildChangeEvent(index);
     };
+    getDefinition(index) {
+        return this.definition;
+    }
     ////// Standard methods
     // Methods which are mutate an array: push, pop, shift, unshift, fill, splice, reverse, sort
     push = (...items) => {
-        //const prevLength = this.values.length
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         const newLength = this.values.push(...items);
-        // const arr = (new Array(newLength - prevLength)).fill(true)
-        //
-        // // TODO: test
-        // // rise events for all the new children
-        // arr.forEach((el: true, index: number) => this.riseChildrenChangeEvent(index))
-        //
-        // TODO: наверное надо инициализировать super value и проверить значения
+        for (const item of items) {
+            // TODO: если передан super value
+            //    надо подменить у него parent, path и слушать buble событий от него
+            //    все его потомки должны обновить родительский path
+        }
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         return newLength;
     };
     pop = () => {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         //const lastIndex = this.values.length - 1
         const res = this.values.pop();
-        //this.riseChildrenChangeEvent(lastIndex)
+        //this.emitChildChangeEvent(lastIndex)
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         // TODO: нужно овязять super элемент и дестроить его
         return res;
     };
     shift = () => {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         const res = this.values.shift();
-        //this.riseChildrenChangeEvent(0)
+        //this.emitChildChangeEvent(0)
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         // TODO: нужно овязять super элемент и дестроить его
         return res;
     };
     unshift = (...items) => {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         const res = this.values.unshift(...items);
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         // const arr = (new Array(items.length)).fill(true)
         //
         // // TODO: test
         // // rise events for all the new children
-        // arr.forEach((el: true, index: number) => this.riseChildrenChangeEvent(index))
+        // arr.forEach((el: true, index: number) => this.emitChildChangeEvent(index))
         // TODO: наверное надо инициализировать super value и проверить значения
         return res;
     };
     fill = (value, start, end) => {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         this.values.fill(value, start, end);
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         // TODO: наверное надо проверить значения
         return this.proxyfiedInstance;
     };
     splice = (start, deleteCount, ...items) => {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         const res = this.values.splice(start, deleteCount, ...items);
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         // TODO: нужно овязять super элемент и дестроить его
         return res;
     };
     reverse = () => {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
         const res = this.values.reverse();
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         return res;
     };
     sort = (compareFn) => {
-        this.values.sort();
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
+        this.values.sort(compareFn);
         // emit event for whole array
-        this.riseMyEvent();
+        this.emitMyEvent();
         return this.proxyfiedInstance;
     };
     // TODO: not mutable methods just copy:
@@ -305,9 +340,29 @@ export class SuperArray extends SuperValueBase {
      * Set value of self readonly value and rise an event
      */
     myRoSetter = (index, newValue) => {
-        // TODO: для массива то получается ro не полноценный
-        //       нужно не только менять потомка но и сам массив - push, splice etc
         this.setOwnValue(index, newValue, true);
-        this.riseChildrenChangeEvent(index);
     };
+    checkDefinition(definition) {
+        const { type, default: defaultValue, defaultArray, nullable, readonly, } = definition;
+        if (type && !Object.keys(All_TYPES).includes(type)) {
+            throw new Error(`Wrong type of SuperArray child: ${type}`);
+        }
+        else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
+            throw new Error(`nullable has to be boolean`);
+        }
+        else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
+            throw new Error(`readonly has to be boolean`);
+        }
+        else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
+            throw new Error(`Default value ${defaultValue} of SuperArray doesn't meet type: ${type}`);
+        }
+        else if (defaultArray) {
+            if (!Array.isArray(defaultArray)) {
+                throw new Error(`defaultArray has to be an array`);
+            }
+            else if (defaultArray.findIndex((el) => !isCorrespondingType(el, type, nullable)) >= 0) {
+                throw new Error(`wrong defaultArray`);
+            }
+        }
+    }
 }

@@ -1,4 +1,4 @@
-import { SprogFn } from '../scope.js';
+import { SprogFn } from '../lib/scope.js';
 /**
  * Call super function. It always await.
  * args:
@@ -13,3 +13,4 @@ export declare const callSuperFunc: SprogFn;
  *   * lines - any code execution include set vars in scope and return value
  */
 export declare const newSuperFunc: SprogFn;
+export declare const superReturn: SprogFn;

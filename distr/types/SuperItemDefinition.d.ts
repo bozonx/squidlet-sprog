@@ -6,8 +6,9 @@ interface SuperItemDefinitionBase {
 interface SuperItemDefinitionExtra {
     required: boolean;
     readonly: boolean;
+    nullable: boolean;
 }
 export type SuperItemInitDefinition = SuperItemDefinitionBase & Partial<SuperItemDefinitionExtra>;
 export type SuperItemDefinition = SuperItemDefinitionBase & SuperItemDefinitionExtra;
-export declare const DEFAULT_INIT_SUPER_DEFINITION: SuperItemInitDefinition;
+export declare const DEFAULT_INIT_SUPER_DEFINITION: SuperItemDefinition;
 export {};

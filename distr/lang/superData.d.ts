@@ -1,10 +1,10 @@
 import { SuperScope } from '../lib/scope.js';
-import { ProxyfiedStruct } from '../lib/SuperStruct.js';
 import { SuperItemDefinition } from '../types/SuperItemDefinition.js';
+import { ProxyfiedData } from '../lib/SuperData.js';
 /**
- * Create a new proxified super struct
+ * Create a new proxified super data
  * Example in yaml:
- *   $exp: newSuperStruct
+ *   $exp: newSuperData
  *   definition:
  *     param1:
  *       type: number
@@ -14,7 +14,7 @@ import { SuperItemDefinition } from '../types/SuperItemDefinition.js';
  *
  * Call it like this: `scope.$run(parsedYaml)`
  */
-export declare function newSuperStruct<T = any>(scope: SuperScope): (p: {
+export declare function newSuperData<T = any>(scope: SuperScope): (p: {
     definition: SuperItemDefinition;
     defaultRo?: boolean;
-}) => Promise<T & ProxyfiedStruct>;
+}) => Promise<T & ProxyfiedData>;

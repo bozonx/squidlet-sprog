@@ -1,24 +1,14 @@
-import { simpleCall } from './lang/simpleCall.js';
-import { callSuperFunc, newSuperFunc } from './lang/superFunc.js';
+import { callSuperFunc, newSuperFunc, superReturn } from './lang/superFunc.js';
 import { deleteValue, getValue, setValue } from './lang/deepValue.js';
-import { deleteVar, newVar } from './lang/simpleVar.js';
+import { newVar } from './lang/simpleVar.js';
 import { jsExp } from './lang/jsExp.js';
-import { isLess, logicAnd, isEqual, isGreater, logicNot, logicOr } from './lang/booleanLogic.js';
+import { isLess, logicAnd, isEqual, isGreater, logicNot, logicOr, isGreaterOrEqual, isLessOrEqual } from './lang/booleanLogic.js';
 import { ifElse } from './lang/ifElse.js';
 import { forEach } from './lang/forEach.js';
 import { newSuperStruct } from './lang/superStruct.js';
 import { newSuperArray } from './lang/superArray.js';
-// TODO: доделать SuperStruct & SuperArray
-// TODO: add switch into isElse
-// TODO: SuperFunc - add return
-// TODO: review forEach - add support of return, break, continue, inner cycles and ifElse
-// TODO: simple function вообще нужен тогда???
-// TODO: add SuperPromise
-// TODO: add SuperError - объект. И вообще продумать поднятие ошибок
-// TODO: add module
-// TODO: add simpleClass
-// TODO: add SuperClass
-// TODO: add test
+import { simpleCall } from './lang/simpleFunc.js';
+import { newSuperData } from './lang/superData.js';
 /*
  * SuperProg visual programming language
  */
@@ -33,7 +23,7 @@ export const sprogFuncs = {
     setValue,
     deleteValue,
     newVar,
-    deleteVar,
+    //deleteVar,
     ////// Boolean logic
     logicAnd,
     logicOr,
@@ -41,9 +31,13 @@ export const sprogFuncs = {
     isEqual,
     isGreater,
     isLess,
+    isGreaterOrEqual,
+    isLessOrEqual,
     ////// SUPER
     callSuperFunc,
     newSuperFunc,
+    superReturn,
+    newSuperData,
     newSuperStruct,
     newSuperArray,
 };

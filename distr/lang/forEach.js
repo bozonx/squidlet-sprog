@@ -1,5 +1,9 @@
-import { lastItem } from 'squidlet-lib';
-import { newScope } from '../scope.js';
+import { newScope } from '../lib/scope.js';
+import { EXP_MARKER } from '../constants.js';
+import { SUPER_RETURN } from '../lib/SuperFunc.js';
+// TODO: add rename of value and index
+export const CONTINUE_CYCLE = 'continueCycle';
+export const BREAK_CYCLE = 'breakCycle';
 /**
  * Super for each cycle
  * It allows to iteract arrays and objects
@@ -20,57 +24,105 @@ import { newScope } from '../scope.js';
 export function forEach(scope) {
     return async (p) => {
         const src = await scope.$resolve(p.src);
+        const reverse = await scope.$resolve(p.reverse);
         if (Array.isArray(src)) {
-            const firstIndex = (p.reverse) ? src.length - 1 : 0;
-            const laseIndex = (p.reverse) ? 0 : src.length - 1;
+            if (!src.length)
+                return;
+            const firstIndex = (reverse) ? src.length - 1 : 0;
+            const lastIndex = (reverse) ? 0 : src.length - 1;
             // array iteration
-            for (let i = (p.reverse) ? src.length - 1 : 0; (p.reverse) ? i >= src.length : i < src.length; (p.reverse) ? i-- : i++) {
-                const localScopeInitial = {
-                    i,
-                    key: i,
-                    value: src[i],
-                    $isFirst: i === firstIndex,
-                    $isLast: i === laseIndex,
-                    // TODO: add skips
-                    //$skipNext
-                    //$skip
-                    //$toStep
-                };
-                const localScope = newScope(localScopeInitial, scope);
-                for (const oneDo of p.do) {
-                    await localScope.$run(oneDo);
-                }
-                if (p.reverse)
-                    i--;
-                else
-                    i++;
+            for (let i = firstIndex; (reverse) ? i >= 0 : i < src.length; (reverse) ? i-- : i++) {
+                let toStepNum = -1;
+                const toStep = (stepNum) => toStepNum = stepNum;
+                const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex, toStep);
+                if (result === '$$' + BREAK_CYCLE)
+                    break;
+                else if (typeof result !== 'undefined')
+                    return result;
+                if (toStepNum >= 0)
+                    i = toStepNum;
             }
         }
         else if (typeof src === 'object') {
             const keys = Object.keys(src);
-            let i = (p.reverse) ? keys.length - 1 : 0;
+            if (!keys.length)
+                return;
+            const firstIndex = (reverse) ? keys.length - 1 : 0;
+            const lastIndex = (reverse) ? 0 : keys.length - 1;
             // object iteration
-            for (let i = (p.reverse) ? keys.length - 1 : 0; (p.reverse) ? i >= keys.length : i < keys.length; (p.reverse) ? i-- : i++) {
+            for (let i = firstIndex; (reverse) ? i >= 0 : i < keys.length; (reverse) ? i-- : i++) {
                 const keyStr = keys[i];
-                const localScopeInitial = {
-                    i,
-                    key: keyStr,
-                    value: src[keyStr],
-                    $isFirst: keys[0] === keyStr,
-                    $isLast: lastItem(keys) === keyStr,
-                    // TODO: add skips
-                    //$skipNext
-                    //$skip
-                    //$toStep
-                };
-                const localScope = newScope(localScopeInitial, scope);
-                for (const oneDo of p.do) {
-                    await localScope.$run(oneDo);
-                }
+                let toStepNum = -1;
+                const toStep = (stepNum) => toStepNum = stepNum;
+                const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex, toStep);
+                if (result === '$$' + BREAK_CYCLE)
+                    break;
+                else if (typeof result !== 'undefined')
+                    return result;
+                if (toStepNum >= 0)
+                    i = toStepNum;
             }
         }
         else {
             throw new Error(`Unsupported types of src: ${typeof src}`);
         }
     };
+}
+async function doIteration(lines, scope, i, key, value, firstIndex, lastIndex, toStep) {
+    const isRecursive = lastIndex === 0 && firstIndex !== 0;
+    const localScopeInitial = {
+        i,
+        key,
+        value,
+        $isFirst: i === firstIndex,
+        $isLast: i === lastIndex,
+        $skipNext() {
+            if (isRecursive) {
+                const toStepNum = i - 1;
+                toStep(toStepNum);
+            }
+            else {
+                const toStepNum = i + 1;
+                // don't worry if it is out of range because of check in "for"
+                toStep(toStepNum);
+            }
+        },
+        $skip(numberOfSteps) {
+            if (isRecursive) {
+                const toStepNum = i - numberOfSteps;
+                toStep(toStepNum);
+            }
+            else {
+                const toStepNum = i + numberOfSteps;
+                // don't worry if it is out of range because of check in "for"
+                toStep(toStepNum);
+            }
+        },
+        $toStep(stepNumber) {
+            if (isRecursive) {
+                toStep(stepNumber + 1);
+            }
+            else {
+                // don't worry if it is out of range because of check in "for"
+                toStep(stepNumber - 1);
+            }
+        }
+    };
+    const localScope = newScope(localScopeInitial, scope);
+    for (const line of lines) {
+        if (line[EXP_MARKER] === CONTINUE_CYCLE)
+            continue;
+        else if (line[EXP_MARKER] === BREAK_CYCLE)
+            return '$$' + BREAK_CYCLE;
+        else if (line[EXP_MARKER] === SUPER_RETURN) {
+            return localScope.$run(line);
+        }
+        const res = await localScope.$run(line);
+        if (res === '$$' + CONTINUE_CYCLE)
+            continue;
+        else if (res === '$$' + BREAK_CYCLE)
+            return '$$' + BREAK_CYCLE;
+        else if (typeof res !== 'undefined')
+            return res;
+    }
 }

@@ -1,4 +1,4 @@
-import { SprogFn } from '../scope.js';
+import { SprogFn } from '../lib/scope.js';
 /**
  * Execute JS expression and return result.
  * Params:

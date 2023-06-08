@@ -1,23 +1,11 @@
-import { SuperScope } from '../scope.js';
+import { SprogFn } from '../lib/scope.js';
 /**
- * Define simple func in the top of scope
- * params:
- *   $exp: simpleFunc
- *   name: nameOfFunction
- *   argsNames: ['arg1', ...]
- *   lines: [{$exp: getValue, path: somePath}]
+ * Call js function from scope
+ * example yaml template:
+ *   $ext: simpleCall
+ *   path: myFunc
+ *   args:
+ *     - 1
+ *     - 'some value'
  */
-export declare function setSimpleFunc(scope: SuperScope): (p: {
-    name: string;
-    argsNames?: string[];
-}) => Promise<void>;
-/**
- * Create simple func and return it
- * params:
- *   $exp: simpleFunc
- *   argsNames: ['arg1', ...]
- *   lines: [{$exp: getValue, path: somePath}]
- */
-export declare function makeSimpleFunc(scope: SuperScope): (p: {
-    argsNames?: string[];
-}) => Promise<void>;
+export declare const simpleCall: SprogFn;

@@ -1,5 +1,7 @@
-import { SuperScope } from '../scope.js';
+import { SuperScope } from '../lib/scope.js';
 import { SprogDefinition } from '../types/types.js';
+export declare const CONTINUE_CYCLE = "continueCycle";
+export declare const BREAK_CYCLE = "breakCycle";
 interface ForEachParams {
     reverse?: boolean;
     src: any[] | Record<string, any>;
@@ -22,5 +24,5 @@ interface ForEachParams {
  *       path: somePath
  *       value: 5
  */
-export declare function forEach(scope: SuperScope): (p: ForEachParams) => Promise<void>;
+export declare function forEach(scope: SuperScope): (p: ForEachParams) => Promise<any>;
 export {};
