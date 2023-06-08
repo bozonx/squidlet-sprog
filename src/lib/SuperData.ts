@@ -47,7 +47,7 @@ export type ProxyfiedData<T = Record<any, any>> = SuperDataPublic
 
 export const DATA_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
-  'isStruct',
+  'isData',
 ]
 export const DEFAULT_DEFINITION_KEY = '$DEFAULT'
 
@@ -62,34 +62,28 @@ export function proxifyData(data: SuperData): ProxyfiedData {
         // public super struct prop
         return (data as any)[prop]
       }
-      // else prop or object itself
+      // else prop or object itself or bottom layer
       return data.layeredValues[prop]
     },
 
     has(target: any, prop: string): boolean {
-      if (prop === SUPER_VALUE_PROP || DATA_MEMBERS.includes(prop)) {
-        return true
-      }
+      if (prop === SUPER_VALUE_PROP || DATA_MEMBERS.includes(prop)) return true
 
       return data.allKeys.includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
-
-      // TODO: а почему не в слой???
-      data.setOwnValue(prop, newValue)
-
-      return true
+      return data.setValue(prop, newValue)
     },
 
     deleteProperty(target: any, prop: string): boolean {
-      data.forget(prop)
-
-      return true
+      throw new Error(`Don't delete via value proxy! User forget() instead`)
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return data.ownKeys
+      // to deep functions need that Reflect.ownKeys()
+      // get all the keys including bottom layer
+      return data.allKeys as any[]
     },
   }
 
@@ -116,13 +110,11 @@ export function proxifyLayeredValue(topOwnValues: Record<string, any>, bottomDat
       ) {
         // if var is defined only in bottom value and not in top level
         // set value to it or its lower levels
-        bottomData.setValue(prop, newValue)
+        return bottomData.setValue(prop, newValue)
       }
-      else {
-        // if var is defined in top value - set to it
-        // or just define a new var in top value
-        topOwnValues[prop] = newValue
-      }
+      // else if var is defined in top value - set to it
+      // or just define a new var in top value
+      topOwnValues[prop] = newValue
 
       return true
     },

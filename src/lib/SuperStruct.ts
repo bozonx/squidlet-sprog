@@ -111,9 +111,7 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
     },
 
     set(target: any, prop: string, newValue: any): boolean {
-      struct.setOwnValue(prop, newValue)
-
-      return true
+      return struct.setOwnValue(prop, newValue)
     },
 
     deleteProperty(): boolean {

@@ -6,7 +6,6 @@ import {
   deepClone,
   splitDeepPath,
   joinDeepPath,
-  deduplicate
 } from 'squidlet-lib';
 import {All_TYPES, AllTypes, SIMPLE_TYPES, SimpleType, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
 import {

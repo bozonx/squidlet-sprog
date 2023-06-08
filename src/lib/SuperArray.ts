@@ -118,11 +118,10 @@ export function proxifyArray(arr: SuperArray): ProxyfiedArray {
           prop = String(arr.length + index);
         }
         // set value and rise an event
-        arr.setOwnValue(index, value)
-      } else {
-        // Set the usual array properties and methods
-        arr.layeredValues[index] = value
+        return arr.setOwnValue(index, value)
       }
+      // Set the usual array properties and methods
+      arr.layeredValues[index] = value
 
       return true
     },
