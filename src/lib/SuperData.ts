@@ -4,7 +4,9 @@ import {
   omitObj,
   concatUniqStrArrays,
   deduplicate,
-  splitDeepPath
+  splitDeepPath,
+  joinDeepPath,
+  deepSet
 } from 'squidlet-lib';
 import {
   checkDefinition,
@@ -92,7 +94,7 @@ export function proxyData(data: SuperData): ProxyfiedData {
   return new Proxy(data.ownValues, handler) as ProxyfiedData
 }
 
-export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: SuperValueBase) {
+export function proxifyLayeredValue(topValue: Record<string, any>, bottomData?: SuperData) {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
       if (Object.keys(topValue).includes(prop)) return topValue[prop]
@@ -147,15 +149,16 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly isData = true
   // put definition via special method, not straight
   readonly definition: Record<string, SuperItemDefinition> = {} as any
-  // current values
+  // values only of this layer. Do not use it, use setValue, getValue instead
   readonly ownValues: Record<string, any> = {}
-  // TODO: сделать protected
+  // proxy which allows to manipulate with all layers. Do not use it at all.
+  // it only for getValue and setValue and other inner methods.
   readonly layeredValues: Record<string, any>
   // ordered keys
   readonly myKeys: string[] = []
   readonly defaultRo: boolean
+  readonly bottomLayer?: SuperData
   protected proxyFn = proxyData
-
 
   get defaultDefinition(): SuperItemDefinition | undefined {
     return this.definition[DEFAULT_DEFINITION_KEY]
@@ -181,11 +184,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       throw new Error(`Layers can't have paths. It doesn't developed at the moment.`)
     }
 
-    super(bottomLayer as SuperValueBase | undefined)
+    super()
 
+    this.bottomLayer = bottomLayer
     // save it to use later to define a new props
     this.defaultRo = defaultRo
-    this.layeredValues = proxifyLayeredValue(this.ownValues, bottomLayer as SuperValueBase | undefined)
+    this.layeredValues = proxifyLayeredValue(this.ownValues, bottomLayer)
     // setup definitions
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition
@@ -288,6 +292,44 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return true
   }
 
+  // TODO: $$setParent должен ли ставить родителя на bottomLayer ???
+
+  // TODO: review - see in base class
+  /**
+   * Set value deeply.
+   * You can set own value or value of some deep object.
+   * Even you can set value to the deepest primitive like: struct.struct.num = 5
+   * @returns {boolean} if true then value was found and set. If false value hasn't been set
+   */
+  setValue = (pathTo: string, newValue: AllTypes): boolean => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
+
+    const splat = splitDeepPath(pathTo)
+
+    if (splat.length === 1) {
+      const keyStr = String(splat[0])
+      // own value - there splat[0] is number or string
+      if (this.ownKeys.includes(keyStr)) {
+        return this.setOwnValue(keyStr, newValue)
+      }
+      else if (this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])) {
+        const lowPath = joinDeepPath([splat[0]])
+
+        return this.bottomLayer.setValue(lowPath, newValue)
+      }
+      else {
+        // if it is a new var then set it to top layer
+        return this.setOwnValue(keyStr, newValue)
+      }
+    }
+    else {
+      // deep value
+      return deepSet(this.layeredValues as any, pathTo, newValue)
+    }
+  }
+
+
   /**
    * Set default value or null if the key doesn't have a default value
    * @param key
@@ -335,6 +377,15 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   }
 
   /////// Data specific
+
+  // TODO: make getter
+  allKeys(): (string | number)[] {
+    return deduplicate([
+      ...(this.bottomLayer?.allKeys() || []),
+      ...this.ownKeys,
+    ])
+  }
+
   // TODO: test
   batchSet(values?: Record<string, any>) {
     if (!values) return
@@ -404,7 +455,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       return this.definition[key] || this.defaultDefinition
     }
     else if (this.bottomLayer) {
-      return (this.bottomLayer as SuperData).getDefinition(key)
+      return this.bottomLayer.getDefinition(key)
     }
   }
 
@@ -425,7 +476,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     spliceItem(this.myKeys, key)
 
     if (this.bottomLayer) {
-      const bottomLayer = this.bottomLayer as SuperData
+      const bottomLayer = this.bottomLayer
       // if bottom layer has forget() method - then do it
       if (bottomLayer.forget) bottomLayer.forget(key)
     }

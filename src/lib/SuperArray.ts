@@ -89,7 +89,7 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
       else {
         // some other prop
         if (typeof prop === 'symbol') {
-          return arr.ownValues[prop as  any]
+          return arr.layeredValues[prop as  any]
         }
         else {
           // means number as string
@@ -101,10 +101,10 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
               prop = String(arr.length + index)
             }
 
-            return arr.ownValues[index]
+            return arr.layeredValues[index]
           }
           // some other prop - get it from the array
-          return arr.ownValues[prop as any]
+          return arr.layeredValues[prop as any]
         }
       }
     },
@@ -121,14 +121,14 @@ export function proxyArray(arr: SuperArray): ProxyfiedArray {
         arr.setOwnValue(index, value)
       } else {
         // Set the usual array properties and methods
-        arr.ownValues[index] = value
+        arr.layeredValues[index] = value
       }
 
       return true
     },
   }
 
-  return new Proxy(arr.ownValues, handler) as ProxyfiedArray
+  return new Proxy(arr.layeredValues, handler) as ProxyfiedArray
 }
 
 
@@ -136,8 +136,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   readonly isArray = true
   // definition for all the items of array
   readonly definition: SuperArrayDefinition
-  readonly ownValues: T[] = []
-  //protected readonly layeredValues: T[]
+  readonly layeredValues: T[] = []
   protected proxyFn = proxyArray
 
 
@@ -146,19 +145,15 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
   get length(): number {
-    return this.ownValues.length
+    return this.layeredValues.length
   }
 
   get itemDefinition(): SuperItemDefinition {
     return { ...this.definition, required: false }
   }
 
-  get layeredValues(): any {
-    return this.ownValues
-  }
-
   get ownKeys(): number[] {
-    return arrayKeys(this.ownValues)
+    return arrayKeys(this.layeredValues)
   }
 
 
@@ -191,7 +186,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     const indexArr = (new Array(maxLength)).fill(true)
     // Any way set length to remove odd items. Actually init is allowed to run only once
     // so there should aren't any initialized super values in the rest of array
-    this.ownValues.length = maxLength
+    this.layeredValues.length = maxLength
 
     indexArr.forEach((el: true, index: number) => {
       // if index is in range of initalArr then get its item otherwise get from defaultArray
@@ -208,7 +203,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
         required: false,
       }
 
-      this.ownValues[index] = this.resolveChildValue(childDefinition, index, value)
+      this.layeredValues[index] = this.resolveChildValue(childDefinition, index, value)
     })
 
     return super.init()
@@ -217,7 +212,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   destroy = () => {
     super.destroy()
 
-    const values: any[] = this.ownValues
+    const values: any[] = this.layeredValues
 
     for (const indexStr of values) {
       if (typeof values[indexStr] === 'object' && values[indexStr].destroy) {
@@ -243,7 +238,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   getOwnValue(key: number): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return this.ownValues[key] as any
+    return this.layeredValues[key] as any
   }
 
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
@@ -251,7 +246,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
     const index = Number(key)
 
-    this.ownValues[index] = this.resolveChildValue(this.itemDefinition, index, value)
+    this.layeredValues[index] = this.resolveChildValue(this.itemDefinition, index, value)
 
     this.riseChildrenChangeEvent(index)
 
@@ -302,7 +297,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
       throw new Error(`Can't delete item from readonly array`)
     }
 
-    delete this.ownValues[index]
+    delete this.layeredValues[index]
 
     this.riseChildrenChangeEvent(index)
   }
@@ -320,7 +315,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     }
 
     // TODO: в тестах не учавствует
-    spliceItem(this.ownValues, index)
+    spliceItem(this.layeredValues, index)
     this.riseChildrenChangeEvent(index)
   }
 
@@ -334,7 +329,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
-    const newLength = this.ownValues.push(...items)
+    const newLength = this.layeredValues.push(...items)
 
     for (const item of items) {
       // TODO: если передан super value
@@ -351,8 +346,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
 
   pop = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
-    //const lastIndex = this.ownValues.length - 1
-    const res = this.ownValues.pop()
+    //const lastIndex = this.layeredValues.length - 1
+    const res = this.layeredValues.pop()
 
     //this.riseChildrenChangeEvent(lastIndex)
     // emit event for whole array
@@ -366,7 +361,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   shift = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const res = this.ownValues.shift()
+    const res = this.layeredValues.shift()
 
     //this.riseChildrenChangeEvent(0)
     // emit event for whole array
@@ -380,7 +375,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   unshift = (...items: any[]) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const res = this.ownValues.unshift(...items)
+    const res = this.layeredValues.unshift(...items)
     // emit event for whole array
     this.riseMyEvent()
 
@@ -398,7 +393,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   fill = (value: any, start?: number, end?: number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    this.ownValues.fill(value, start, end)
+    this.layeredValues.fill(value, start, end)
     // emit event for whole array
     this.riseMyEvent()
 
@@ -410,7 +405,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   splice = (start: number, deleteCount: number, ...items: T[]) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const res = this.ownValues.splice(start, deleteCount, ...items)
+    const res = this.layeredValues.splice(start, deleteCount, ...items)
     // emit event for whole array
     this.riseMyEvent()
 
@@ -422,7 +417,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   reverse = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const res = this.ownValues.reverse()
+    const res = this.layeredValues.reverse()
     // emit event for whole array
     this.riseMyEvent()
 
@@ -432,7 +427,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   sort = (compareFn?: (a: T, b: T) => number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    this.ownValues.sort(compareFn)
+    this.layeredValues.sort(compareFn)
     // emit event for whole array
     this.riseMyEvent()
 

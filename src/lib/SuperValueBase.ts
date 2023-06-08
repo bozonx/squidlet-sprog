@@ -125,13 +125,12 @@ export abstract class SuperValueBase<T = any | any[]>
   implements SuperValuePublic
 {
   readonly isSuperValue = true
-  // values only of this layer. Do not use it, use setValue, getValue instead
-  readonly abstract ownValues: T
-  // proxy which allows to manipulate with all layers. Do not use it at all.
-  // it only for getValue and setValue and other inner methods.
+
+  // TODO: rename to values
+
+  // current values
   readonly abstract layeredValues: T
   events = new IndexedEventEmitter()
-  readonly bottomLayer?: SuperValueBase
   protected links: SuperLinkItem[] = []
 
   get isDestroyed(): boolean {
@@ -143,12 +142,6 @@ export abstract class SuperValueBase<T = any | any[]>
    */
   abstract ownKeys: (string | number)[]
 
-
-  protected constructor(bottomLayer?: SuperValueBase) {
-    super()
-
-    this.bottomLayer = bottomLayer
-  }
 
   init(): any {
     super.init()
@@ -188,7 +181,7 @@ export abstract class SuperValueBase<T = any | any[]>
     super.$$setParent(parent, myPath)
     // reregister path of all the super children
     for (const childId of this.ownKeys) {
-      const item = this.ownValues[childId as keyof T] as SuperValueBase
+      const item = this.layeredValues[childId as keyof T] as SuperValueBase
       // TODO: нужно тоже делать для слоя ниже!!!!
       // TODO: check isSuper instead
       if (isSuperValue(item)) item.$$setParent(this, this.makeChildPath(childId))
@@ -201,7 +194,7 @@ export abstract class SuperValueBase<T = any | any[]>
   abstract isKeyReadonly(key: string | number): boolean
 
   /**
-   * Get only own value not bottom layer and not deep
+   * Get only own value not from bottom layer and not deep
    * @param key
    */
   abstract getOwnValue(key: string | number): AllTypes
@@ -226,13 +219,6 @@ export abstract class SuperValueBase<T = any | any[]>
 
   unsubscribe = (handlerIndex: number) => {
     this.events.removeListener(handlerIndex, SUPER_VALUE_EVENTS.change)
-  }
-
-  allKeys(): (string | number)[] {
-    return deduplicate([
-      ...(this.bottomLayer?.allKeys() || []),
-      ...this.ownKeys,
-    ])
   }
 
   /**
@@ -275,18 +261,19 @@ export abstract class SuperValueBase<T = any | any[]>
 
     if (splat.length === 1) {
       // own value - there splat[0] is number or string
-      if (this.ownKeys.includes(splat[0])) {
-        return this.setOwnValue(splat[0], newValue)
-      }
-      else if (this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])) {
-        const lowPath = joinDeepPath([splat[0]])
-
-        return this.bottomLayer.setValue(lowPath, newValue)
-      }
-      else {
-        // if it is a new var then set it to top layer
-        return this.setOwnValue(splat[0], newValue)
-      }
+      return this.setOwnValue(splat[0], newValue)
+      // if (this.ownKeys.includes(splat[0])) {
+      //   return this.setOwnValue(splat[0], newValue)
+      // }
+      // else if (this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])) {
+      //   const lowPath = joinDeepPath([splat[0]])
+      //
+      //   return this.bottomLayer.setValue(lowPath, newValue)
+      // }
+      // else {
+      //   // if it is a new var then set it to top layer
+      //   return this.setOwnValue(splat[0], newValue)
+      // }
     }
     else {
       // deep value
@@ -599,7 +586,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
     for (const key of this.ownKeys) {
       // TODO: тут должны быть ownValues или layered???
-      const value: SuperValueBase = (this.ownValues as any)[key]
+      const value: SuperValueBase = (this.layeredValues as any)[key]
 
       if (typeof value !== 'object' || !value.isSuperValue) continue
 
