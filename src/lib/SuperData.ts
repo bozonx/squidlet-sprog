@@ -388,6 +388,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (definition === null) {
       delete this.definition[DEFAULT_DEFINITION_KEY]
 
+      this.events.emit(SUPER_VALUE_EVENTS.definition, DEFAULT_DEFINITION_KEY)
+
       return
     }
 
@@ -396,7 +398,6 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     this.events.emit(SUPER_VALUE_EVENTS.definition, DEFAULT_DEFINITION_KEY)
   }
 
-  // TODO: можно переместить в SuperValueBase
   getDefinition(key: string | number): SuperItemDefinition | undefined {
     if (this.definition[key]) {
       return this.definition[key] || this.defaultDefinition

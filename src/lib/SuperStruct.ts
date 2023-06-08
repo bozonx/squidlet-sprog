@@ -263,7 +263,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
     validateChildValue(name as string, definition, value)
   }
 
-  getDefinition(key: keyof T): SuperItemDefinition | undefined {
+  getDefinition(keyStr: string): SuperItemDefinition | undefined {
+    const key = keyStr as keyof T
+
     if (this.definition[key]) {
       return this.definition[key]
     }

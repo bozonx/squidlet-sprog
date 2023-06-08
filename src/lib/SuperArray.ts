@@ -324,7 +324,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     this.riseChildrenChangeEvent(index)
   }
 
-  getDefinition(key: string): SuperItemDefinition | undefined {
+  getDefinition(index: number): SuperItemDefinition | undefined {
     return this.definition as SuperItemDefinition
   }
 

@@ -244,6 +244,8 @@ export abstract class SuperValueBase<T = any | any[]>
 
   abstract toDefaultValue(key: string | number): void
 
+  abstract getDefinition(key: string | number): SuperItemDefinition | undefined
+
   subscribe = (handler: SuperChangeHandler): number => {
     return this.events.addListener(SUPER_VALUE_EVENTS.change, handler)
   }
