@@ -118,6 +118,82 @@ export function checkDefinition(definition: SuperItemInitDefinition) {
   }
 }
 
+/**
+ * Resolves value for simple type and
+ * any, simple function, super function, classes and other.
+ * It assumes that you validated value before
+ */
+function resolveNotSuperChild(
+  definition: SuperItemDefinition,
+  initialValue?: any
+): SimpleType | undefined {
+  // use initial value or default if no initial value
+  const value = (typeof initialValue === 'undefined')
+    ? definition.default
+    : initialValue
+
+  if (typeof value !== 'undefined') return value
+  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+    // if no value then make it from simple type
+    // return null if nullable or initial value for each type
+    // e.g string='', number=0, boolean=false etc
+    return resolveInitialSimpleValue(
+      definition.type as keyof typeof SIMPLE_TYPES,
+      definition.nullable
+    )
+  }
+  else if (Object.keys(All_TYPES).includes(definition.type)) {
+    // if no value or default value then return undefined for
+    // any, simple function, super function, classes and other.
+    return undefined
+  }
+
+  throw new Error(`Unsupported definition type of ${definition.type}`)
+}
+
+// TODO: почему только в struct а не в data??
+export function validateChildValue(
+  definition: SuperItemDefinition,
+  childKeyOrIndex: string | number,
+  value?: any
+) {
+  if (!definition) throw new Error(`no definition`)
+
+  else if (definition.type === 'any') {
+    return
+  }
+  else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
+
+    // TODO: validate super value
+  }
+  else if (definition.type === SUPER_TYPES.SuperFunc) {
+    // TODO: validate super func
+  }
+  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+    if (typeof value === 'undefined' && definition.required) {
+      throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
+    }
+    else if (typeof value === 'undefined' && !definition.required) {
+      return
+    }
+    else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
+      throw new Error(
+        `The value of ${childKeyOrIndex} has type ${typeof value}, `
+        + `but not ${definition.type}`
+      )
+    }
+    // // Value is defined in this case don't check required.
+    // // Check type
+    // else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
+    //   throw new Error(
+    //     `The value of ${childKeyOrIndex} has type ${typeof value}, `
+    //     + `but not ${definition.type}`
+    //   )
+    // }
+
+  }
+  // TODO: check other types
+}
 
 export abstract class SuperValueBase<T = any | any[]>
   extends SuperBase
@@ -412,76 +488,25 @@ export abstract class SuperValueBase<T = any | any[]>
     childKeyOrIndex: string | number,
     value?: any
   ): any {
+    validateChildValue(definition, childKeyOrIndex, value)
 
-    // TODO: вызывать validateItem перед вызовом этой ф-и
-
-    if (!definition) throw new Error(`no definition`)
-    else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-      return this.setupSuperChild(definition, childKeyOrIndex, value)
+    if (Object.keys(SUPER_VALUES).includes(definition.type)) {
+      return this.resolveSuperChild(definition, childKeyOrIndex, value)
     }
-    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      return this.setupSimpleChild(definition, childKeyOrIndex, value)
-    }
-    else if (Object.keys(All_TYPES).includes(definition.type)) {
-      // for any, simple function, super function, classes and other.
-      // return initial value or default
-      if (typeof value === 'undefined') {
-        return definition.default
-      }
-
-      return value
-    }
-
-    throw new Error(`Unsupported definition type of ${childKeyOrIndex}`)
-  }
-
-
-  /**
-   * It checks and resolve initial value
-   */
-  private setupSimpleChild(
-    definition: SuperItemDefinition,
-    childKeyOrIndex: string | number,
-    initialValue?: any
-  ): SimpleType {
-    // use initial value of default if no initial value
-    const value = (typeof initialValue === 'undefined')
-      ? definition.default
-      : initialValue
-
-    if (typeof value === 'undefined' && definition.required) {
-      throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
-    }
-    else if (typeof value === 'undefined' && !definition.required) {
-      // return null if nullable or initial value for each type
-      // e.g string='', number=0, boolean=false etc
-      return resolveInitialSimpleValue(
-        definition.type as keyof typeof SIMPLE_TYPES,
-        definition.nullable
-      )
-    }
-    // Value is defined in this case don't check required.
-    // Check type
-    else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-      throw new Error(
-        `The value of ${childKeyOrIndex} has type ${typeof value}, `
-        + `but not ${definition.type}`
-      )
-    }
-
-    return value
+    // resolve other types
+    return resolveNotSuperChild(definition, value)
   }
 
   // TODO: review
-  private setupSuperChild(
+  private resolveSuperChild(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     initialValue?: any
   ): SuperValueBase {
     // work with super type
 
+    // TODO: убрать лишние валидации
     // TODO: check undefined initialValue
-    // TODO: check syper type
     // TODO: startListenChildren()
 
     // TODO: если передан super value
