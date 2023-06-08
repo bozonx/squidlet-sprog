@@ -1,6 +1,6 @@
 import {callSuperFunc, newSuperFunc, superReturn} from './lang/superFunc.js';
 import {deleteValue, getValue, setValue} from './lang/deepValue.js';
-import {deleteVar, newVar} from './lang/simpleVar.js';
+import {newVar} from './lang/simpleVar.js';
 import {jsExp} from './lang/jsExp.js';
 import {
   isLess,
@@ -35,7 +35,7 @@ export const sprogFuncs = {
   setValue,
   deleteValue,
   newVar,
-  deleteVar,
+  //deleteVar,
   ////// Boolean logic
   logicAnd,
   logicOr,

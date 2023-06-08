@@ -1,5 +1,4 @@
 import {newScope} from "../../src/index.js";
-import {deleteVar, newVar} from "../../src/lang/simpleVar.js";
 
 
 describe('scope', () => {

@@ -31,22 +31,22 @@ export function newVar(scope: SuperScope) {
   }
 }
 
-/**
- * Delete var from top level of scope
- * params:
- *   $exp: deleteVar
- *   name: nameOfVarToDelete
- */
-export function deleteVar(scope: SuperScope) {
-  return async (p: {name: string}) => {
-    const name: string = await scope.$resolve(p.name)
-
-    if (!name) throw new Error(`You need to set name`)
-    else if (typeof name !== 'string') throw new Error(`Name has to be a string`)
-    else if (SCOPE_FUNCTIONS.includes(name)) {
-      throw new Error(`Can't delete reserved function ${name}`)
-    }
-
-    scope.$super.forget(name)
-  }
-}
+// /**
+//  * Delete var from top level of scope
+//  * params:
+//  *   $exp: deleteVar
+//  *   name: nameOfVarToDelete
+//  */
+// export function deleteVar(scope: SuperScope) {
+//   return async (p: {name: string}) => {
+//     const name: string = await scope.$resolve(p.name)
+//
+//     if (!name) throw new Error(`You need to set name`)
+//     else if (typeof name !== 'string') throw new Error(`Name has to be a string`)
+//     else if (SCOPE_FUNCTIONS.includes(name)) {
+//       throw new Error(`Can't delete reserved function ${name}`)
+//     }
+//
+//     scope.$super.forget(name)
+//   }
+// }
