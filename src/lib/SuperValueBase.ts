@@ -150,7 +150,6 @@ export abstract class SuperValueBase<T = any | any[]>
     //this.startListenChildren()
 
     this.events.emit(SUPER_VALUE_EVENTS.inited)
-
     // return setter for read only props
     return this.myRoSetter
   }
@@ -170,17 +169,16 @@ export abstract class SuperValueBase<T = any | any[]>
 
   /**
    * It is called only when parent set this item as its child
-   * @parent - parent super struct or super array
-   * @myPath - full path to me in tree where im is
+   * @parent - parent super struct, super array or super data
+   * @myPath - full path to me in tree where im am
    */
   $$setParent(parent: SuperValueBase, myPath: string) {
     super.$$setParent(parent, myPath)
     // reregister path of all the super children
     for (const childId of this.ownKeys) {
-      const item = this.values[childId as keyof T] as SuperValueBase
-      // TODO: нужно тоже делать для слоя ниже!!!!
-      // TODO: check isSuper instead
-      if (isSuperValue(item)) item.$$setParent(this, this.makeChildPath(childId))
+      const item = this.values[childId as keyof T] as SuperBase
+
+      if (item.$$setParent) item.$$setParent(this, this.makeChildPath(childId))
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.changeParent)
