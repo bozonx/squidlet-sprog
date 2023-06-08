@@ -171,20 +171,20 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   constructor(
     definition: Record<string, SuperItemInitDefinition> = {},
     defaultRo: boolean = false,
-    lowLayer?: SuperData
+    bottomLayer?: SuperData
   ) {
-    if (lowLayer && !lowLayer.isData) {
+    if (bottomLayer && !bottomLayer.isData) {
       throw new Error(`Super data can inherit only other super data`)
     }
-    else if (lowLayer && lowLayer.pathToMe) {
+    else if (bottomLayer && bottomLayer.pathToMe) {
       throw new Error(`Layers can't have paths. It doesn't developed at the moment.`)
     }
 
-    super(lowLayer as SuperValueBase | undefined)
+    super(bottomLayer as SuperValueBase | undefined)
 
     // save it to use later to define a new props
     this.defaultRo = defaultRo
-    this.layeredValues = proxifyLayeredValue(this.ownValues, lowLayer as SuperValueBase | undefined)
+    this.layeredValues = proxifyLayeredValue(this.ownValues, bottomLayer as SuperValueBase | undefined)
     // setup definitions
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition
@@ -225,9 +225,9 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
       this.ownValues[key] = this.resolveChildValue(def, key, initialValues?.[key])
     }
     // listen to bottom layer changes of which children which upper layer doesn't have
-    if (this.lowLayer) {
-      this.lowLayer.subscribe((target: SuperValueBase, path) => {
-        if (!this.lowLayer?.isInitialized) return
+    if (this.bottomLayer) {
+      this.bottomLayer.subscribe((target: SuperValueBase, path) => {
+        if (!this.bottomLayer?.isInitialized) return
         // skip events of whole super data
         else if (!path || path === this.myPath) return
 
@@ -402,13 +402,14 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (this.definition[key]) {
       return this.definition[key] || this.defaultDefinition
     }
-    else if (this.lowLayer) {
-      return (this.lowLayer as SuperData).getDefinition(key)
+    else if (this.bottomLayer) {
+      return (this.bottomLayer as SuperData).getDefinition(key)
     }
   }
 
   /**
-   * Remove value and definition it that way as they never exist
+   * Remove value and definition in that way as they never exist.
+   * It remove value and definition from bottom layer too
    * @param key
    */
   forget(key: string) {
@@ -417,10 +418,10 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (key !== DEFAULT_DEFINITION_KEY) {
       delete this.ownValues[key]
 
-      if (this.lowLayer) {
-        const lowLayer = this.lowLayer as SuperData
+      if (this.bottomLayer) {
+        const bottomLayer = this.bottomLayer as SuperData
 
-        if (lowLayer.forget) lowLayer.forget(key)
+        if (bottomLayer.forget) bottomLayer.forget(key)
       }
 
       // TODO: надо тогда вернуть на any иначе непонятно как проверять значения массива

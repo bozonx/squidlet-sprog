@@ -120,17 +120,17 @@ export class SuperStruct<T = Record<string, AllTypes>>
   constructor(
     definition: Record<keyof T, SuperItemInitDefinition>,
     defaultRo: boolean = false,
-    lowLayer?: SuperStruct
+    bottomLayer?: SuperStruct
   ) {
-    if (lowLayer && !lowLayer.isStruct) {
+    if (bottomLayer && !bottomLayer.isStruct) {
       throw new Error(`Struct can inherit only other struct`)
     }
 
-    super(lowLayer as SuperValueBase | undefined)
+    super(bottomLayer as SuperValueBase | undefined)
 
     this.layeredValues = proxifyLayeredValue(
       this.ownValues as any,
-      lowLayer as SuperValueBase | undefined
+      bottomLayer as SuperValueBase | undefined
     )
 
     for (const keyStr of Object.keys(definition)) {
@@ -269,8 +269,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
     if (this.definition[key]) {
       return this.definition[key]
     }
-    else if (this.lowLayer) {
-      return (this.lowLayer as any).getDefinition(key as string)
+    else if (this.bottomLayer) {
+      return (this.bottomLayer as any).getDefinition(key as string)
     }
   }
 

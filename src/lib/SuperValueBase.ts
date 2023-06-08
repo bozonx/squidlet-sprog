@@ -157,7 +157,7 @@ export abstract class SuperValueBase<T = any | any[]>
   // it only for getValue and setValue and other inner methods.
   readonly abstract layeredValues: T
   events = new IndexedEventEmitter()
-  readonly lowLayer?: SuperValueBase
+  readonly bottomLayer?: SuperValueBase
   protected links: SuperLinkItem[] = []
 
   get isDestroyed(): boolean {
@@ -170,10 +170,10 @@ export abstract class SuperValueBase<T = any | any[]>
   abstract ownKeys: (string | number)[]
 
 
-  protected constructor(lowLayer?: SuperValueBase) {
+  protected constructor(bottomLayer?: SuperValueBase) {
     super()
 
-    this.lowLayer = lowLayer
+    this.bottomLayer = bottomLayer
   }
 
   init(): any {
@@ -256,7 +256,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
   allKeys(): (string | number)[] {
     return deduplicate([
-      ...(this.lowLayer?.allKeys() || []),
+      ...(this.bottomLayer?.allKeys() || []),
       ...this.ownKeys,
     ])
   }
@@ -304,10 +304,10 @@ export abstract class SuperValueBase<T = any | any[]>
       if (this.ownKeys.includes(splat[0])) {
         return this.setOwnValue(splat[0], newValue)
       }
-      else if (this.lowLayer && this.lowLayer.allKeys().includes(splat[0])) {
+      else if (this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])) {
         const lowPath = joinDeepPath([splat[0]])
 
-        return this.lowLayer.setValue(lowPath, newValue)
+        return this.bottomLayer.setValue(lowPath, newValue)
       }
       else {
         // if it is a new var then set it to top layer
