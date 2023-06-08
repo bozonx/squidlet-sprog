@@ -358,13 +358,13 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     }
     // do not set value if it is a default definition
     if (key === DEFAULT_DEFINITION_KEY) return
-
-    let finalDef = this.definition[key] || this.definition[DEFAULT_DEFINITION_KEY]
+    // set the default value
+    let finalDef = this.definition[key] || this.defaultDefinition
 
     if (!finalDef) throw new Error(`Can't resolve definition`)
 
-    this.myKeys.push(key)
-    // set default value as value
+    if (!this.ownKeys.includes(key)) this.myKeys.push(key)
+    // resolve default or initial value as value
     const defaultValue = this.setupChildValue(finalDef, key, initialValue)
 
     if (typeof defaultValue !== 'undefined') {
