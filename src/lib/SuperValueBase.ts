@@ -262,18 +262,6 @@ export abstract class SuperValueBase<T = any | any[]>
     if (splat.length === 1) {
       // own value - there splat[0] is number or string
       return this.setOwnValue(splat[0], newValue)
-      // if (this.ownKeys.includes(splat[0])) {
-      //   return this.setOwnValue(splat[0], newValue)
-      // }
-      // else if (this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])) {
-      //   const lowPath = joinDeepPath([splat[0]])
-      //
-      //   return this.bottomLayer.setValue(lowPath, newValue)
-      // }
-      // else {
-      //   // if it is a new var then set it to top layer
-      //   return this.setOwnValue(splat[0], newValue)
-      // }
     }
     else {
       // deep value

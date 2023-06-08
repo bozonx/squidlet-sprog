@@ -306,19 +306,20 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
     const splat = splitDeepPath(pathTo)
+    const keyStr = String(splat[0])
 
     if (splat.length === 1) {
-      const keyStr = String(splat[0])
-      // own value - there splat[0] is number or string
-      if (this.ownKeys.includes(keyStr)) {
-        return this.setOwnValue(keyStr, newValue)
-      }
-      else if (this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])) {
+      if (
+        !this.ownKeys.includes(keyStr)
+        && this.bottomLayer && this.bottomLayer.allKeys().includes(splat[0])
+      ) {
+        // if not own key but layered key
         const lowPath = joinDeepPath([splat[0]])
 
         return this.bottomLayer.setValue(lowPath, newValue)
       }
       else {
+        // own value - there splat[0] is number or string
         // if it is a new var then set it to top layer
         return this.setOwnValue(keyStr, newValue)
       }
