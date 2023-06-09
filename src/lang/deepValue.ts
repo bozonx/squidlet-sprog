@@ -44,29 +44,29 @@ export function setValue(scope: SuperScope) {
   }
 }
 
-/**
- * Deeply delete a key
- * params:
- *   $exp: deleteValue
- *   path: pathToItemToDelete
- * Arrays are supported
- */
-export function deleteValue(scope: SuperScope) {
-  return async (p: {path: string}) => {
-    const path: string = await scope.$resolve(p.path)
-    const [parent, lastPathPart] = deepGetParent(
-      scope,
-      path
-    )
-
-    if (parent && typeof lastPathPart !== 'undefined') {
-      if (isSuperValue(parent)) {
-        // TODO: WTF ???
-        parent.$super.forget(lastPathPart)
-      }
-      else {
-        delete parent[lastPathPart]
-      }
-    }
-  }
-}
+// /**
+//  * Deeply delete a key
+//  * params:
+//  *   $exp: deleteValue
+//  *   path: pathToItemToDelete
+//  * Arrays are supported
+//  */
+// export function deleteValue(scope: SuperScope) {
+//   return async (p: {path: string}) => {
+//     const path: string = await scope.$resolve(p.path)
+//     const [parent, lastPathPart] = deepGetParent(
+//       scope,
+//       path
+//     )
+//
+//     if (parent && typeof lastPathPart !== 'undefined') {
+//       if (isSuperValue(parent)) {
+//         // TODO: WTF ???
+//         parent.$super.forget(lastPathPart)
+//       }
+//       else {
+//         delete parent[lastPathPart]
+//       }
+//     }
+//   }
+// }

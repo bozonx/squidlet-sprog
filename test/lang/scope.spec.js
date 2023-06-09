@@ -66,6 +66,20 @@ describe('scope', () => {
     assert.deepEqual(res, [0,1])
   })
 
+  it('forbid to delete variables', async () => {
+    const scope = newScope({})
+
+    await scope.$run({
+      $exp: 'newVar',
+      name: 'a',
+      value: 1
+    })
+
+    assert.throws(() => delete scope['a'])
+
+    // actually it is possible to delete via scope.$super.forget()
+  })
+
   // TODO: test deep with overwrite
 
 })

@@ -1,5 +1,5 @@
 import {callSuperFunc, newSuperFunc, superReturn} from './lang/superFunc.js';
-import {deleteValue, getValue, setValue} from './lang/deepValue.js';
+import {getValue, setValue} from './lang/deepValue.js';
 import {newVar} from './lang/simpleVar.js';
 import {jsExp} from './lang/jsExp.js';
 import {
@@ -33,7 +33,6 @@ export const sprogFuncs = {
   ////// Variables
   getValue,
   setValue,
-  deleteValue,
   newVar,
   //deleteVar,
   ////// Boolean logic
