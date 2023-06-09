@@ -23,7 +23,7 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {checkValueBeforeSet} from './SuperStruct.js';
-import {resolveInitialSimpleValue} from './helpers.js';
+import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
 
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???

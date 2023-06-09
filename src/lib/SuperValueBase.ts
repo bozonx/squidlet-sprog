@@ -14,7 +14,7 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {resolveInitialSimpleValue} from './helpers.js';
+import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {SuperBase} from './SuperBase.js';
 
 

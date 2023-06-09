@@ -12,7 +12,7 @@ import {
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
-import {resolveInitialSimpleValue} from './helpers.js';
+import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 
 
