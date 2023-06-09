@@ -4,8 +4,6 @@ import {EXP_MARKER} from '../constants.js';
 import {SUPER_RETURN} from '../lib/SuperFunc.js';
 
 
-// TODO: add rename of value and index
-
 export const CONTINUE_CYCLE = 'continueCycle'
 export const BREAK_CYCLE = 'breakCycle'
 
@@ -13,8 +11,10 @@ export const BREAK_CYCLE = 'breakCycle'
 interface ForEachParams {
   reverse?: boolean
   src: any[] | Record<string, any>
-  // default is 'item'
-  //as?: string
+  // rename value variable to other name
+  as?: string
+  // rename key variable to other name
+  keyAs?: string
   do: SprogDefinition[]
 }
 
@@ -61,6 +61,8 @@ export function forEach(scope: SuperScope) {
   return async (p: ForEachParams) => {
     const src: Record<any, any> | any[] = await scope.$resolve(p.src)
     const reverse: boolean = await scope.$resolve(p.reverse)
+    const as: string | undefined = await scope.$resolve(p.as)
+    const keyAs: string | undefined = await scope.$resolve(p.keyAs)
 
     if (Array.isArray(src)) {
       if (!src.length) return
@@ -76,7 +78,9 @@ export function forEach(scope: SuperScope) {
       ) {
         let toStepNum: number = -1
         const toStep = (stepNum: number) => toStepNum = stepNum
-        const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex, toStep)
+        const result = await doIteration(
+          p.do, scope, i, i, src[i], firstIndex, lastIndex, toStep, as, keyAs
+        )
 
         if (result === '$$' + BREAK_CYCLE) break
         else if (typeof result !== 'undefined') return result
@@ -100,7 +104,9 @@ export function forEach(scope: SuperScope) {
         const keyStr = keys[i]
         let toStepNum: number = -1
         const toStep = (stepNum: number) => toStepNum = stepNum
-        const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex, toStep)
+        const result = await doIteration(
+          p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex, toStep, as, keyAs
+        )
 
         if (result === '$$' + BREAK_CYCLE) break
         else if (typeof result !== 'undefined') return result
@@ -123,13 +129,15 @@ async function doIteration(
   value: any,
   firstIndex: number,
   lastIndex: number,
-  toStep: (stepNum: number) => void
+  toStep: (stepNum: number) => void,
+  as?: string,
+  keyAs?: string
 ): Promise<any> {
   const isRecursive = lastIndex === 0 && firstIndex !== 0
-  const localScopeInitial: ForEachLocalScope = {
+  const localScopeInitial = {
     i,
-    key,
-    value,
+    [keyAs || 'key']: key,
+    [as || 'value']: value,
     $isFirst: i === firstIndex,
     $isLast: i === lastIndex,
     $skipNext() {
@@ -165,7 +173,7 @@ async function doIteration(
         toStep(stepNumber - 1)
       }
     }
-  }
+  } as ForEachLocalScope
 
   const localScope = newScope(localScopeInitial, scope)
 

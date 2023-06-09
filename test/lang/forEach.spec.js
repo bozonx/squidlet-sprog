@@ -1517,4 +1517,35 @@ describe('forEach', () => {
     spy.should.have.been.calledWith(4)
   })
 
+  it('rename value and key', async () => {
+    const spy = sinon.spy()
+    const scope = newScope({spy})
+
+    await scope.$run({
+      $exp: 'forEach',
+      src: ['a'],
+      as: 'v',
+      keyAs: 'k',
+      do: [
+        {
+          $exp: 'simpleCall',
+          path: 'spy',
+          args: [
+            {
+              $exp: 'getValue',
+              path: 'v',
+            },
+            {
+              $exp: 'getValue',
+              path: 'k',
+            }
+          ],
+        },
+      ]
+    })
+
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith('a', 0)
+  })
+
 })
