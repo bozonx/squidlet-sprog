@@ -551,7 +551,7 @@ export abstract class SuperValueBase<T = any | any[]>
   protected setDeepChild(pathTo: string, newValue: AllTypes): boolean {
     const [deepParent, lastPathPart] = deepGetParent(this.values as any, pathTo)
 
-    if (!lastPathPart) {
+    if (typeof lastPathPart === 'undefined') {
       throw new Error(`Can't find deep child`)
     }
     else if (isSuperValue(deepParent)) {
