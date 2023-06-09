@@ -13,7 +13,6 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
-import {isCorrespondingType} from './isCorrespondingType.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
