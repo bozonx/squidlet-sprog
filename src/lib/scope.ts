@@ -4,6 +4,7 @@ import {EXP_MARKER} from '../constants.js';
 import {SprogDefinition} from '../types/types.js';
 import {SUPER_VALUE_PROP} from './SuperValueBase.js';
 import {SuperData} from './SuperData.js';
+import {stdLib} from '../stdLib.js';
 
 
 export type SprogScopedFn = (p: any) => Promise<any | void>
@@ -129,7 +130,13 @@ export function newScope<T = any>(initialVars: T = {} as T, previousScope?: Supe
   // TODO: test что нельзя удалять переменные из scope
 
   const data = new SuperData(
-    undefined,
+    {
+      std: {
+        type: 'object',
+        default: stdLib,
+        readonly: true,
+      }
+    },
     undefined,
     previousScope?.$super
   )

@@ -1,3 +1,4 @@
+import {omitObj} from "squidlet-lib";
 import {newScope} from "../../src/index.js";
 
 
@@ -24,7 +25,7 @@ describe('scope', () => {
       value: 2,
     })
 
-    assert.deepEqual(scope2.$super.clone(), {v0: 0, v1: 1, v2: 2, v3: 3})
+    assert.deepEqual(omitObj(scope2.$super.clone(), 'std'), {v0: 0, v1: 1, v2: 2, v3: 3})
     assert.deepEqual(scope2.$super.getDefinition('v1').type, 'number')
     // catch changes from scope2
     scope1.$super.subscribe(spy1)
@@ -44,10 +45,26 @@ describe('scope', () => {
       value: 1,
     })
 
-    assert.deepEqual(scope1.$super.clone(), {v0: 0})
-    assert.deepEqual(scope2.$super.clone(), {v0: 1})
+    assert.deepEqual(omitObj(scope1.$super.clone(), 'std'), {v0: 0})
+    assert.deepEqual(omitObj(scope2.$super.clone(), 'std'), {v0: 1})
   })
 
+  it('std', async () => {
+    const scope = newScope({})
+
+    const res = await scope.$run({
+      $exp: 'superReturn',
+      value: {
+        $exp: 'simpleCall',
+        path: 'std.deduplicate',
+        args: [
+          [0,0,1]
+        ]
+      },
+    })
+
+    assert.deepEqual(res, [0,1])
+  })
 
   // TODO: test deep with overwrite
 

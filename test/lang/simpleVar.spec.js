@@ -1,3 +1,4 @@
+import {omitObj} from 'squidlet-lib';
 import {newScope} from "../../src/index.js";
 
 
@@ -19,7 +20,7 @@ describe('simpleVar', () => {
     await scope.$run(def)
 
     assert.equal(scope['v1'], 5)
-    assert.deepEqual(scope.$super.clone(), {v1: 5})
+    assert.deepEqual(omitObj(scope.$super.clone(), 'std'), {v1: 5})
     // // delete var
     // await scope.$run({
     //   $exp: 'deleteVar',
