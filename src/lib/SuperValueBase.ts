@@ -228,12 +228,6 @@ export abstract class SuperValueBase<T = any | any[]>
     super.init()
     // rise an event any way if any values was set or not
     this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
-
-    // TODO: это должно произойти вглубь на всех потомков, все должны друг друга слушать
-    // TODO: хотя наверное это уже произошло при установке значений
-    // listen to children to bubble their events
-    //this.startListenChildren()
-
     this.events.emit(SUPER_VALUE_EVENTS.inited)
     // return setter for read only props
     return this.myRoSetter
@@ -262,6 +256,8 @@ export abstract class SuperValueBase<T = any | any[]>
     // reregister path of all the super children
     for (const childId of this.ownKeys) {
       const item = this.values[childId as keyof T] as SuperBase
+
+      // TODO: должен установить ro у детей а те у своих детей
 
       if (item.$$setParent) item.$$setParent(this, this.makeChildPath(childId))
     }
@@ -533,17 +529,17 @@ export abstract class SuperValueBase<T = any | any[]>
     }
     else {
       const superChildType = definition.type as keyof typeof SUPER_VALUES
-      // TODO: add default ro from me
+      // it doesn't need to set whole RO because it will be set in $$setParent() in setupSuperChild()
       const superChildRo = definition.readonly
       let superChild
       // no initialValue
       if (definition.default) {
         // there is has to be a defintion setup of child
-        superChild = new SUPER_VALUE_CLASSES[superChildType](
-          // use default as definition of this value
-          definition.default,
-          superChildRo
-        )
+        // superChild = new SUPER_VALUE_CLASSES[superChildType](
+        //   // use default as definition of this value
+        //   definition.default,
+        //   superChildRo
+        // )
       }
       else {
         // if no definition setup of child then just make it without definition
@@ -552,18 +548,17 @@ export abstract class SuperValueBase<T = any | any[]>
           throw new Error(`Can't create SuperStruct instance without definition for "${childKeyOrIndex}"`)
         }
         // make super child without definition
-        // TODO: add default ro from me
-        superChild = new SUPER_VALUE_CLASSES[superChildType](
-          undefined,
-          superChildRo
-        )
+        // superChild = new SUPER_VALUE_CLASSES[superChildType](
+        //   undefined,
+        //   superChildRo
+        // )
       }
 
-      this.setupSuperChild(superChild, childKeyOrIndex)
-
-      superChild.init()
-
-      return superChild.getProxy()
+      // this.setupSuperChild(superChild, childKeyOrIndex)
+      //
+      // superChild.init()
+      //
+      // return superChild.getProxy()
     }
   }
 
@@ -575,9 +570,8 @@ export abstract class SuperValueBase<T = any | any[]>
     child: ProxifiedSuperValue,
     childKeyOrIndex: string | number
   ) {
-    // TODO: установить ro если он у родителя
-    // TODO: потомок должен установить ro у детей
-    // TODO: все его потомки должны обновить родительский path
+
+    // TODO: это должно произойти вглубь на всех потомков, все должны друг друга слушать
     // TODO: поидее надо на всякий случай сначала отписаться от его событий
 
     // TODO: поидее должно пойти в глубину.
