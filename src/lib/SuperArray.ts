@@ -158,6 +158,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   constructor(definition: Partial<SuperArrayDefinition>) {
     super()
 
+    // TODO: разрешить не указывать definition - тогда будет просто {type: 'any'}
+
     this.checkDefinition(definition)
 
     this.definition = {

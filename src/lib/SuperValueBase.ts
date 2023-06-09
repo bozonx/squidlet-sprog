@@ -532,55 +532,39 @@ export abstract class SuperValueBase<T = any | any[]>
       return initialValue
     }
     else {
+      const superChildType = definition.type as keyof typeof SUPER_VALUES
+      // TODO: add default ro from me
+      const superChildRo = definition.readonly
+      let superChild
       // no initialValue
-      // const newSuperValue = new SUPER_VALUE_CLASSES[definition.type as keyof typeof SUPER_VALUES](
-      //   // TODO: а где мы возмём definition его потомков ???
-      //   definition,
-      //   // TODO: add default ro from me
-      // )
+      if (definition.default) {
+        // there is has to be a defintion setup of child
+        superChild = new SUPER_VALUE_CLASSES[superChildType](
+          // use default as definition of this value
+          definition.default,
+          superChildRo
+        )
+      }
+      else {
+        // if no definition setup of child then just make it without definition
+        // only for SuperData and SuperArray
+        if (definition.type === SUPER_VALUES.SuperStruct) {
+          throw new Error(`Can't create SuperStruct instance without definition for "${childKeyOrIndex}"`)
+        }
+        // make super child without definition
+        // TODO: add default ro from me
+        superChild = new SUPER_VALUE_CLASSES[superChildType](
+          undefined,
+          superChildRo
+        )
+      }
 
+      this.setupSuperChild(superChild, childKeyOrIndex)
 
-      // TODO: должен вернуть proxyfied
+      superChild.init()
 
-      // let def
-      //
-      // if (definition.type === SUPER_VALUES.SuperStruct) {
-      //   def = {
-      //     $exp: 'newSuperStruct',
-      //     definition: definition.default,
-      //     defaultRo: definition.readonly,
-      //   }
-      // }
-      // else if (definition.type === SUPER_VALUES.SuperArray) {
-      //   def = {
-      //     $exp: 'newSuperArray',
-      //     item: {
-      //       ...definition.default.item,
-      //       //readonly: definition.readonly
-      //     },
-      //     default: definition.default.default,
-      //   }
-      // }
+      return superChild.getProxy()
     }
-
-    /////////
-
-
-    // if (!definition.default) {
-    //   throw new Error(`There aren't initial value and default value for super value`)
-    // }
-    // else if (typeof definition.default !== 'object') {
-    //   throw new Error(`Wrong type of definition.default`)
-    // }
-    // else {
-    //   // if initial value not defined then create an instance using default's definition
-    //
-    //
-    //
-    //   //this.myScope.$resolve()
-    // }
-    //
-    // throw new Error(`Can't setup a super value of ${childKeyOrIndex}`)
   }
 
   /**
