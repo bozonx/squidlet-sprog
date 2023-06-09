@@ -236,6 +236,9 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   destroy() {
+
+    // TODO: запретить дестрой если нарушится целостность у родителя - required, struct
+
     this.events.emit(SUPER_VALUE_EVENTS.destroy)
 
     for (const linkId in this.links) {
@@ -271,6 +274,7 @@ export abstract class SuperValueBase<T = any | any[]>
       // TODO: если отсоединить потомка от другого родителя то у него может
       //       нарушиться целостность, так как он может быть обязательным в struct
       //       или быть required
+      //       можно сделать явную проверку и поднять ошибку
 
       if (item.$$setParent) item.$$setParent(this, this.makeChildPath(childId))
     }
@@ -558,7 +562,7 @@ export abstract class SuperValueBase<T = any | any[]>
         throw new Error(`child is not Super Value`)
       }
       // this means the super value has already initialized
-      // so now we are linking it as my child and start listening of its events
+      // so now we are making it my child and start listening of its events
       this.setupSuperChild(initialValue, childKeyOrIndex)
 
       return initialValue
@@ -621,7 +625,7 @@ export abstract class SuperValueBase<T = any | any[]>
     childKeyOrIndex: string | number
   ) {
     child.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex))
-
+    // any way remove my listener if it has
     if (this.childEventHandlers[childKeyOrIndex]) {
       this.removeChildListeners(childKeyOrIndex)
     }
@@ -630,7 +634,7 @@ export abstract class SuperValueBase<T = any | any[]>
       // bubble child events to me
       [SUPER_VALUE_EVENTS.change]: child.subscribe((target: ProxifiedSuperValue, path?: string) => {
         if (!path) {
-          console.warn(`WARNING: Bubble child event without path. Root is "${this.pathToMe}"`)
+          console.warn(`WARNING: Bubbling child event without path. Root is "${this.pathToMe}"`)
 
           return
         }
