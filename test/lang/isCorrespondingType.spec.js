@@ -1,4 +1,5 @@
 import {isCorrespondingType} from "../../src/lib/isCorrespondingType.js";
+import {newScope, SuperArray, SuperData, SuperFunc, SuperStruct} from "../../src/index.js";
 
 
 describe('isCorrespondingType', () => {
@@ -56,13 +57,28 @@ describe('isCorrespondingType', () => {
     assert.isTrue(isCorrespondingType(Promise.resolve(), 'Promise'))
     assert.isTrue(isCorrespondingType(Promise.reject('a'), 'Promise'))
     assert.isFalse(isCorrespondingType({}, 'Promise'))
-
-    // SuperStruct
-    // SuperArray
     // SuperData
+    const sd = new SuperData()
+    assert.isTrue(isCorrespondingType(sd, 'SuperData'))
+    assert.isFalse(isCorrespondingType({}, 'SuperData'))
+    // SuperStruct
+    const ss = new SuperStruct({})
+    assert.isTrue(isCorrespondingType(ss, 'SuperStruct'))
+    assert.isFalse(isCorrespondingType({}, 'SuperStruct'))
+    assert.isFalse(isCorrespondingType(sd, 'SuperStruct'))
+    // SuperArray
+    const sa = new SuperArray({})
+    assert.isTrue(isCorrespondingType(sa, 'SuperArray'))
+    assert.isFalse(isCorrespondingType({}, 'SuperArray'))
+    assert.isFalse(isCorrespondingType(sd, 'SuperArray'))
+    assert.isFalse(isCorrespondingType(ss, 'SuperArray'))
     // SuperFunc
-
+    const sf = new SuperFunc(newScope(), {}, [])
+    assert.isTrue(isCorrespondingType(sf, 'SuperFunc'))
+    assert.isFalse(isCorrespondingType({}, 'SuperFunc'))
+    assert.isFalse(isCorrespondingType(sd, 'SuperFunc'))
+    assert.isFalse(isCorrespondingType(sd, 'SuperFunc'))
+    assert.isFalse(isCorrespondingType(sa, 'SuperFunc'))
   })
-
 
 })
