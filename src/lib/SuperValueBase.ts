@@ -518,6 +518,16 @@ export abstract class SuperValueBase<T = any | any[]>
     if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       return this.resolveSuperChild(definition, childKeyOrIndex, value)
     }
+    else if (
+      definition.type === 'any'
+      && typeof value === 'object'
+      && isSuperValue(value[SUPER_VALUE_PROP])
+    ) {
+      // if any type and the value is super value - then make it my child
+      this.setupSuperChild(value, childKeyOrIndex)
+
+      return value
+    }
     // resolve other types
     return resolveNotSuperChild(definition, value)
   }
@@ -538,7 +548,12 @@ export abstract class SuperValueBase<T = any | any[]>
     initialValue?: ProxifiedSuperValue
   ): ProxifiedSuperValue {
     if (initialValue) {
-      if (!isSuperValue(initialValue)) throw new Error(`initialValue is not Super Value`)
+      if (!initialValue[SUPER_VALUE_PROP]) {
+        throw new Error(`child has to be proxified`)
+      }
+      else if (!isSuperValue(initialValue)) {
+        throw new Error(`child is not Super Value`)
+      }
       // this means the super value has already initialized
       // so now we are linking it as my child and start listening of its events
       this.setupSuperChild(initialValue, childKeyOrIndex)
@@ -546,43 +561,49 @@ export abstract class SuperValueBase<T = any | any[]>
       return initialValue
     }
     else {
-      const superChildType = definition.type as keyof typeof SUPER_VALUES
-      // it doesn't need to set whole RO because it will be set in $$setParent() in setupSuperChild()
-      const superChildRo = definition.readonly
-      let superChild
-      // no initialValue
-      if (definition.default) {
-        // there is has to be a defintion setup of child
-        // superChild = new SUPER_VALUE_CLASSES[superChildType](
-        //   // use default as definition of this value
-        //   definition.default,
-        //   superChildRo
-        // )
-        // superChild = new SUPER_VALUE_CLASSES[superChildType](
-        //   // use default as definition of this value
-        //   definition.default,
-        //   superChildRo
-        // )
-      }
-      else {
-        // if no definition setup of child then just make it without definition
-        // only for SuperData and SuperArray
-        if (definition.type === SUPER_VALUES.SuperStruct) {
-          throw new Error(`Can't create SuperStruct instance without definition for "${childKeyOrIndex}"`)
-        }
-        // make super child without definition
-        // superChild = new SUPER_VALUE_CLASSES[superChildType](
-        //   undefined,
-        //   superChildRo
-        // )
-      }
-
-      // this.setupSuperChild(superChild, childKeyOrIndex)
-      //
-      // superChild.init()
-      //
-      // return superChild.getProxy()
+      // no initial value - make a new Super Value
+      return this.makeNewSuperValueByDefinition(definition, childKeyOrIndex)
     }
+  }
+
+  private makeNewSuperValueByDefinition(
+    definition: SuperItemDefinition,
+    childKeyOrIndex: string | number
+  ) {
+    const superChildType = definition.type as keyof typeof SUPER_VALUES
+    // it doesn't need to set whole RO because it will be set in $$setParent() in setupSuperChild()
+    const superChildRo = definition.readonly
+    let superChild
+    // no initialValue
+    if (definition.default) {
+      //instantiateSuperValue()
+      // there is has to be a defintion setup of child
+
+      // TODO: циклическая зависимость !!!
+      // superChild = new SUPER_VALUE_CLASSES[superChildType](
+      //   // use default as definition of this value
+      //   definition.default,
+      //   superChildRo
+      // )
+    }
+    else {
+      // if no definition setup of child then just make it without definition
+      // only for SuperData and SuperArray
+      if (definition.type === SUPER_VALUES.SuperStruct) {
+        throw new Error(`Can't create SuperStruct instance without definition for "${childKeyOrIndex}"`)
+      }
+      // make super child without definition
+      // superChild = new SUPER_VALUE_CLASSES[superChildType](
+      //   undefined,
+      //   superChildRo
+      // )
+    }
+
+    // this.setupSuperChild(superChild, childKeyOrIndex)
+    //
+    // superChild.init()
+    //
+    // return superChild.getProxy()
   }
 
   /**
