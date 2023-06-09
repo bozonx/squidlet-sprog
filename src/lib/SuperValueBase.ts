@@ -211,7 +211,7 @@ export abstract class SuperValueBase<T = any | any[]>
   readonly isSuperValue = true
   // current values
   readonly abstract values: T
-  events = new IndexedEventEmitter()
+  readonly events = new IndexedEventEmitter()
   protected links: SuperLinkItem[] = []
   // like {childKeyOrIndex: {eventNum: handlerIndex}}
   private childEventHandlers: Record<string, Record<string, number>> = {}
@@ -268,6 +268,9 @@ export abstract class SuperValueBase<T = any | any[]>
 
       // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
       // TODO: если у нового потомка есть старый родитель, то надо отписаться от него
+      // TODO: если отсоединить потомка от другого родителя то у него может
+      //       нарушиться целостность, так как он может быть обязательным в struct
+      //       или быть required
 
       if (item.$$setParent) item.$$setParent(this, this.makeChildPath(childId))
     }
@@ -546,7 +549,7 @@ export abstract class SuperValueBase<T = any | any[]>
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     initialValue?: ProxifiedSuperValue
-  ): ProxifiedSuperValue {
+  ): ProxifiedSuperValue | undefined {
     if (initialValue) {
       if (!initialValue[SUPER_VALUE_PROP]) {
         throw new Error(`child has to be proxified`)
@@ -607,7 +610,10 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * listen to children to bubble their events
+   * it:
+   * * replace parent
+   * * start listen to children to bubble their events
+   * * listen to child destroy
    * @protected
    */
   private setupSuperChild(
@@ -624,22 +630,29 @@ export abstract class SuperValueBase<T = any | any[]>
       // bubble child events to me
       [SUPER_VALUE_EVENTS.change]: child.subscribe((target: ProxifiedSuperValue, path?: string) => {
         if (!path) {
-          console.warn(`Bubble child event without path. Root is "${this.pathToMe}"`)
+          console.warn(`WARNING: Bubble child event without path. Root is "${this.pathToMe}"`)
 
           return
         }
 
         return this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
       }),
-      [SUPER_VALUE_EVENTS.destroy]: child.$super.events.addListener(SUPER_VALUE_EVENTS.destroy, () => {
-        this.handleSuperChildDestroy(childKeyOrIndex)
-      }),
+      [SUPER_VALUE_EVENTS.destroy]: child.$super.events.addListener(
+        SUPER_VALUE_EVENTS.destroy,
+        () => this.handleSuperChildDestroy(childKeyOrIndex)
+      ),
     }
   }
 
   private handleSuperChildDestroy(childKeyOrIndex: string | number) {
     this.unlinkByChildKey(childKeyOrIndex)
     this.removeChildListeners(childKeyOrIndex)
+
+    // TODO: его надо удалить из this.values тоже
+    //       но тогда останется его definition
+    //       и что делать если в definition должен быть потомок если required???
+    //       создать заного потомка???
+    //       а в struct что делать??? там же потомок обязателен
   }
 
   /**
