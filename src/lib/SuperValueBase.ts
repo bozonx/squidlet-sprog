@@ -257,7 +257,8 @@ export abstract class SuperValueBase<T = any | any[]>
     for (const childId of this.ownKeys) {
       const item = this.values[childId as keyof T] as SuperBase
 
-      // TODO: должен установить ro у детей а те у своих детей
+      // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
+      // TODO: если у нового потомка есть старый родитель, то надо отписаться от него
 
       if (item.$$setParent) item.$$setParent(this, this.makeChildPath(childId))
     }
@@ -570,13 +571,7 @@ export abstract class SuperValueBase<T = any | any[]>
     child: ProxifiedSuperValue,
     childKeyOrIndex: string | number
   ) {
-
-    // TODO: это должно произойти вглубь на всех потомков, все должны друг друга слушать
-    // TODO: поидее надо на всякий случай сначала отписаться от его событий
-
-    // TODO: поидее должно пойти в глубину.
-    //    Но при этом если объект был переназначен другому родителю
-    //    то надо отписаться от старых событий - зайти в старого родителя и отписаться
+    // TODO: поидее надо на всякий случай сначала отписаться от его событий у себя
 
     child.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex))
     // bubble child events to me
@@ -589,6 +584,15 @@ export abstract class SuperValueBase<T = any | any[]>
 
       return this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
     })
+    child.$super.events.addListener(SUPER_VALUE_EVENTS.destroy, () => {
+      this.handleSuperChildDestroy(childKeyOrIndex)
+    })
+  }
+
+  private handleSuperChildDestroy(childKeyOrIndex: string | number) {
+    // TODO: make unlink
+    // TODO: remove listeners of child
+    //this.unlink(childKeyOrIndex)
   }
 
 }
