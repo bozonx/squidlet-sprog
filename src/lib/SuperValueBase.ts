@@ -6,6 +6,7 @@ import {
   deepClone,
   splitDeepPath,
   joinDeepPath,
+  deepGetParent,
 } from 'squidlet-lib';
 import {
   All_TYPES,
@@ -357,7 +358,7 @@ export abstract class SuperValueBase<T = any | any[]>
     }
     else {
       // deep value
-      return deepSet(this.values as any, pathTo, newValue)
+      return this.setDeepChild(pathTo, newValue)
     }
   }
 
@@ -538,6 +539,32 @@ export abstract class SuperValueBase<T = any | any[]>
     // resolve other types
     return resolveNotSuperChild(definition, value)
   }
+
+  /**
+   * Set to deep child.
+   * * if parent of this child is Super value then call setValue which emits an event
+   * * if parent of child is simple array or object - just set value and emit an event
+   * @param pathTo - has to be a deep value
+   * @param newValue
+   * @protected
+   */
+  protected setDeepChild(pathTo: string, newValue: AllTypes): boolean {
+    const [deepParent, lastPathPart] = deepGetParent(this.values as any, pathTo)
+
+    if (!lastPathPart) {
+      throw new Error(`Can't find deep child`)
+    }
+    else if (isSuperValue(deepParent)) {
+      return deepParent.$super.setValue(lastPathPart, newValue)
+    }
+    // simple object or array
+    deepParent[lastPathPart] = newValue
+
+    this.events.emit(SUPER_VALUE_EVENTS.change, deepParent, pathTo)
+
+    return true
+  }
+
 
   /**
    * It resolves a super value:

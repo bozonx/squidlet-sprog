@@ -631,6 +631,29 @@ describe('SuperData', () => {
     spy2.should.have.been.calledTwice
   })
 
+  ///////////// Simple deep children
+
+  it('manipulate deep object without definition', async () => {
+    const spy = sinon.spy()
+    const sdata = (new SuperData()).getProxy()
+
+    sdata.subscribe((target, path) => spy(path))
+    sdata.$super.init({a: {b: 1}})
+
+    assert.equal(sdata.getValue('a.b'), 1)
+    spy.should.have.been.calledOnce
+    spy.should.have.been.calledWith(undefined)
+    // set value
+    sdata.setValue('a.b', 2)
+    assert.equal(sdata.getValue('a.b'), 2)
+    spy.should.have.been.calledTwice
+    spy.should.have.been.calledWith('a.b')
+  })
+
+  // TODO: test with definition
+  // TODO: test forget deep
+  // TODO: test simple array
+
   //////////// Super children
 
   it('children is SuperData', async () => {
@@ -645,7 +668,7 @@ describe('SuperData', () => {
     const childProxy = (new SuperData()).getProxy()
 
     rootProxy.subscribe((target, path) => spy1(path))
-    rootProxy.subscribe((target, path) => spy2(path))
+    childProxy.subscribe((target, path) => spy2(path))
     childProxy.$super.init({a: 1})
     rootProxy.$super.init({ch: childProxy})
 

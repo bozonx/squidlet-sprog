@@ -6,10 +6,9 @@ import {
   deduplicate,
   splitDeepPath,
   joinDeepPath,
-  deepSet
 } from 'squidlet-lib';
 import {
-  checkDefinition,
+  checkDefinition, isSuperValue,
   prepareDefinitionItem,
   SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
   SUPER_VALUE_PROP,
@@ -322,16 +321,12 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
         return this.bottomLayer.setValue(lowPath, newValue)
       }
-      else {
-        // own value - there splat[0] is number or string
-        // if it is a new var then set it to top layer
-        return this.setOwnValue(keyStr, newValue)
-      }
+      // else own value - there splat[0] is number or string
+      // if it is a new var then set it to top layer
+      return this.setOwnValue(keyStr, newValue)
     }
-    else {
-      // deep value
-      return deepSet(this.values as any, pathTo, newValue)
-    }
+    // deep child
+    return this.setDeepChild(pathTo, newValue)
   }
 
 
