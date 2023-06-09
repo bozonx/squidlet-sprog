@@ -213,6 +213,8 @@ export abstract class SuperValueBase<T = any | any[]>
   readonly abstract values: T
   events = new IndexedEventEmitter()
   protected links: SuperLinkItem[] = []
+  // like {childKeyOrIndex: {eventNum: handlerIndex}}
+  private childEventHandlers: Record<string, Record<string, number>> = {}
 
   get isDestroyed(): boolean {
     return this.events.isDestroyed
@@ -243,6 +245,10 @@ export abstract class SuperValueBase<T = any | any[]>
       this.unlink(Number(linkId))
     }
 
+    for (const itemKey of this.ownKeys) {
+      this.removeChildListeners(itemKey)
+    }
+
     this.events.destroy()
   }
 
@@ -253,6 +259,9 @@ export abstract class SuperValueBase<T = any | any[]>
    */
   $$setParent(parent: SuperValueBase, myPath: string) {
     super.$$setParent(parent, myPath)
+
+    // TODO: если этот же родитель был ранее, то нужно отписаться от событий и заного записаться
+
     // reregister path of all the super children
     for (const childId of this.ownKeys) {
       const item = this.values[childId as keyof T] as SuperBase
@@ -448,6 +457,14 @@ export abstract class SuperValueBase<T = any | any[]>
     this.events.emit(SUPER_VALUE_EVENTS.unlink, linkId)
   }
 
+  unlinkByChildKey(childKeyOrIndex: string | number) {
+    const linkId = this.links.findIndex((el) => {
+      return el.myKey === childKeyOrIndex
+    })
+
+    if (linkId >= 0) this.unlink(linkId)
+  }
+
   /**
    * It makes full deep clone.
    * You can change the clone but changes will not affect the struct.
@@ -541,6 +558,11 @@ export abstract class SuperValueBase<T = any | any[]>
         //   definition.default,
         //   superChildRo
         // )
+        // superChild = new SUPER_VALUE_CLASSES[superChildType](
+        //   // use default as definition of this value
+        //   definition.default,
+        //   superChildRo
+        // )
       }
       else {
         // if no definition setup of child then just make it without definition
@@ -571,28 +593,52 @@ export abstract class SuperValueBase<T = any | any[]>
     child: ProxifiedSuperValue,
     childKeyOrIndex: string | number
   ) {
-    // TODO: поидее надо на всякий случай сначала отписаться от его событий у себя
-
     child.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex))
-    // bubble child events to me
-    child.subscribe((target: ProxifiedSuperValue, path?: string) => {
-      if (!path) {
-        console.warn(`Bubble child event without path. Root is "${this.pathToMe}"`)
 
-        return
-      }
+    if (this.childEventHandlers[childKeyOrIndex]) {
+      this.removeChildListeners(childKeyOrIndex)
+    }
 
-      return this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
-    })
-    child.$super.events.addListener(SUPER_VALUE_EVENTS.destroy, () => {
-      this.handleSuperChildDestroy(childKeyOrIndex)
-    })
+    this.childEventHandlers[childKeyOrIndex] = {
+      // bubble child events to me
+      [SUPER_VALUE_EVENTS.change]: child.subscribe((target: ProxifiedSuperValue, path?: string) => {
+        if (!path) {
+          console.warn(`Bubble child event without path. Root is "${this.pathToMe}"`)
+
+          return
+        }
+
+        return this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
+      }),
+      [SUPER_VALUE_EVENTS.destroy]: child.$super.events.addListener(SUPER_VALUE_EVENTS.destroy, () => {
+        this.handleSuperChildDestroy(childKeyOrIndex)
+      }),
+    }
   }
 
   private handleSuperChildDestroy(childKeyOrIndex: string | number) {
-    // TODO: make unlink
-    // TODO: remove listeners of child
-    //this.unlink(childKeyOrIndex)
+    this.unlinkByChildKey(childKeyOrIndex)
+    this.removeChildListeners(childKeyOrIndex)
+  }
+
+  /**
+   * Remove all the listeners of child
+   * @param childKeyOrIndex - it can be a stringified number like '0'
+   * @private
+   */
+  private removeChildListeners(childKeyOrIndex: string | number) {
+    const child: ProxifiedSuperValue = (this.values as any)[childKeyOrIndex]
+
+    if (!this.childEventHandlers[childKeyOrIndex] || !child) return
+
+    for (const eventNumStr of Object.keys(this.childEventHandlers[childKeyOrIndex])) {
+      const handlerIndex = this.childEventHandlers[childKeyOrIndex][eventNumStr]
+      const eventNum = Number(eventNumStr)
+
+      child.$super.events.removeListener(handlerIndex, eventNum)
+    }
+
+    delete this.childEventHandlers[childKeyOrIndex]
   }
 
 }

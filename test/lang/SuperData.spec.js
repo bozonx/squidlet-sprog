@@ -686,6 +686,7 @@ describe('SuperData', () => {
   //   assert.deepEqual(cloned, {p1: 5})
   // })
 
+  // TODO: test removeChildListeners()
   // TODO: test all the events
   // TODO: test toDefaultValue
   // TODO: test toDefaultValue when child is super data
