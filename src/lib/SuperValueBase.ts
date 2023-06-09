@@ -7,7 +7,15 @@ import {
   splitDeepPath,
   joinDeepPath,
 } from 'squidlet-lib';
-import {All_TYPES, AllTypes, SIMPLE_TYPES, SimpleType, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
+import {
+  All_TYPES,
+  AllTypes,
+  ProxifiedSuperValue,
+  SIMPLE_TYPES,
+  SimpleType,
+  SUPER_TYPES,
+  SUPER_VALUES
+} from '../types/valueTypes.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
@@ -16,6 +24,7 @@ import {
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {SuperBase} from './SuperBase.js';
+import {SUPER_VALUE_CLASSES} from '../constants.js';
 
 
 export interface SuperValuePublic {
@@ -63,7 +72,7 @@ export enum SUPER_VALUE_EVENTS {
 
 export type SuperChangeHandler = (
   // link to element which is changed. It can be a parent or its child
-  target: SuperValueBase,
+  target: ProxifiedSuperValue,
   // path to child element which is changed. If '' then it is parent
   // if it is undefined then means any element of root was changed
   path?: string
@@ -479,15 +488,17 @@ export abstract class SuperValueBase<T = any | any[]>
 
   /**
    * Resolve onw child value according the definition and init it.
-   * If the child is simple type then it checks its type and returns
-   * default or initial value for type.
-   * If the child is Super type then it init it if need
+   * It is called in init(), setOwnValue() and define()
+   * @param definition
+   * @param childKeyOrIndex
+   * @param value - if value not set then it will try to get default value
+   *   or make an initial value according to definition.type
    */
   protected resolveChildValue(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
     value?: any
-  ): any {
+  ): SimpleType | ProxifiedSuperValue | undefined {
     validateChildValue(definition, childKeyOrIndex, value)
 
     if (Object.keys(SUPER_VALUES).includes(definition.type)) {
@@ -497,101 +508,109 @@ export abstract class SuperValueBase<T = any | any[]>
     return resolveNotSuperChild(definition, value)
   }
 
-  // TODO: review
+  /**
+   * It resolves a super value:
+   * * if initialValue set then it returns it
+   * * if no initialValue then make a new instance an init it with default value
+   * * if no initialValue and default value then just init a new instance
+   * @param definition
+   * @param childKeyOrIndex
+   * @param initialValue
+   * @private
+   */
   private resolveSuperChild(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
-    initialValue?: any
-  ): SuperValueBase {
-    // work with super type
-
-    // TODO: убрать лишние валидации
-    // TODO: check undefined initialValue
-    // TODO: startListenChildren()
-
-    // TODO: если передан super value
-    //    надо подменить у него parent, path и слушать buble событий от него
-    //    все его потомки должны обновить родительский path
-
-
-    // TODO: check isSuper instead
-    if (initialValue && isSuperValue(initialValue)) {
-      // this means the super struct or array has already initialized,
-      // so now we are linking it as my child
-
-      // TODO: проверить соответствие в default's definition
-      // TODO: установить ro если он у родителя
-      // TODO: потомок должен установить ro у детей
-
-      initialValue.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex))
+    initialValue?: ProxifiedSuperValue
+  ): ProxifiedSuperValue {
+    if (initialValue) {
+      if (!isSuperValue(initialValue)) throw new Error(`initialValue is not Super Value`)
+      // this means the super value has already initialized
+      // so now we are linking it as my child and start listening of its events
+      this.setupSuperChild(initialValue, childKeyOrIndex)
 
       return initialValue
     }
-    else if (!definition.default) {
-      throw new Error(`There aren't initial value and default value for super value`)
-    }
-    else if (typeof definition.default !== 'object') {
-      throw new Error(`Wrong type of definition.default`)
-    }
     else {
-      // if initial value not defined then create an instance using default's definition
+      // no initialValue
+      // const newSuperValue = new SUPER_VALUE_CLASSES[definition.type as keyof typeof SUPER_VALUES](
+      //   // TODO: а где мы возмём definition его потомков ???
+      //   definition,
+      //   // TODO: add default ro from me
+      // )
 
-      // TODO: read only должно наследоваться потомками если оно стоит у родителя
 
-      // TODO: если потомок super value то надо делать его через proxy
-      //       потому что иначе не сработает deepGet, deepSet etc
-      //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
+      // TODO: должен вернуть proxyfied
 
-      let def
-
-      if (definition.type === SUPER_VALUES.SuperStruct) {
-        def = {
-          $exp: 'newSuperStruct',
-          definition: definition.default,
-          defaultRo: definition.readonly,
-        }
-      }
-      else if (definition.type === SUPER_VALUES.SuperArray) {
-        def = {
-          $exp: 'newSuperArray',
-          item: {
-            ...definition.default.item,
-            //readonly: definition.readonly
-          },
-          default: definition.default.default,
-        }
-      }
-
-      //this.myScope.$resolve()
+      // let def
+      //
+      // if (definition.type === SUPER_VALUES.SuperStruct) {
+      //   def = {
+      //     $exp: 'newSuperStruct',
+      //     definition: definition.default,
+      //     defaultRo: definition.readonly,
+      //   }
+      // }
+      // else if (definition.type === SUPER_VALUES.SuperArray) {
+      //   def = {
+      //     $exp: 'newSuperArray',
+      //     item: {
+      //       ...definition.default.item,
+      //       //readonly: definition.readonly
+      //     },
+      //     default: definition.default.default,
+      //   }
+      // }
     }
 
-    throw new Error(`Can't setup a super value of ${childKeyOrIndex}`)
+    /////////
+
+
+    // if (!definition.default) {
+    //   throw new Error(`There aren't initial value and default value for super value`)
+    // }
+    // else if (typeof definition.default !== 'object') {
+    //   throw new Error(`Wrong type of definition.default`)
+    // }
+    // else {
+    //   // if initial value not defined then create an instance using default's definition
+    //
+    //
+    //
+    //   //this.myScope.$resolve()
+    // }
+    //
+    // throw new Error(`Can't setup a super value of ${childKeyOrIndex}`)
   }
 
   /**
    * listen to children to bubble their events
    * @protected
    */
-  private startListenChildren() {
+  private setupSuperChild(
+    child: ProxifiedSuperValue,
+    childKeyOrIndex: string | number
+  ) {
+    // TODO: установить ro если он у родителя
+    // TODO: потомок должен установить ro у детей
+    // TODO: все его потомки должны обновить родительский path
+    // TODO: поидее надо на всякий случай сначала отписаться от его событий
 
-    // TODO: use it in value setup
     // TODO: поидее должно пойти в глубину.
     //    Но при этом если объект был переназначен другому родителю
     //    то надо отписаться от старых событий - зайти в старого родителя и отписаться
 
-    for (const key of this.ownKeys) {
-      // TODO: тут должны быть ownValues или layered???
-      const value: SuperValueBase = (this.values as any)[key]
+    child.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex))
+    // bubble child events to me
+    child.subscribe((target: ProxifiedSuperValue, path?: string) => {
+      if (!path) {
+        console.warn(`Bubble child event without path. Root is "${this.pathToMe}"`)
 
-      if (typeof value !== 'object' || !value.isSuperValue) continue
+        return
+      }
 
-      value.subscribe((target: SuperValueBase, path?: string) => {
-        // if not path then it's some wierd
-        if (!path) console.warn(`Bubble event without path. But root is "${this.pathToMe}", child is "${key}"`)
-        // just bubble children's event
-        this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
-      })
-    }
+      return this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
+    })
   }
 
 }
