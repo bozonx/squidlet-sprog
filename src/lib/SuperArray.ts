@@ -181,7 +181,7 @@ export class SuperArray<T = any>
       const value = (itemIndex < initArrLength)
         ? initialArr?.[itemIndex]
         : this.definition.defaultArray?.[itemIndex]
-      const childDefinition = this.makeItemDefinition(itemIndex)
+      const childDefinition = this.getDefinition(itemIndex)
 
       this.values[itemIndex] = this.resolveChildValue(childDefinition, itemIndex, value)
     }
@@ -204,9 +204,7 @@ export class SuperArray<T = any>
 
   setOwnValue(keyStr: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
     const index = Number(keyStr)
-    const def = this.makeItemDefinition(index)
-
-    if (!this.isInitialized) throw new Error(`Init it first`)
+    const def = this.getDefinition(index)
 
     checkValueBeforeSet(this.isInitialized, def, index, value, ignoreRo)
     // value will be validated inside resolveChildValue
@@ -248,8 +246,19 @@ export class SuperArray<T = any>
     return super.getProxy()
   }
 
-  getDefinition(index: number): SuperItemDefinition | undefined {
-    return this.definition as SuperItemDefinition
+  getDefinition(index: number): SuperItemDefinition {
+
+    // TODO: а если потомок массив ???
+
+    return {
+      type: this.definition.type,
+      default: (this.definition.defaultArray)
+        ? this.definition.defaultArray[index]
+        : this.definition.default,
+      readonly: this.definition.readonly,
+      nullable: this.definition.nullable,
+      required: false,
+    }
   }
 
   // TODO: переделать под array
@@ -271,24 +280,6 @@ export class SuperArray<T = any>
     return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any) => {
       if (el === this) handler()
     })
-  }
-
-  /**
-   * Make definition of child
-   */
-  makeItemDefinition(itemIndex: number): SuperItemDefinition {
-
-    // TODO: а если потомок массив ???
-
-    return {
-      type: this.definition.type,
-      default: (this.definition.defaultArray)
-        ? this.definition.defaultArray[itemIndex]
-        : this.definition.default,
-      readonly: this.definition.readonly,
-      nullable: this.definition.nullable,
-      required: false,
-    }
   }
 
   /**
