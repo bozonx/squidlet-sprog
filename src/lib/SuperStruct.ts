@@ -156,15 +156,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   /////// Struct specific
 
-  validateItem(key: keyof T, value?: AllTypes, ignoreRo?: boolean) {
-    const keyStr = key as string
-    const definition = this.definition[key]
-
-    checkValueBeforeSet(this.isInitialized, definition, keyStr, value, ignoreRo)
-    validateChildValue(definition, keyStr, value)
-  }
-
-
   /**
    * Set value of self readonly value and rise an event
    */

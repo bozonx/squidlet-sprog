@@ -11,7 +11,7 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {checkValueBeforeSet, SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
 
 
 // TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
@@ -316,8 +316,6 @@ export class SuperArray<T = any>
 
     this.emitChildChangeEvent(index)
   }
-
-  // TODO: add validateItem()
 
 
   ////// Standard methods

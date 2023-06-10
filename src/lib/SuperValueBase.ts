@@ -426,6 +426,13 @@ export abstract class SuperValueBase<T = any | any[]>
     return joinDeepPath([this.pathToMe, childKeyOrIndex])
   }
 
+  validateItem(key: string | number, value?: AllTypes, ignoreRo?: boolean) {
+    const definition = this.getDefinition(key)
+
+    checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
+    validateChildValue(definition, key, value)
+  }
+
 
   /**
    * This method will be returned after initializing to update readonly values
