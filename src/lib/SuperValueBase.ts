@@ -223,7 +223,7 @@ export abstract class SuperValueBase<T = any | any[]>
   /**
    * Get own keys or indexes
    */
-  abstract ownKeys: (string | number)[]
+  abstract ownKeysOLD: (string | number)[]
 
 
   init(): any {
@@ -248,7 +248,7 @@ export abstract class SuperValueBase<T = any | any[]>
       this.unlink(Number(linkId))
     }
 
-    for (const itemKey of this.ownKeys) {
+    for (const itemKey of this.ownKeysOLD) {
       this.removeChildListeners(itemKey)
     }
 
@@ -266,7 +266,7 @@ export abstract class SuperValueBase<T = any | any[]>
     // TODO: если этот же родитель был ранее, то нужно отписаться от событий и заного записаться
 
     // reregister path of all the super children
-    for (const childId of this.ownKeys) {
+    for (const childId of this.ownKeysOLD) {
       const item = this.values[childId as keyof T] as SuperBase
 
       // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
@@ -374,7 +374,7 @@ export abstract class SuperValueBase<T = any | any[]>
    * Set all the values to default ones
    */
   toDefaults() {
-    for (const key of this.ownKeys) {
+    for (const key of this.ownKeysOLD) {
       this.toDefaultValue(key)
     }
   }

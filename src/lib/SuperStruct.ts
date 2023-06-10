@@ -67,7 +67,7 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
     has(target: any, prop: string): boolean {
       if (prop === SUPER_VALUE_PROP || STRUCT_PUBLIC_MEMBERS.includes(prop)) return true
 
-      return struct.ownKeys.includes(prop)
+      return struct.ownKeysOLD.includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
@@ -79,7 +79,7 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return struct.ownKeys
+      return struct.ownKeysOLD
     },
   }
 
@@ -98,7 +98,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   // It assumes that you will not change it after initialization
   private readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
 
-  get ownKeys(): string[] {
+  get ownKeysOLD(): string[] {
     return Object.keys(this.values as any)
   }
 
@@ -148,7 +148,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   destroy = () => {
     super.destroy()
 
-    for (const key of this.ownKeys) {
+    for (const key of this.ownKeysOLD) {
       const keyName = key as keyof T
 
       if (typeof this.values[keyName] === 'object' && (this.values[keyName] as any).destroy) {

@@ -156,14 +156,14 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   /**
    * Keys only of me, not low layer and not children's
    */
-  get ownKeys(): string[] {
+  get ownKeysOLD(): string[] {
     return [...this.ownOrderedKeys]
   }
 
   get allKeys(): (string | number)[] {
     return deduplicate([
       ...(this.bottomLayer?.allKeys || []),
-      ...this.ownKeys,
+      ...this.ownKeysOLD,
     ])
   }
 
@@ -235,7 +235,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
         const splatPath = splitDeepPath(path)
         const childKeyStr = String(splatPath[0])
         // if it is another key not I have then rise an event of my level
-        if (!this.ownKeys.includes(childKeyStr)) {
+        if (!this.ownKeysOLD.includes(childKeyStr)) {
           this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
         }
       })
@@ -311,7 +311,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (splat.length === 1) {
       if (
-        !this.ownKeys.includes(keyStr)
+        !this.ownKeysOLD.includes(keyStr)
         && this.bottomLayer && this.bottomLayer.allKeys.includes(splat[0])
       ) {
         // if not own key but layered key
@@ -412,7 +412,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (!finalDef) throw new Error(`Can't resolve definition`)
 
-    if (!this.ownKeys.includes(key)) this.ownOrderedKeys.push(key)
+    if (!this.ownKeysOLD.includes(key)) this.ownOrderedKeys.push(key)
     // resolve default or initial value as value
     const defaultValue = this.resolveChildValue(finalDef, key, initialValue)
 
