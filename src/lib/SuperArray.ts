@@ -201,18 +201,8 @@ export class SuperArray<T = any>
     }
   }
 
-
   setOwnValue(keyStr: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
-    const index = Number(keyStr)
-    const def = this.getDefinition(index)
-
-    checkValueBeforeSet(this.isInitialized, def, index, value, ignoreRo)
-    // value will be validated inside resolveChildValue
-    this.values[index] = this.resolveChildValue(def, index, value)
-
-    this.emitChildChangeEvent(index)
-
-    return true
+    return super.setOwnValue(Number(keyStr), value, ignoreRo)
   }
 
   /**

@@ -19,7 +19,7 @@ import {
   resolveNotSuperChild,
   SUPER_VALUE_PROP,
   validateChildValue,
-  isSuperValue
+  isSuperValue, checkValueBeforeSet
 } from './superValueHelpers.js';
 
 
@@ -162,15 +162,6 @@ export abstract class SuperValueBase<T = any | any[]>
    */
   //abstract getOwnValue(key: string | number): AllTypes
 
-  /**
-   * Set value to own child, not deeper and not to bottom layer.
-   * And rise an event of it child
-   * @param key
-   * @param value
-   * @param ignoreRo
-   * @returns {boolean} if true then value was found and set. If false value hasn't been set
-   */
-  abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean
 
   abstract toDefaultValue(key: string | number): void
 
@@ -209,6 +200,28 @@ export abstract class SuperValueBase<T = any | any[]>
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     return this.values[key as keyof T] as any
+  }
+
+  /**
+   * Set value to own child, not deeper and not to bottom layer.
+   * And rise an event of it child
+   * @param key
+   * @param value
+   * @param ignoreRo
+   * @returns {boolean} if true then value was found and set. If false value hasn't been set
+   */
+  //abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean
+
+  setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
+    const def = this.getDefinition(key)
+
+    checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo)
+    // value will be validated inside resolveChildValue
+    this.values[key as keyof T] = this.resolveChildValue(def!, key, value)
+
+    this.emitChildChangeEvent(key)
+
+    return true
   }
 
   /**
