@@ -93,7 +93,7 @@ export function proxyScope(data: SuperData): SuperScope {
         return true
       }
 
-      return data.allKeysOLD.includes(prop)
+      return data.allKeys.includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
@@ -109,7 +109,7 @@ export function proxyScope(data: SuperData): SuperScope {
     },
 
     ownKeys(): ArrayLike<string | symbol> {
-      return data.allKeysOLD as string[]
+      return data.allKeys as string[]
     },
   }
 

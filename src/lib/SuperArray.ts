@@ -150,7 +150,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return { ...this.definition, required: false }
   }
 
-  get ownKeysOLD(): number[] {
+  get allKeys(): number[] {
     return arrayKeys(this.values)
   }
 

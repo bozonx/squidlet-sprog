@@ -260,7 +260,7 @@ describe('SuperArray', () => {
 
     arr.$super.setValue('[2]', 2)
     // TODO: WTF???
-    assert.deepEqual(arr.$super.ownKeysOLD, [0, undefined, 2])
+    assert.deepEqual(arr.$super.allKeys, [0, undefined, 2])
 
   })
 
