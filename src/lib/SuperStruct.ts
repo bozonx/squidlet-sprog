@@ -1,18 +1,22 @@
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
-  SUPER_VALUE_PROP,
   SUPER_PROXY_PUBLIC_MEMBERS,
   SuperValuePublic,
-  checkDefinition,
-  prepareDefinitionItem,
-  SUPER_VALUE_EVENTS, validateChildValue,
+  SUPER_VALUE_EVENTS,
 } from './SuperValueBase.js';
 import {
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {
+  checkDefinition,
+  checkValueBeforeSet,
+  prepareDefinitionItem,
+  SUPER_VALUE_PROP,
+  validateChildValue
+} from './superValueHelpers.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -28,24 +32,6 @@ export const STRUCT_PUBLIC_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
   'isStruct',
 ]
-
-export function checkValueBeforeSet(
-  isInitialized: boolean,
-  definition: SuperItemDefinition | undefined,
-  key: string,
-  value?: AllTypes,
-  ignoreRo: boolean = false
-) {
-  if (!isInitialized) throw new Error(`Init it first`)
-  else if (!definition) throw new Error(`Doesn't have definition for key ${key}`)
-  // obviously check it otherwise it will be set to default
-  else if (typeof value === 'undefined') {
-    throw new Error(`It isn't possible to set undefined to data child`)
-  }
-  else if (!ignoreRo && definition.readonly) {
-    throw new Error(`Can't set readonly value of name ${key}`)
-  }
-}
 
 
 /**

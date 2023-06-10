@@ -1,6 +1,4 @@
-import {deepGetParent} from 'squidlet-lib';
 import {SuperScope} from '../lib/scope.js';
-import {isSuperValue} from '../lib/SuperValueBase.js';
 
 
 /**

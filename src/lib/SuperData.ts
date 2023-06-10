@@ -8,10 +8,7 @@ import {
   joinDeepPath,
 } from 'squidlet-lib';
 import {
-  checkDefinition,
-  prepareDefinitionItem,
   SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
-  SUPER_VALUE_PROP,
   SuperValueBase,
   SuperValuePublic,
 } from './SuperValueBase.js';
@@ -21,8 +18,8 @@ import {
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
-import {checkValueBeforeSet} from './SuperStruct.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {checkDefinition, checkValueBeforeSet, prepareDefinitionItem, SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???

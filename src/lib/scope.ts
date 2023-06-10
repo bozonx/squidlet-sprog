@@ -2,9 +2,9 @@ import {omitObj} from 'squidlet-lib';
 import {sprogFuncs} from '../sprogFuncs.js';
 import {EXP_MARKER} from '../constants.js';
 import {SprogDefinition} from '../types/types.js';
-import {SUPER_VALUE_PROP} from './SuperValueBase.js';
 import {SuperData} from './SuperData.js';
 import {stdLib} from '../stdLib.js';
+import {SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 export type SprogScopedFn = (p: any) => Promise<any | void>

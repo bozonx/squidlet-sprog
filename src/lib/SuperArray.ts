@@ -2,7 +2,6 @@ import {arrayKeys, spliceItem, omitObj} from 'squidlet-lib';
 import {
   SUPER_PROXY_PUBLIC_MEMBERS,
   SUPER_VALUE_EVENTS,
-  SUPER_VALUE_PROP,
   SuperValueBase,
   SuperValuePublic
 } from './SuperValueBase.js';
@@ -13,6 +12,7 @@ import {
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 
