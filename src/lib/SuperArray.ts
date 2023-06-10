@@ -12,7 +12,7 @@ import {
 import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {checkValueBeforeSet, SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
@@ -202,13 +202,15 @@ export class SuperArray<T = any>
   }
 
 
-  setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
+  setOwnValue(keyStr: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
+    const index = Number(keyStr)
+    const def = this.makeItemDefinition(index)
+
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const index = Number(key)
-
-    // TODO: review makeItemDefinition
-    this.values[index] = this.resolveChildValue(this.makeItemDefinition(index), index, value)
+    checkValueBeforeSet(this.isInitialized, def, index, value, ignoreRo)
+    // value will be validated inside resolveChildValue
+    this.values[index] = this.resolveChildValue(def, index, value)
 
     this.emitChildChangeEvent(index)
 

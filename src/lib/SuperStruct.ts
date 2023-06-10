@@ -146,10 +146,11 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false): boolean {
     const name: keyof T = keyStr as any
+    const def = this.getDefinition(keyStr)
 
-    checkValueBeforeSet(this.isInitialized, this.definition[name], keyStr, value, ignoreRo)
+    checkValueBeforeSet(this.isInitialized, def, keyStr, value, ignoreRo)
     // value will be validated inside resolveChildValue
-    this.values[name] = this.resolveChildValue(this.definition[name], keyStr, value)
+    this.values[name] = this.resolveChildValue(def!, keyStr, value)
 
     this.emitChildChangeEvent(keyStr)
 

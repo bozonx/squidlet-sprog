@@ -145,7 +145,7 @@ export function validateChildValue(
 export function checkValueBeforeSet(
   isInitialized: boolean,
   definition: SuperItemDefinition | undefined,
-  key: string,
+  key: string | number,
   value?: AllTypes,
   ignoreRo?: boolean
 ) {
