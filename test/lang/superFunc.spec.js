@@ -28,6 +28,8 @@ describe('superFunc', () => {
       ]
     })
 
+    assert.equal(func.$super.constructor.name, 'SuperFunc')
+
     await func.exec()
 
     assert.equal(scope['topVal'], 5)

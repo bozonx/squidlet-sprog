@@ -1,11 +1,11 @@
 import {newScope, SuperScope} from './scope.js'
-import {makeFuncProxy} from './functionProxy.js';
 import {SprogDefinition} from '../types/types.js';
 import {SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {EXP_MARKER} from '../constants.js';
+import {SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 export const SUPER_RETURN = 'superReturn'
@@ -16,12 +16,38 @@ export const SUPER_RETURN = 'superReturn'
 // TODO: может добавить событие вызова ф-и или лучше middleware???
 
 
+export function proxifySuperFunc(obj: any): (() => any) {
+  const funcProxyHandler: ProxyHandler<any> = {
+    apply(target: any, thisArg: any, argArray: any[]) {
+      return obj.exec(...argArray)
+    },
+
+    get(target: any, prop: string): any {
+      // $super
+      if (prop === SUPER_VALUE_PROP) return obj
+
+      return obj[prop]
+    },
+
+    has(target: any, prop: string): boolean {
+      if (prop === SUPER_VALUE_PROP) return true
+
+      return Boolean(obj[prop])
+    }
+  }
+
+  function fakeFunction () {}
+
+  return new Proxy(fakeFunction, funcProxyHandler)
+}
+
+
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   readonly isSuperFunc: boolean = true
   readonly lines: SprogDefinition[]
   appliedValues: Record<string, any> = {}
 
-  protected proxyFn: (instance: any) => any = makeFuncProxy
+  protected proxyFn: (instance: any) => any = proxifySuperFunc
 
   private readonly propsSetter
   private readonly scope: SuperScope
@@ -128,5 +154,5 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 //
 //   if (values) newSuperFunc.applyValues(values)
 //
-//   return makeFuncProxy(newSuperFunc)
+//   return proxifySuperFunc(newSuperFunc)
 // }

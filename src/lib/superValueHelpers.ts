@@ -8,13 +8,10 @@ import {
   AllTypes,
   SIMPLE_TYPES,
   SimpleType,
-  SUPER_TYPES,
-  SUPER_VALUES
 } from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {SuperArrayDefinition} from './SuperArray.js';
-import {isPromise} from 'util/types';
 
 
 export const SUPER_VALUE_PROP = '$super'
@@ -134,52 +131,21 @@ export function validateChildValue(
   if (!definition) throw new Error(`no definition`)
   // if type any - nothing to check
   else if (definition.type === 'any') return
-  else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-    if (value && (typeof value !== 'object' || !isSuperValue(value))) {
-      throw new Error(`Value has to be a Super Value`)
-    }
+  else if (typeof value === 'undefined' && definition.required) {
+    throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
   }
-  else if (definition.type === SUPER_TYPES.SuperFunc) {
-    if (value && (typeof value !== 'object' || !value.isSuperFunc)) {
-      throw new Error(`Value has to be a SuperFunc`)
-    }
-  }
-  else if (definition.type === 'function') {
-    if (value && typeof value !== 'function') {
-      throw new Error(`Value has to be a function`)
-    }
-  }
-  else if (definition.type === 'Promise') {
-    if (value && typeof isPromise(value)) {
-      throw new Error(`Value has to be a promise`)
-    }
-  }
-  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-    if (typeof value === 'undefined' && definition.required) {
-      throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`)
-    }
-    else if (typeof value === 'undefined' && !definition.required) {
-      return
-    }
-    else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-      throw new Error(
-        `The value of ${childKeyOrIndex} has type ${typeof value}, `
-        + `but not ${definition.type}`
-      )
-    }
-    // // Value is defined in this case don't check required.
-    // // Check type
-    // else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-    //   throw new Error(
-    //     `The value of ${childKeyOrIndex} has type ${typeof value}, `
-    //     + `but not ${definition.type}`
-    //   )
-    // }
-
-  }
-  else {
+  // nothing to check
+  else if (typeof value === 'undefined' && !definition.required) return
+  else if (!Object.keys(All_TYPES).includes(definition.type)) {
     throw new Error(`Unknown type: ${definition.type}`)
   }
+  else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
+    throw new Error(
+      `The value of ${childKeyOrIndex} has type ${typeof value}, `
+      + `but not ${definition.type}`
+    )
+  }
+  // else it is ok
 }
 
 export function checkValueBeforeSet(

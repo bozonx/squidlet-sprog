@@ -57,23 +57,26 @@ describe('isCorrespondingType', () => {
     assert.isTrue(isCorrespondingType(Promise.resolve(), 'Promise'))
     assert.isTrue(isCorrespondingType(Promise.reject('a'), 'Promise'))
     assert.isFalse(isCorrespondingType({}, 'Promise'))
+  })
+
+  it('check super types', async () => {
     // SuperData
-    const sd = new SuperData()
+    const sd = new SuperData().getProxy()
     assert.isTrue(isCorrespondingType(sd, 'SuperData'))
     assert.isFalse(isCorrespondingType({}, 'SuperData'))
     // SuperStruct
-    const ss = new SuperStruct({})
+    const ss = new SuperStruct({}).getProxy()
     assert.isTrue(isCorrespondingType(ss, 'SuperStruct'))
     assert.isFalse(isCorrespondingType({}, 'SuperStruct'))
     assert.isFalse(isCorrespondingType(sd, 'SuperStruct'))
-    // SuperArray
-    const sa = new SuperArray({})
+    // // SuperArray
+    const sa = new SuperArray({}).getProxy()
     assert.isTrue(isCorrespondingType(sa, 'SuperArray'))
     assert.isFalse(isCorrespondingType({}, 'SuperArray'))
     assert.isFalse(isCorrespondingType(sd, 'SuperArray'))
     assert.isFalse(isCorrespondingType(ss, 'SuperArray'))
     // SuperFunc
-    const sf = new SuperFunc(newScope(), {}, [])
+    const sf = new SuperFunc(newScope(), {}, []).getProxy()
     assert.isTrue(isCorrespondingType(sf, 'SuperFunc'))
     assert.isFalse(isCorrespondingType({}, 'SuperFunc'))
     assert.isFalse(isCorrespondingType(sd, 'SuperFunc'))

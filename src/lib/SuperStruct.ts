@@ -10,10 +10,8 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {
   checkDefinition,
-  checkValueBeforeSet,
   prepareDefinitionItem,
   SUPER_VALUE_PROP,
-  validateChildValue
 } from './superValueHelpers.js';
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 
