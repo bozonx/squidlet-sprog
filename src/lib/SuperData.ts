@@ -8,7 +8,7 @@ import {
   joinDeepPath,
 } from 'squidlet-lib';
 import {
-  checkDefinition, isSuperValue,
+  checkDefinition,
   prepareDefinitionItem,
   SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
   SUPER_VALUE_PROP,
@@ -32,8 +32,6 @@ import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 // TODO: добавить методы array - filter, find, map и итд
 // TODO: add ability to delete array value
 // TODO: test batchSet
-// TODO: может сделать allKeys - все ключи (тоже в struct и в array),
-//       а ownKeys только мои (только data)
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -65,7 +63,7 @@ export function proxifyData(data: SuperData): ProxyfiedData {
     has(target: any, prop: string): boolean {
       if (prop === SUPER_VALUE_PROP || DATA_PUBLIC_MEMBERS.includes(prop)) return true
 
-      return data.allKeysOLD.includes(prop)
+      return data.allKeys.includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
@@ -79,7 +77,7 @@ export function proxifyData(data: SuperData): ProxyfiedData {
     ownKeys(): ArrayLike<string | symbol> {
       // to deep functions need that Reflect.ownKeys()
       // get all the keys including bottom layer
-      return data.allKeysOLD as any[]
+      return data.allKeys as any[]
     },
   }
 
@@ -96,13 +94,13 @@ export function proxifyLayeredValue(topOwnValues: Record<string, any>, bottomDat
 
     has(target: any, prop: string): boolean {
       return Object.keys(topOwnValues).includes(prop)
-        || (bottomData?.allKeysOLD || []).includes(prop)
+        || (bottomData?.allKeys || []).includes(prop)
     },
 
     set(target: any, prop: string, newValue: any): boolean {
       if (
         !Object.keys(topOwnValues).includes(prop)
-        && bottomData && bottomData.allKeysOLD.includes(prop)
+        && bottomData && bottomData.allKeys.includes(prop)
       ) {
         // if var is defined only in bottom value and not in top level
         // set value to it or its lower levels
@@ -122,7 +120,7 @@ export function proxifyLayeredValue(topOwnValues: Record<string, any>, bottomDat
     ownKeys(): ArrayLike<string | symbol> {
       // it has to return all the keys on Reflect.ownKeys()
       return deduplicate([
-        ...(bottomData?.allKeysOLD || []),
+        ...(bottomData?.allKeys || []),
         ...Object.keys(topOwnValues),
       ])
     },
@@ -153,18 +151,22 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     return this.definition[DEFAULT_DEFINITION_KEY]
   }
 
+
+  /**
+   * All the keys of my and bottom layer
+   */
+  get allKeys(): (string | number)[] {
+    return deduplicate([
+      ...(this.bottomLayer?.allKeys || []),
+      ...this.ownKeys,
+    ])
+  }
+
   /**
    * Keys only of me, not low layer and not children's
    */
-  get ownKeysOLD(): string[] {
+  get ownKeys(): string[] {
     return [...this.ownOrderedKeys]
-  }
-
-  get allKeysOLD(): (string | number)[] {
-    return deduplicate([
-      ...(this.bottomLayer?.allKeysOLD || []),
-      ...this.ownKeysOLD,
-    ])
   }
 
 
@@ -235,7 +237,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
         const splatPath = splitDeepPath(path)
         const childKeyStr = String(splatPath[0])
         // if it is another key not I have then rise an event of my level
-        if (!this.ownKeysOLD.includes(childKeyStr)) {
+        if (!this.ownKeys.includes(childKeyStr)) {
           this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
         }
       })
@@ -311,8 +313,8 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (splat.length === 1) {
       if (
-        !this.ownKeysOLD.includes(keyStr)
-        && this.bottomLayer && this.bottomLayer.allKeysOLD.includes(splat[0])
+        !this.ownKeys.includes(keyStr)
+        && this.bottomLayer && this.bottomLayer.allKeys.includes(splat[0])
       ) {
         // if not own key but layered key
         const lowPath = joinDeepPath([splat[0]])
@@ -412,7 +414,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
 
     if (!finalDef) throw new Error(`Can't resolve definition`)
 
-    if (!this.ownKeysOLD.includes(key)) this.ownOrderedKeys.push(key)
+    if (!this.ownOrderedKeys.includes(key)) this.ownOrderedKeys.push(key)
     // resolve default or initial value as value
     const defaultValue = this.resolveChildValue(finalDef, key, initialValue)
 
@@ -490,7 +492,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   private makeOrderedObject(): Record<string, any> {
     const res: Record<string, any> = {}
 
-    for (const key of this.allKeysOLD) res[key] = this.values[key]
+    for (const key of this.allKeys) res[key] = this.values[key]
 
     return res
   }
