@@ -5,19 +5,15 @@ import {
   SuperValueBase,
   SuperValuePublic
 } from './SuperValueBase.js';
-import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
-import {isCorrespondingType} from './isCorrespondingType.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
+import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {isCorrespondingType} from './isCorrespondingType.js';
 import {SUPER_VALUE_PROP} from './superValueHelpers.js';
-
-
-
-// TODO: наверное в default запретить пока super value
-
+import {DATA_PUBLIC_MEMBERS} from './SuperData.js';
 
 
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
@@ -41,6 +37,8 @@ export interface SuperArrayPublic extends SuperValuePublic {
   splice(start: number, deleteCount: number, ...items: any[]): any[]
   reverse(): any[]
   sort(): ProxyfiedArray
+
+  // TODO: а остальные не мутабл методы???
 }
 
 export type ProxyfiedArray<T = any> = SuperArrayPublic
@@ -66,6 +64,8 @@ const ARR_PUBLIC_MEMBERS = [
   'splice',
   'reverse',
   'sort',
+
+  // TODO: а остальные не мутабл методы???
 ]
 
 
@@ -73,58 +73,46 @@ const ARR_PUBLIC_MEMBERS = [
  * Wrapper for super array which allows to manipulate it as common array.
  * And it puts some methods to it:
  * * arr.$super - instance of SuperArray
- * * arr... - see other methods in ARR_PUBLIC_MEMBERS
+ * * arr. ... - see other methods in ARR_PUBLIC_MEMBERS
  * @param arr
  */
 export function proxifyArray(arr: SuperArray): ProxyfiedArray {
   const handler: ProxyHandler<any[]> = {
     get(target: any[], prop: string | symbol) {
-      if (prop === SUPER_VALUE_PROP) {
-        return arr
-      }
+      // $super
+      if (prop === SUPER_VALUE_PROP) return arr
       else if (typeof prop === 'string' && ARR_PUBLIC_MEMBERS.includes(prop)) {
         // public SuperArray prop
         return (arr as any)[prop]
       }
-      else {
-        // some other prop
-        if (typeof prop === 'symbol') {
-          return arr.values[prop as  any]
-        }
-        else {
-          // means number as string
-          const index = Number(prop)
-
-          if (Number.isInteger(index)) {
-            if (index < 0) {
-              // Support negative indices (e.g., -1 for last element)
-              prop = String(arr.length + index)
-            }
-
-            return arr.values[index]
-          }
-          // some other prop - get it from the array
-          return arr.values[prop as any]
-        }
-      }
+      // symbol or index or prop of Array() class
+      return arr.values[prop as any]
     },
+
+    has(target: any, prop: string): boolean {
+      if (prop === SUPER_VALUE_PROP || ARR_PUBLIC_MEMBERS.includes(prop)) return true
+
+      return typeof arr.values[prop as any] !== 'undefined'
+    },
+
     set(target: any[], prop, value) {
       // Intercept array element assignment
-      const index = Number(prop);
+      const index = Number(prop)
 
       if (Number.isInteger(index)) {
-        if (index < 0) {
-          // Support negative indices (e.g., -1 for last element)
-          prop = String(arr.length + index);
-        }
         // set value and rise an event
         return arr.setOwnValue(index, value)
       }
-      // Set the usual array properties and methods
-      arr.values[index] = value
 
-      return true
+      throw new Error(`It isn't allow to change Array() members`)
     },
+
+    deleteProperty(target: any, prop: string): boolean {
+      throw new Error(
+        `Don't delete via value proxy! User clearItem() or deleteItem() instead`
+      )
+    },
+
   }
 
   return new Proxy(arr.values, handler) as ProxyfiedArray
@@ -315,6 +303,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     this.emitChildChangeEvent(index)
   }
 
+  // TODO: rename to forget ???
   /**
    * Delete item and splice an array
    * deleteItem(1) [0,1,2] will be [0,2]

@@ -12,13 +12,11 @@ import {
   SuperValueBase,
   SuperValuePublic,
 } from './SuperValueBase.js';
-import {AllTypes, SIMPLE_TYPES, SUPER_TYPES} from '../types/valueTypes.js';
 import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
-import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {
   checkDefinition,
   checkValueBeforeSet,
@@ -26,6 +24,8 @@ import {
   SUPER_VALUE_PROP,
   validateChildValue
 } from './superValueHelpers.js';
+import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
 
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
@@ -56,6 +56,7 @@ export const DEFAULT_DEFINITION_KEY = '$DEFAULT'
 export function proxifyData(data: SuperData): ProxyfiedData {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
+      // $super
       if (prop === SUPER_VALUE_PROP) return data
       // public super data prop
       else if (DATA_PUBLIC_MEMBERS.includes(prop)) return (data as any)[prop]

@@ -1,4 +1,3 @@
-import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
   SUPER_PROXY_PUBLIC_MEMBERS,
@@ -9,7 +8,6 @@ import {
   SuperItemDefinition,
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
-import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {
   checkDefinition,
   checkValueBeforeSet,
@@ -17,6 +15,8 @@ import {
   SUPER_VALUE_PROP,
   validateChildValue
 } from './superValueHelpers.js';
+import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -43,6 +43,7 @@ export const STRUCT_PUBLIC_MEMBERS = [
 export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
+      // $super
       if (prop === SUPER_VALUE_PROP) return struct
       // public super struct prop
       else if (STRUCT_PUBLIC_MEMBERS.includes(prop)) return (struct as any)[prop]
