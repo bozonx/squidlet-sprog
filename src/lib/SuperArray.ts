@@ -210,9 +210,6 @@ export class SuperArray<T = any>
   }
 
   getDefinition(index: number): SuperItemDefinition {
-
-    // TODO: а если потомок массив ???
-
     return {
       type: this.definition.type,
       default: (this.definition.defaultArray)
@@ -224,14 +221,13 @@ export class SuperArray<T = any>
     }
   }
 
-  // TODO: переделать под array
-  // batchSet(values?: Record<string, any>) {
-  //   if (!values) return
-  //
-  //   for (const key of Object.keys(values)) {
-  //     this.setOwnValue(key, values[key])
-  //   }
-  // }
+  batchSet(values?: T[]) {
+    if (!values) return
+
+    for (const key of values.keys()) {
+      this.setOwnValue(key, (values as any[])[key])
+    }
+  }
 
   ///// Array specific methods
 
