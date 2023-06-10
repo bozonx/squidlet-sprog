@@ -16,7 +16,6 @@ import {
   validateChildValue
 } from './superValueHelpers.js';
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
-import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {

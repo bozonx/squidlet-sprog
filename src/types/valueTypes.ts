@@ -25,8 +25,6 @@ export const SIMPLE_TYPES = {
   ...PRIMITIVE_TYPES,
   array: 'array',
   object: 'object',
-  // TODO: add function
-  //function: 'function',
 }
 export const SUPER_VALUES = {
   SuperStruct: 'SuperStruct',
@@ -41,6 +39,7 @@ export const SUPER_TYPES = {
 export const All_TYPES = {
   ...SIMPLE_TYPES,
   ...SUPER_TYPES,
+  function: 'function',
   any: 'any',
   Promise: 'Promise',
 }

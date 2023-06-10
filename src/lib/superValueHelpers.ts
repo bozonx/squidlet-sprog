@@ -14,6 +14,7 @@ import {
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {SuperArrayDefinition} from './SuperArray.js';
+import {isPromise} from 'util/types';
 
 
 export const SUPER_VALUE_PROP = '$super'
@@ -125,23 +126,33 @@ export function resolveNotSuperChild(
   throw new Error(`Unsupported definition type of ${definition.type}`)
 }
 
-// TODO: почему только в struct а не в data??
 export function validateChildValue(
   definition: SuperItemDefinition | undefined,
   childKeyOrIndex: string | number,
   value?: any
 ) {
   if (!definition) throw new Error(`no definition`)
-
-  else if (definition.type === 'any') {
-    return
-  }
+  // if type any - nothing to check
+  else if (definition.type === 'any') return
   else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-
-    // TODO: validate super value
+    if (value && (typeof value !== 'object' || !isSuperValue(value))) {
+      throw new Error(`Value has to be a Super Value`)
+    }
   }
   else if (definition.type === SUPER_TYPES.SuperFunc) {
-    // TODO: validate super func
+    if (value && (typeof value !== 'object' || !value.isSuperFunc)) {
+      throw new Error(`Value has to be a SuperFunc`)
+    }
+  }
+  else if (definition.type === 'function') {
+    if (value && typeof value !== 'function') {
+      throw new Error(`Value has to be a function`)
+    }
+  }
+  else if (definition.type === 'Promise') {
+    if (value && typeof isPromise(value)) {
+      throw new Error(`Value has to be a promise`)
+    }
   }
   else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
     if (typeof value === 'undefined' && definition.required) {
@@ -166,7 +177,9 @@ export function validateChildValue(
     // }
 
   }
-  // TODO: check other types
+  else {
+    throw new Error(`Unknown type: ${definition.type}`)
+  }
 }
 
 export function checkValueBeforeSet(

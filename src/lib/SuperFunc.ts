@@ -17,6 +17,7 @@ export const SUPER_RETURN = 'superReturn'
 
 
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
+  readonly isSuperFunc: boolean = true
   readonly lines: SprogDefinition[]
   appliedValues: Record<string, any> = {}
 
