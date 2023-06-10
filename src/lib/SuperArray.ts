@@ -136,15 +136,6 @@ export class SuperArray<T = any>
     return this.values.length
   }
 
-  /**
-   * Make definition of item.
-   * It actualy get default array definition and add required: false
-   */
-  get itemDefinition(): SuperItemDefinition {
-    // TODO: remove defaultArray???
-    return { ...this.definition, required: false }
-  }
-
   get allKeys(): number[] {
     return arrayKeys(this.values)
   }
@@ -185,19 +176,12 @@ export class SuperArray<T = any>
     this.values.length = maxLength
 
     for (const itemIndex of (new Array(maxLength)).keys()) {
-      // if index is in range of initalArr then get its item otherwise get from defaultArray
+      // if index is in range of initalArr then get its item
+      // otherwise get from defaultArray
       const value = (itemIndex < initArrLength)
         ? initialArr?.[itemIndex]
         : this.definition.defaultArray?.[itemIndex]
-      const childDefinition: SuperItemDefinition = {
-        type: this.definition.type,
-        default: (this.definition.defaultArray)
-          ? this.definition.defaultArray[itemIndex]
-          : this.definition.default,
-        readonly: this.definition.readonly,
-        nullable: this.definition.nullable,
-        required: false,
-      }
+      const childDefinition = this.makeItemDefinition(itemIndex)
 
       this.values[itemIndex] = this.resolveChildValue(childDefinition, itemIndex, value)
     }
@@ -218,23 +202,8 @@ export class SuperArray<T = any>
   }
 
 
-  /**
-   * Listen only to add, remove or reorder array changes
-   */
-  onArrayChange(handler: () => void): number {
-    return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any) => {
-      if (el === this) handler()
-    })
-  }
-
   isKeyReadonly(key: string | number): boolean {
     return this.isReadOnly
-  }
-
-  getOwnValue(key: number): AllTypes {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-
-    return this.values[key] as any
   }
 
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
@@ -242,7 +211,8 @@ export class SuperArray<T = any>
 
     const index = Number(key)
 
-    this.values[index] = this.resolveChildValue(this.itemDefinition, index, value)
+    // TODO: review makeItemDefinition
+    this.values[index] = this.resolveChildValue(this.makeItemDefinition(index), index, value)
 
     this.emitChildChangeEvent(index)
 
@@ -294,6 +264,35 @@ export class SuperArray<T = any>
   // }
 
   ///// Array specific methods
+
+  // TODO: зачем ???
+  /**
+   * Listen only to add, remove or reorder array changes
+   */
+  onArrayChange(handler: () => void): number {
+    return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any) => {
+      if (el === this) handler()
+    })
+  }
+
+  /**
+   * Make definition of child
+   */
+  makeItemDefinition(itemIndex: number): SuperItemDefinition {
+
+    // TODO: а если потомок массив ???
+
+    return {
+      type: this.definition.type,
+      default: (this.definition.defaultArray)
+        ? this.definition.defaultArray[itemIndex]
+        : this.definition.default,
+      readonly: this.definition.readonly,
+      nullable: this.definition.nullable,
+      required: false,
+    }
+  }
+
   /**
    * Clear item in array but not remove index
    * clearItem(1) [0,1,2] will be [0, empty, 2]

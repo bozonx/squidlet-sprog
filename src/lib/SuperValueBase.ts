@@ -160,7 +160,7 @@ export abstract class SuperValueBase<T = any | any[]>
    * Get only own value not from bottom layer and not deep
    * @param key
    */
-  abstract getOwnValue(key: string | number): AllTypes
+  //abstract getOwnValue(key: string | number): AllTypes
 
   /**
    * Set value to own child, not deeper and not to bottom layer.
@@ -193,6 +193,12 @@ export abstract class SuperValueBase<T = any | any[]>
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
     return deepHas(this.values as any, pathTo)
+  }
+
+  getOwnValue(key: number | string): AllTypes {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
+    return this.values[key as keyof T] as any
   }
 
   /**

@@ -154,12 +154,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
     return def.readonly
   }
 
-  getOwnValue(key: string): AllTypes {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-
-    return this.values[key as keyof T] as any
-  }
-
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false): boolean {
     const name: keyof T = keyStr as any
 
