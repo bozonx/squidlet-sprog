@@ -67,6 +67,7 @@ export function proxifyData(data: SuperData): ProxyfiedData {
     },
 
     set(target: any, prop: string, newValue: any): boolean {
+      // set to me or to bottom layer
       return data.setValue(prop, newValue)
     },
 
@@ -77,7 +78,7 @@ export function proxifyData(data: SuperData): ProxyfiedData {
     ownKeys(): ArrayLike<string | symbol> {
       // to deep functions need that Reflect.ownKeys()
       // get all the keys including bottom layer
-      return data.allKeys as any[]
+      return data.allKeys
     },
   }
 
@@ -131,7 +132,7 @@ export function proxifyLayeredValue(topOwnValues: Record<string, any>, bottomDat
 
 
 export class SuperData<T extends Record<string, any> = Record<string, any>>
-  extends SuperValueBase<Record<string| number, T>>
+  extends SuperValueBase<Record<string, T>>
   implements SuperDataPublic
 {
   readonly isData = true
@@ -155,7 +156,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   /**
    * All the keys of my and bottom layer
    */
-  get allKeys(): (string | number)[] {
+  get allKeys(): string[] {
     return deduplicate([
       ...(this.bottomLayer?.allKeys || []),
       ...this.ownKeys,
@@ -265,7 +266,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     super.$$setParent(parent, myPath)
   }
 
-  isKeyReadonly(key: string | number): boolean {
+  isKeyReadonly(key: string): boolean {
     const def = this.getDefinition(key)
 
     if (!def) {
@@ -314,7 +315,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     if (splat.length === 1) {
       if (
         !this.ownKeys.includes(keyStr)
-        && this.bottomLayer && this.bottomLayer.allKeys.includes(splat[0])
+        && this.bottomLayer && this.bottomLayer.allKeys.includes(keyStr)
       ) {
         // if not own key but layered key
         const lowPath = joinDeepPath([splat[0]])
@@ -444,7 +445,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
     this.events.emit(SUPER_VALUE_EVENTS.definition, DEFAULT_DEFINITION_KEY)
   }
 
-  getDefinition(key: string | number): SuperItemDefinition | undefined {
+  getDefinition(key: string): SuperItemDefinition | undefined {
     if (this.definition[key]) {
       return this.definition[key] || this.defaultDefinition
     }
