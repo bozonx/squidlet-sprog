@@ -2,7 +2,6 @@ import {
   IndexedEventEmitter,
   deepGet,
   deepHas,
-  deepSet,
   deepClone,
   splitDeepPath,
   joinDeepPath,

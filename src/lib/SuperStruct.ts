@@ -1,4 +1,4 @@
-import {AllTypes, SIMPLE_TYPES, SUPER_TYPES, SUPER_VALUES} from '../types/valueTypes.js';
+import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {
   SuperValueBase,
   SUPER_VALUE_PROP,
@@ -37,7 +37,7 @@ export function checkValueBeforeSet(
   ignoreRo: boolean = false
 ) {
   if (!isInitialized) throw new Error(`Init it first`)
-  else if (!definition) throw new Error(`Doesn't have key ${key}`)
+  else if (!definition) throw new Error(`Doesn't have definition for key ${key}`)
   // obviously check it otherwise it will be set to default
   else if (typeof value === 'undefined') {
     throw new Error(`It isn't possible to set undefined to data child`)
@@ -57,21 +57,15 @@ export function checkValueBeforeSet(
 export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
-      if (prop === SUPER_VALUE_PROP) {
-        return struct
-      }
-      else if (STRUCT_PUBLIC_MEMBERS.includes(prop)) {
-        // public super struct prop
-        return (struct as any)[prop]
-      }
+      if (prop === SUPER_VALUE_PROP) return struct
+      // public super struct prop
+      else if (STRUCT_PUBLIC_MEMBERS.includes(prop)) return (struct as any)[prop]
       // else prop or object itself
       return struct.values[prop]
     },
 
     has(target: any, prop: string): boolean {
-      if (prop === SUPER_VALUE_PROP || STRUCT_PUBLIC_MEMBERS.includes(prop)) {
-        return true
-      }
+      if (prop === SUPER_VALUE_PROP || STRUCT_PUBLIC_MEMBERS.includes(prop)) return true
 
       return struct.ownKeys.includes(prop)
     },

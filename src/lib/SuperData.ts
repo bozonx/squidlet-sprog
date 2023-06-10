@@ -27,11 +27,13 @@ import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
 // TODO: makeChildPath не верно отработает если дадут число
-// TODO: можно сортировать ключи, reverse, pop, etc
-// TODO: добавление нового элемента это push
-// TODO: добавить методы array - push, filter и итд
+// TODO: можно сортировать ключи
+// TODO: reverse
+// TODO: добавить методы array - filter, find, map и итд
 // TODO: add ability to delete array value
 // TODO: test batchSet
+// TODO: может сделать allKeys - все ключи (тоже в struct и в array),
+//       а ownKeys только мои (только data)
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -43,7 +45,7 @@ export type ProxyfiedData<T = Record<any, any>> = SuperDataPublic
   & T
 
 
-export const DATA_MEMBERS = [
+export const DATA_PUBLIC_MEMBERS = [
   ...SUPER_PROXY_PUBLIC_MEMBERS,
   'isData',
 ]
@@ -53,19 +55,15 @@ export const DEFAULT_DEFINITION_KEY = '$DEFAULT'
 export function proxifyData(data: SuperData): ProxyfiedData {
   const handler: ProxyHandler<Record<any, any>> = {
     get(target: any, prop: string) {
-      if (prop === SUPER_VALUE_PROP) {
-        return data
-      }
-      else if (DATA_MEMBERS.includes(prop)) {
-        // public super struct prop
-        return (data as any)[prop]
-      }
+      if (prop === SUPER_VALUE_PROP) return data
+      // public super data prop
+      else if (DATA_PUBLIC_MEMBERS.includes(prop)) return (data as any)[prop]
       // else prop or object itself or bottom layer
       return data.values[prop]
     },
 
     has(target: any, prop: string): boolean {
-      if (prop === SUPER_VALUE_PROP || DATA_MEMBERS.includes(prop)) return true
+      if (prop === SUPER_VALUE_PROP || DATA_PUBLIC_MEMBERS.includes(prop)) return true
 
       return data.allKeys.includes(prop)
     },
