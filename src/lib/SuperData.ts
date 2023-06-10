@@ -501,4 +501,97 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     return res
   }
 
+
+  ////////// Array-like mutable methods
+
+  pop() {
+    // TODO: add
+  }
+
+  shift() {
+    // TODO: add
+  }
+
+  /**
+   *
+   * @param value
+   */
+  create(value: AllTypes): symbol {
+    const sym = Symbol()
+
+    // TODO: add
+
+    return sym
+  }
+
+  /**
+   * Create values and make symbols for them
+   * @param value
+   * @param count
+   */
+  fill(value: any, count: number) {
+    // TODO: add
+  }
+
+  reverse() {
+    // TODO: add
+  }
+
+  sort(compareFn?: (a: T, b: T) => number) {
+    // TODO: add
+  }
+
+  //////// Not mutable methods
+
+  filter() {
+    // TODO: add
+  }
+
+  find() {
+    // TODO: add
+  }
+
+  findIndex() {
+    // TODO: add
+  }
+
+  findLast() {
+    // TODO: add
+  }
+
+  findLastIndex() {
+    // TODO: add
+  }
+
+  forEach() {
+    // TODO: add
+  }
+
+  includes() {
+    // TODO: add
+  }
+
+  indexOf() {
+    // TODO: add
+  }
+
+  map() {
+    // TODO: add
+  }
+
+  slice() {
+    // TODO: add
+  }
+
+  reduce() {
+    // TODO: add
+  }
+
+  reduceRight() {
+    // TODO: add
+  }
+
+
+  // TODO: concat ну или както объединить объекты
+
 }

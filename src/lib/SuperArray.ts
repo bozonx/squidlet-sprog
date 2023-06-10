@@ -1,4 +1,4 @@
-import {arrayKeys, spliceItem, omitObj} from 'squidlet-lib';
+import {arrayKeys, omitObj} from 'squidlet-lib';
 import {
   SUPER_PROXY_PUBLIC_MEMBERS,
   SUPER_VALUE_EVENTS,
@@ -9,9 +9,9 @@ import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
-import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {All_TYPES, AllTypes} from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {checkValueBeforeSet, SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
+import {SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 // TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
