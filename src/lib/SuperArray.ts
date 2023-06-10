@@ -202,10 +202,6 @@ export class SuperArray<T = any>
   }
 
 
-  isKeyReadonly(key: string | number): boolean {
-    return this.isReadOnly
-  }
-
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
     if (!this.isInitialized) throw new Error(`Init it first`)
 

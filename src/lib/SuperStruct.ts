@@ -144,16 +144,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
 
-  isKeyReadonly(key: string): boolean {
-    const def = this.getDefinition(key)
-
-    if (!def) {
-      throw new Error(`Struct doesn't have definition of key ${key}`)
-    }
-
-    return def.readonly
-  }
-
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false): boolean {
     const name: keyof T = keyStr as any
 

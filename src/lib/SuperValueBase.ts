@@ -154,7 +154,7 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
 
-  abstract isKeyReadonly(key: string | number): boolean
+  //abstract isKeyReadonly(key: string | number): boolean
 
   /**
    * Get only own value not from bottom layer and not deep
@@ -182,6 +182,16 @@ export abstract class SuperValueBase<T = any | any[]>
 
   unsubscribe = (handlerIndex: number) => {
     this.events.removeListener(handlerIndex, SUPER_VALUE_EVENTS.change)
+  }
+
+  isKeyReadonly(key: string | number): boolean {
+    const def = this.getDefinition(key)
+
+    if (!def) {
+      throw new Error(`Struct doesn't have definition of key ${key}`)
+    }
+
+    return def.readonly
   }
 
   /**

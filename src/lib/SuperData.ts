@@ -267,15 +267,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     super.$$setParent(parent, myPath)
   }
 
-  isKeyReadonly(key: string): boolean {
-    const def = this.getDefinition(key)
-
-    if (!def) {
-      throw new Error(`Data doesn't have definition of key "${key}"`)
-    }
-
-    return def.readonly
-  }
 
   getOwnValue(key: string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
