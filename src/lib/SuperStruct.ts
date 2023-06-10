@@ -143,12 +143,14 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
 
-  isKeyReadonly(key: string | number): boolean {
-    if (!this.definition[key as keyof T]) {
-      throw new Error(`Struct doesn't have key ${key}`)
+  isKeyReadonly(key: string): boolean {
+    const def = this.getDefinition(key)
+
+    if (!def) {
+      throw new Error(`Struct doesn't have definition of key ${key}`)
     }
 
-    return Boolean(this.definition?.[key as keyof T].readonly)
+    return def.readonly
   }
 
   getOwnValue(key: string): AllTypes {
@@ -160,8 +162,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
   setOwnValue(keyStr: string, value: AllTypes, ignoreRo: boolean = false): boolean {
     const name: keyof T = keyStr as any
 
-    this.validateItem(name, value, ignoreRo)
-
+    checkValueBeforeSet(this.isInitialized, this.definition[name], keyStr, value, ignoreRo)
+    // value will be validated inside resolveChildValue
     this.values[name] = this.resolveChildValue(this.definition[name], keyStr, value)
 
     this.emitChildChangeEvent(keyStr)
@@ -170,31 +172,33 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
 
-  // TODO: наверное в default запретить пока super value
-
   /**
    * Set default value or null if the key doesn't have a default value
    * @param key
    */
   toDefaultValue = (key: string) => {
+    const definition = this.getDefinition(key)
+
     if (!this.isInitialized) throw new Error(`Init it first`)
-    else if (!this.definition[key as keyof T]) {
-      throw new Error(`Struct doesn't have key ${key}`)
+    else if (!definition) {
+      throw new Error(`Struct doesn't have definition for key ${key}`)
     }
 
-    let defaultValue = this.definition[key as keyof T].default
+    let defaultValue = definition.default
+
+    // TODO: наверное в default запретить пока super value
 
     // TODO: а если super type??? То надо вызвать default value у него ???
     //       или ничего не делать? Если менять заного то надо дестроить предыдущий
 
     // if no default value then make it from type
     if (
-      Object.keys(SIMPLE_TYPES).includes(this.definition[key as keyof T].type)
+      Object.keys(SIMPLE_TYPES).includes(definition.type)
       && typeof defaultValue === 'undefined'
     ) {
       defaultValue = resolveInitialSimpleValue(
-        this.definition[key as keyof T].type as keyof typeof SIMPLE_TYPES,
-        this.definition[key as keyof T].nullable,
+        definition.type as keyof typeof SIMPLE_TYPES,
+        definition.nullable,
       )
     }
 
@@ -203,6 +207,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   getProxy(): T & ProxyfiedStruct<T> {
     return super.getProxy()
+  }
+
+  getDefinition(keyStr: string): SuperItemDefinition | undefined {
+    const key = keyStr as keyof T
+
+    return this.definition[key]
   }
 
 
@@ -222,14 +232,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     const definition = this.definition[name]
 
     checkValueBeforeSet(this.isInitialized, definition, keyStr, value, ignoreRo)
-
     validateChildValue(definition, name as string, value)
-  }
-
-  getDefinition(keyStr: string): SuperItemDefinition | undefined {
-    const key = keyStr as keyof T
-
-    return this.definition[key]
   }
 
 

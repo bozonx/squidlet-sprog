@@ -276,13 +276,14 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     return this.ownValues[key] as any
   }
 
-  setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean): boolean {
+  setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false): boolean {
+    // get only own definition or default one
     const definition = (this.definition[key])
       ? (this.definition[key])
       : this.defaultDefinition
 
     checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
-
+    // value will be validated inside resolveChildValue
     this.ownValues[key] = this.resolveChildValue(definition!, key, value)
 
     if (!this.ownOrderedKeys.includes(key)) this.ownOrderedKeys.push(key)
@@ -339,9 +340,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       throw new Error(`Data doesn't have definition for key "${key}"`)
     }
 
-    if (
-      Object.keys(SIMPLE_TYPES).includes(definition.type)
-    ) {
+    if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
       let defaultValue = definition.default
 
       if (typeof defaultValue === 'undefined') {
@@ -372,6 +371,20 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     return deepClone(this.makeOrderedObject())
+  }
+
+  /**
+   * Get own definition or own default definition or bottom definition
+   * @param key
+   */
+  getDefinition(key: string): SuperItemDefinition | undefined {
+    if (this.definition[key]) {
+      return this.definition[key] || this.defaultDefinition
+    }
+    else if (this.bottomLayer) {
+      // TODO: если есть default definition то до сюда не дойдёт
+      return this.bottomLayer.getDefinition(key)
+    }
   }
 
   /////// Data specific
@@ -437,15 +450,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     this.define(DEFAULT_DEFINITION_KEY, definition)
 
     this.events.emit(SUPER_VALUE_EVENTS.definition, DEFAULT_DEFINITION_KEY)
-  }
-
-  getDefinition(key: string): SuperItemDefinition | undefined {
-    if (this.definition[key]) {
-      return this.definition[key] || this.defaultDefinition
-    }
-    else if (this.bottomLayer) {
-      return this.bottomLayer.getDefinition(key)
-    }
   }
 
   /**

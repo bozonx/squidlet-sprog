@@ -147,7 +147,7 @@ export function checkValueBeforeSet(
   definition: SuperItemDefinition | undefined,
   key: string,
   value?: AllTypes,
-  ignoreRo: boolean = false
+  ignoreRo?: boolean
 ) {
   if (!isInitialized) throw new Error(`Init it first`)
   else if (!definition) throw new Error(`Doesn't have definition for key ${key}`)

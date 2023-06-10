@@ -284,6 +284,10 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return super.getProxy()
   }
 
+  getDefinition(index: number): SuperItemDefinition | undefined {
+    return this.definition as SuperItemDefinition
+  }
+
   ///// Array specific methods
   /**
    * Clear item in array but not remove index
@@ -317,10 +321,6 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     // TODO: в тестах не учавствует
     spliceItem(this.values, index)
     this.emitChildChangeEvent(index)
-  }
-
-  getDefinition(index: number): SuperItemDefinition | undefined {
-    return this.definition as SuperItemDefinition
   }
 
 
