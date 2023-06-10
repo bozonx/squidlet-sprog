@@ -390,7 +390,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     }
   }
 
-  /////// Data specific
+  /////// Data specific methods
 
   // TODO: test
   validateItem(key: string, value?: AllTypes, ignoreRo?: boolean) {

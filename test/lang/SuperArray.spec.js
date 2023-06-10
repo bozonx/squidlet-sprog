@@ -63,8 +63,8 @@ describe('SuperArray', () => {
     assert.throws(() => arr.setOwnValue(0, 6))
     assert.throws(() => arr.toDefaultValue(0))
     // array specific
-    assert.throws(() => arr.clearItem(0))
-    assert.throws(() => arr.deleteItem(0))
+    assert.throws(() => arr.clearIndex(0))
+    assert.throws(() => arr.deleteIndex(0))
     assert.throws(() => arr.push(1))
     assert.throws(() => arr.pop())
     assert.throws(() => arr.shift())
@@ -232,6 +232,82 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
+  it(`clearIndex`, async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'string',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init(['a', 'b'])
+
+    arr.$super.clearIndex(0)
+    assert.deepEqual(arr, [undefined, 'b'])
+    spy.should.have.been.calledTwice
+  })
+
+  it(`clearValue`, async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'string',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init(['a', 'b'])
+
+    arr.$super.clearValue('a')
+    assert.deepEqual(arr, [undefined, 'b'])
+    spy.should.have.been.calledTwice
+  })
+
+  it(`deleteIndex`, async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'string',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init(['a', 'b'])
+
+    arr.$super.deleteIndex(0)
+    assert.deepEqual(arr, ['b'])
+    spy.should.have.been.calledTwice
+  })
+
+  it(`deleteValue`, async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'string',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init(['a', 'b'])
+
+    arr.$super.deleteValue('a')
+    assert.deepEqual(arr, ['b'])
+    spy.should.have.been.calledTwice
+  })
+
   it('little methods', async () => {
     const scope = newScope()
     const spy = sinon.spy()
@@ -271,6 +347,9 @@ describe('SuperArray', () => {
 
 
   })
+
+
+  // TODO: test onArrayChange()
 
   // TODO: children - simple objects and array - check deepness and changes of them
   // TODO: обычная ф-я ???

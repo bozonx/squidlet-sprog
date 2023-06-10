@@ -10,9 +10,11 @@ import {
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
 import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
-import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
-import {checkValueBeforeSet, SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {SUPER_VALUE_PROP} from './superValueHelpers.js';
+
+
+// TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
 
 
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
@@ -25,8 +27,10 @@ export interface SuperArrayPublic extends SuperValuePublic {
   isArray: boolean
   isReadOnly: boolean
   length: number
-  clearItem(index: number): void
-  deleteItem(index: number, ignoreRo?: boolean): void
+  clearIndex(index: number): void
+  clearValue(value: any): void
+  deleteIndex(index: number): void
+  deleteValue(value: any): void
 
   push(...items: any[]): number
   pop(): any | undefined
@@ -231,23 +235,22 @@ export class SuperArray<T = any>
 
   ///// Array specific methods
 
-  // TODO: зачем ???
   /**
    * Listen only to add, remove or reorder array changes
    */
   onArrayChange(handler: () => void): number {
-    return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any) => {
-      if (el === this) handler()
+    return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any, path?: string) => {
+      if (el === this && path === this.myPath) handler()
     })
   }
 
   /**
-   * Clear item in array but not remove index
+   * Clear item in array by index but not remove index
    * clearItem(1) [0,1,2] will be [0, empty, 2]
    * getting of arr[1] will return undefined
    * @param index
    */
-  clearItem = (index: number) => {
+  clearIndex = (index: number) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
@@ -258,21 +261,59 @@ export class SuperArray<T = any>
     this.emitChildChangeEvent(index)
   }
 
-  // TODO: rename to forget ???
+  /**
+   * Clear item in array by value but not remove index
+   * clearItem(1) [0,1,2] will be [0, empty, 2]
+   * getting of arr[1] will return undefined
+   * @param value
+   */
+  clearValue = (value: any) => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (this.isReadOnly) {
+      throw new Error(`Can't delete item from readonly array`)
+    }
+
+    const index = this.values.indexOf(value)
+
+    if (index < 0) return
+
+    delete this.values[index]
+
+    this.emitChildChangeEvent(index)
+  }
+
   /**
    * Delete item and splice an array
    * deleteItem(1) [0,1,2] will be [0,2]
    * @param index
-   * @param ignoreRo
    */
-  deleteItem = (index: number, ignoreRo: boolean = false) => {
+  deleteIndex = (index: number) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
-    else if (!ignoreRo && this.isReadOnly) {
+    else if (this.isReadOnly) {
       throw new Error(`Can't delete item from readonly array`)
     }
 
-    // TODO: в тестах не учавствует
-    spliceItem(this.values, index)
+    this.values.splice(index, 1)
+    this.emitChildChangeEvent(index)
+  }
+
+  /**
+   * Delete item and splice an array
+   * deleteItem(1) [0,1,2] will be [0,2]
+   * @param value
+   */
+  deleteValue = (value: any) => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (this.isReadOnly) {
+      throw new Error(`Can't delete item from readonly array`)
+    }
+
+    const index = this.values.indexOf(value)
+
+    if (index < 0) return
+
+    this.values.splice(index, 1)
+
     this.emitChildChangeEvent(index)
   }
 
