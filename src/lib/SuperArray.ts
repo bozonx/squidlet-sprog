@@ -323,6 +323,8 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     this.emitChildChangeEvent(index)
   }
 
+  // TODO: add validateItem()
+
 
   ////// Standard methods
   // Methods which are mutate an array: push, pop, shift, unshift, fill, splice, reverse, sort

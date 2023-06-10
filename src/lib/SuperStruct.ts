@@ -227,12 +227,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
   // TODO: test
-  validateItem(name: keyof T, value?: AllTypes, ignoreRo?: boolean) {
-    const keyStr = name as string
-    const definition = this.definition[name]
+  validateItem(key: keyof T, value?: AllTypes, ignoreRo?: boolean) {
+    const keyStr = key as string
+    const definition = this.definition[key]
 
     checkValueBeforeSet(this.isInitialized, definition, keyStr, value, ignoreRo)
-    validateChildValue(definition, name as string, value)
+    validateChildValue(definition, keyStr, value)
   }
 
 

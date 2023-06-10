@@ -19,7 +19,13 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
-import {checkDefinition, checkValueBeforeSet, prepareDefinitionItem, SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {
+  checkDefinition,
+  checkValueBeforeSet,
+  prepareDefinitionItem,
+  SUPER_VALUE_PROP,
+  validateChildValue
+} from './superValueHelpers.js';
 
 
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
@@ -395,6 +401,16 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     for (const key of Object.keys(values)) {
       this.setOwnValue(key, values[key])
     }
+  }
+
+  // TODO: test
+  validateItem(key: string, value?: AllTypes, ignoreRo?: boolean) {
+    const definition = (this.definition[key])
+      ? (this.definition[key])
+      : this.defaultDefinition
+
+    checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
+    validateChildValue(definition, key, value)
   }
 
   /**

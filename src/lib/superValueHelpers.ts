@@ -100,7 +100,7 @@ export function resolveNotSuperChild(
 
 // TODO: почему только в struct а не в data??
 export function validateChildValue(
-  definition: SuperItemDefinition,
+  definition: SuperItemDefinition | undefined,
   childKeyOrIndex: string | number,
   value?: any
 ) {
