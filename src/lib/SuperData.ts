@@ -35,6 +35,7 @@ import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 // TODO: добавить методы array - filter, find, map и итд
 // TODO: add ability to delete array value
 // TODO: test batchSet
+// TODO: можно добавить метод create() он создаст значение с символом и вернёт символ
 
 
 export interface SuperDataPublic extends SuperValuePublic {
