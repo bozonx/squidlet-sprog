@@ -131,8 +131,8 @@ export function proxifyLayeredValue(topOwnValues: Record<string, any>, bottomDat
 }
 
 
-export class SuperData<T extends Record<string, any> = Record<string, any>>
-  extends SuperValueBase<Record<string, T>>
+export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTypes>>
+  extends SuperValueBase<T>
   implements SuperDataPublic
 {
   readonly isData = true
@@ -140,7 +140,7 @@ export class SuperData<T extends Record<string, any> = Record<string, any>>
   readonly ownValues: Record<string, any> = {}
   // proxy which allows to manipulate with all layers. Do not use it at all.
   // it only for getValue and setValue and other inner methods.
-  readonly values: Record<string, any>
+  readonly values: T
   readonly defaultRo: boolean
   readonly bottomLayer?: SuperData
   protected proxyFn = proxifyData
