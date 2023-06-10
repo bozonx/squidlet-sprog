@@ -13,7 +13,6 @@ import {All_TYPES, AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {SUPER_VALUE_PROP} from './superValueHelpers.js';
-import {DATA_PUBLIC_MEMBERS} from './SuperData.js';
 
 
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
@@ -119,7 +118,10 @@ export function proxifyArray(arr: SuperArray): ProxyfiedArray {
 }
 
 
-export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArrayPublic {
+export class SuperArray<T = any>
+  extends SuperValueBase<T[]>
+  implements SuperArrayPublic
+{
   readonly isArray = true
   readonly values: T[] = []
   protected proxyFn = proxifyArray
@@ -134,7 +136,12 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return this.values.length
   }
 
+  /**
+   * Make definition of item.
+   * It actualy get default array definition and add required: false
+   */
   get itemDefinition(): SuperItemDefinition {
+    // TODO: remove defaultArray???
     return { ...this.definition, required: false }
   }
 
@@ -143,16 +150,20 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
 
-  constructor(definition: Partial<SuperArrayDefinition>) {
+  constructor(
+    definition?: Partial<SuperArrayDefinition>,
+    defaultRo: boolean = false,
+  ) {
     super()
-
-    // TODO: разрешить не указывать definition - тогда будет просто {type: 'any'}
 
     this.checkDefinition(definition)
 
     this.definition = {
       ...omitObj(DEFAULT_INIT_SUPER_DEFINITION, 'required'),
       ...definition,
+      readonly: (typeof definition?.readonly === 'undefined')
+        ? defaultRo
+        : definition.readonly
     } as SuperArrayDefinition
   }
 
@@ -161,9 +172,7 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
    * It returns setter for readonly params
    */
   init = (initialArr?: T[]): ((index: number, item: AllTypes) => void) => {
-    if (this.inited) {
-      throw new Error(`The array has been already initialized`)
-    }
+    if (this.inited) throw new Error(`The array has been already initialized`)
 
     this.events.emit(SUPER_VALUE_EVENTS.initStart)
 
@@ -470,7 +479,11 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
   }
 
 
-  private checkDefinition(definition: Partial<SuperArrayDefinition>) {
+  // TODO: можно сделать функцией
+  // TODO: повторяет checkDefinition()
+  private checkDefinition(definition?: Partial<SuperArrayDefinition>) {
+    if (!definition) return
+
     const {
       type,
       default: defaultValue,
