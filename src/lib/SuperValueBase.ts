@@ -250,6 +250,15 @@ export abstract class SuperValueBase<T = any | any[]>
     }
   }
 
+  // TODO: test
+  batchSet(values?: T) {
+    if (!values) return
+
+    for (const key of Object.keys(values)) {
+      this.setOwnValue(key, (values as any)[key])
+    }
+  }
+
   // TODO: review - нужно учитывать что тот элемент может задестроиться
   // TODO: если задестроится external элемент то у нас ещё link останется - это плохо
   //       тогда либо надо проверять в событии живой ли элемент

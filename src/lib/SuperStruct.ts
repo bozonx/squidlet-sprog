@@ -184,25 +184,26 @@ export class SuperStruct<T = Record<string, AllTypes>>
       throw new Error(`Struct doesn't have definition for key ${key}`)
     }
 
-    let defaultValue = definition.default
+    if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+      let defaultValue = definition.default
 
-    // TODO: наверное в default запретить пока super value
-
-    // TODO: а если super type??? То надо вызвать default value у него ???
-    //       или ничего не делать? Если менять заного то надо дестроить предыдущий
-
-    // if no default value then make it from type
-    if (
-      Object.keys(SIMPLE_TYPES).includes(definition.type)
-      && typeof defaultValue === 'undefined'
-    ) {
-      defaultValue = resolveInitialSimpleValue(
-        definition.type as keyof typeof SIMPLE_TYPES,
-        definition.nullable,
-      )
+      if (typeof defaultValue === 'undefined') {
+        // if no default value then make it from type
+        defaultValue = resolveInitialSimpleValue(
+          definition.type as keyof typeof SIMPLE_TYPES,
+          definition.nullable,
+        )
+      }
+      // set default value to simple child
+      this.setOwnValue(key, defaultValue)
     }
-
-    this.setOwnValue(key, defaultValue)
+    else {
+      // some super types and other types
+      if ((this.values[key as keyof T] as SuperValueBase)?.toDefaults) {
+        (this.values[key as keyof T] as SuperValueBase).toDefaults()
+      }
+      // if doesn't have toDefaults() then do nothing
+    }
   }
 
   getProxy(): T & ProxyfiedStruct<T> {
@@ -215,18 +216,8 @@ export class SuperStruct<T = Record<string, AllTypes>>
     return this.definition[key]
   }
 
-
   /////// Struct specific
-  // TODO: test
-  batchSet(values?: T) {
-    if (!values) return
 
-    for (const key of Object.keys(values)) {
-      this.setOwnValue(key, (values as any)[key])
-    }
-  }
-
-  // TODO: test
   validateItem(key: keyof T, value?: AllTypes, ignoreRo?: boolean) {
     const keyStr = key as string
     const definition = this.definition[key]

@@ -349,6 +349,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
       let defaultValue = definition.default
 
+      // some simple type
       if (typeof defaultValue === 'undefined') {
         // if no default value then make it from type
         defaultValue = resolveInitialSimpleValue(
@@ -360,10 +361,11 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       this.setOwnValue(key, defaultValue)
     }
     else {
+      // some super types and other types
 
       // TODO: а должна быть поддержка нижнего слоя ???
       // TODO: может toDefaults() должен учитывать нижний слой ??
-      // some super types
+
       if (this.ownValues[key]?.toDefaults) this.ownValues[key].toDefaults()
       // if doesn't have toDefaults() then do nothing
     }
@@ -394,14 +396,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   }
 
   /////// Data specific
-
-  batchSet(values?: Record<string, any>) {
-    if (!values) return
-
-    for (const key of Object.keys(values)) {
-      this.setOwnValue(key, values[key])
-    }
-  }
 
   // TODO: test
   validateItem(key: string, value?: AllTypes, ignoreRo?: boolean) {

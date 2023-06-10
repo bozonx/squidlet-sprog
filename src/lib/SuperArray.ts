@@ -288,6 +288,15 @@ export class SuperArray<T = any> extends SuperValueBase<T[]> implements SuperArr
     return this.definition as SuperItemDefinition
   }
 
+  // TODO: переделать под array
+  // batchSet(values?: Record<string, any>) {
+  //   if (!values) return
+  //
+  //   for (const key of Object.keys(values)) {
+  //     this.setOwnValue(key, values[key])
+  //   }
+  // }
+
   ///// Array specific methods
   /**
    * Clear item in array but not remove index
