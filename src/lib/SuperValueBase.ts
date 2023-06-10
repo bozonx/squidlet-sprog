@@ -507,6 +507,7 @@ export abstract class SuperValueBase<T = any | any[]>
     this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
   }
 
+  // TODO: впринципе можно вынести в отдельную ф-ю
   /**
    * Resolve onw child value according the definition and init it.
    * It is called in init(), setOwnValue() and define()

@@ -152,7 +152,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     return this.definition[DEFAULT_DEFINITION_KEY]
   }
 
-
   /**
    * All the keys of my and bottom layer
    */
@@ -164,7 +163,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   }
 
   /**
-   * Keys only of me, not low layer and not children's
+   * Keys only of me, not bottom layer and not children's
    */
   get ownKeys(): string[] {
     return [...this.ownOrderedKeys]
@@ -208,9 +207,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
 
 
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
-    if (this.inited) {
-      throw new Error(`The struct has been already initialized`)
-    }
+    if (this.inited) throw new Error(`The data has been already initialized`)
 
     this.events.emit(SUPER_VALUE_EVENTS.initStart)
 

@@ -125,9 +125,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
    * It returns setter for readonly params
    */
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
-    if (this.inited) {
-      throw new Error(`The struct has been already initialized`)
-    }
+    if (this.inited) throw new Error(`The struct has been already initialized`)
 
     this.events.emit(SUPER_VALUE_EVENTS.initStart)
 
