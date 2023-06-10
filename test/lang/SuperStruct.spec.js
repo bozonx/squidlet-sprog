@@ -49,7 +49,7 @@ describe('SuperStruct', () => {
     // from struct
     assert.throws(() => struct.getOwnValue('p1'))
     assert.throws(() => struct.setOwnValue('p1', 7))
-    assert.throws(() => struct.toDefaultValue('p1'))
+    assert.throws(() => struct.$super.toDefaultValue('p1'))
   })
 
   it('check definition', async () => {
@@ -279,7 +279,7 @@ describe('SuperStruct', () => {
 
     assert.deepEqual(struct, {p1: 1})
 
-    struct.toDefaultValue('p1')
+    struct.$super.toDefaultValue('p1')
 
     assert.deepEqual(struct, {p1: 0})
   })

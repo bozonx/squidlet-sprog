@@ -206,7 +206,7 @@ describe('SuperArray', () => {
     arr.$super.init([6])
 
     assert.deepEqual(arr, [6])
-    arr.toDefaultValue(0)
+    arr.$super.toDefaultValue(0)
     assert.deepEqual(arr, [5])
     spy.should.have.been.calledTwice
   })
@@ -227,7 +227,7 @@ describe('SuperArray', () => {
     arr.$super.init([6])
 
     assert.deepEqual(arr, [6])
-    arr.toDefaultValue(0)
+    arr.$super.toDefaultValue(0)
     assert.deepEqual(arr, [0])
     spy.should.have.been.calledTwice
   })

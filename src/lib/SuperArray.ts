@@ -209,12 +209,11 @@ export class SuperArray<T = any>
    * Set default value of array or undefined if there isn't any default value
    * @param index
    */
-  toDefaultValue = (index: number) => {
+  toDefaultValue(index: number) {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    let defaultValue = (this.definition.defaultArray)
-      ? this.definition.defaultArray[index]
-      : this.definition.default
+    const definition = this.getDefinition(index)
+    let defaultValue = definition.default
 
     // TODO: а если super type??? То надо вызвать default value у него ???
     //       или ничего не делать? Если менять заного то надо дестроить предыдущий

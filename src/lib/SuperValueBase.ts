@@ -28,7 +28,6 @@ export interface SuperValuePublic {
   getValue(pathTo: string): AllTypes | undefined
   setValue(pathTo: string, newValue: AllTypes): void
   setNull(pathTo: string): void
-  toDefaultValue(key: string | number): void
 }
 
 export interface SuperLinkItem {
@@ -49,7 +48,6 @@ export const SUPER_PROXY_PUBLIC_MEMBERS = [
   'getValue',
   'setValue',
   'setNull',
-  'toDefaultValue',
   'subscribe',
 ]
 

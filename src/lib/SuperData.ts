@@ -329,7 +329,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    * Set default value or null if the key doesn't have a default value
    * @param key
    */
-  toDefaultValue = (key: string) => {
+  toDefaultValue(key: string) {
     const definition = (this.definition[key])
       ? (this.definition[key])
       : this.defaultDefinition

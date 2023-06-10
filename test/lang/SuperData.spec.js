@@ -52,7 +52,7 @@ describe('SuperData', () => {
     // from data
     assert.throws(() => data.getOwnValue('p1'))
     assert.throws(() => data.setOwnValue('p1', 7))
-    assert.throws(() => data.toDefaultValue('p1'))
+    assert.throws(() => data.$super.toDefaultValue('p1'))
 
     // TODO: add data specific
   })
@@ -293,7 +293,7 @@ describe('SuperData', () => {
 
     assert.deepEqual(data, {p1: 1})
 
-    data.toDefaultValue('p1')
+    data.$super.toDefaultValue('p1')
 
     assert.deepEqual(data, {p1: 0})
   })
@@ -780,7 +780,6 @@ describe('SuperData', () => {
 
   // TODO: test removeChildListeners()
   // TODO: test all the events
-  // TODO: test toDefaultValue
   // TODO: test toDefaultValue when child is super data
   // TODO: test batchSet
   // TODO: test array like
