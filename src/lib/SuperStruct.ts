@@ -144,40 +144,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
 
-  /**
-   * Set default value or null if the key doesn't have a default value
-   * @param key
-   */
-  toDefaultValue(key: string) {
-    const definition = this.getDefinition(key)
-
-    if (!this.isInitialized) throw new Error(`Init it first`)
-    else if (!definition) {
-      throw new Error(`Struct doesn't have definition for key ${key}`)
-    }
-
-    if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      let defaultValue = definition.default
-
-      if (typeof defaultValue === 'undefined') {
-        // if no default value then make it from type
-        defaultValue = resolveInitialSimpleValue(
-          definition.type as keyof typeof SIMPLE_TYPES,
-          definition.nullable,
-        )
-      }
-      // set default value to simple child
-      this.setOwnValue(key, defaultValue)
-    }
-    else {
-      // some super types and other types
-      if ((this.values[key as keyof T] as SuperValueBase)?.toDefaults) {
-        (this.values[key as keyof T] as SuperValueBase).toDefaults()
-      }
-      // if doesn't have toDefaults() then do nothing
-    }
-  }
-
   getProxy(): T & ProxyfiedStruct<T> {
     return super.getProxy()
   }

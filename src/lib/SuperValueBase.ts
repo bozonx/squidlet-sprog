@@ -9,7 +9,7 @@ import {
 } from 'squidlet-lib';
 import {
   AllTypes,
-  ProxifiedSuperValue,
+  ProxifiedSuperValue, SIMPLE_TYPES,
   SimpleType,
   SUPER_VALUES
 } from '../types/valueTypes.js';
@@ -21,6 +21,7 @@ import {
   validateChildValue,
   isSuperValue, checkValueBeforeSet
 } from './superValueHelpers.js';
+import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
 
 export interface SuperValuePublic {
@@ -161,8 +162,6 @@ export abstract class SuperValueBase<T = any | any[]>
   //abstract getOwnValue(key: string | number): AllTypes
 
 
-  abstract toDefaultValue(key: string | number): void
-
   abstract getDefinition(key: string | number): SuperItemDefinition | undefined
 
   subscribe = (handler: SuperChangeHandler): number => {
@@ -274,6 +273,40 @@ export abstract class SuperValueBase<T = any | any[]>
   toDefaults() {
     for (const key of this.allKeys) {
       this.toDefaultValue(key)
+    }
+  }
+
+  /**
+   * Set default value or null if the key doesn't have a default value
+   * @param key
+   */
+  toDefaultValue(key: string | number) {
+    const definition = this.getDefinition(key)
+
+    if (!this.isInitialized) throw new Error(`Init it first`)
+    else if (!definition) {
+      throw new Error(`Struct doesn't have definition for key ${key}`)
+    }
+
+    if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+      let defaultValue = definition.default
+
+      if (typeof defaultValue === 'undefined') {
+        // if no default value then make it from type
+        defaultValue = resolveInitialSimpleValue(
+          definition.type as keyof typeof SIMPLE_TYPES,
+          definition.nullable,
+        )
+      }
+      // set default value to simple child
+      this.setOwnValue(key, defaultValue)
+    }
+    else {
+      // some super types and other types
+      if ((this.values[key as keyof T] as SuperValueBase)?.toDefaults) {
+        (this.values[key as keyof T] as SuperValueBase).toDefaults()
+      }
+      // if doesn't have toDefaults() then do nothing
     }
   }
 

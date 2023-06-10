@@ -334,6 +334,8 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       ? (this.definition[key])
       : this.defaultDefinition
 
+    // TODO: во много похоже на SuperValueBase
+
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (!definition) {
       throw new Error(`Data doesn't have definition for key "${key}"`)

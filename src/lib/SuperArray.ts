@@ -205,32 +205,6 @@ export class SuperArray<T = any>
     return super.setOwnValue(Number(keyStr), value, ignoreRo)
   }
 
-  /**
-   * Set default value of array or undefined if there isn't any default value
-   * @param index
-   */
-  toDefaultValue(index: number) {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-
-    const definition = this.getDefinition(index)
-    let defaultValue = definition.default
-
-    // TODO: а если super type??? То надо вызвать default value у него ???
-    //       или ничего не делать? Если менять заного то надо дестроить предыдущий
-
-    if (
-      Object.keys(SIMPLE_TYPES).includes(this.definition.type)
-      && typeof defaultValue === 'undefined'
-    ) {
-      defaultValue = resolveInitialSimpleValue(
-        this.definition.type as keyof typeof SIMPLE_TYPES,
-        this.definition.nullable
-      )
-    }
-
-    this.setOwnValue(index, defaultValue)
-  }
-
   getProxy(): ProxyfiedArray<T> {
     return super.getProxy()
   }
