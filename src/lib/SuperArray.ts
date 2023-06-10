@@ -180,28 +180,27 @@ export class SuperArray<T = any>
     const initArrLength = initialArr?.length || 0
     const defaultArrLength = this.definition.defaultArray?.length || 0
     const maxLength: number = Math.max(initArrLength, defaultArrLength)
-    const indexArr = (new Array(maxLength)).fill(true)
     // Any way set length to remove odd items. Actually init is allowed to run only once
     // so there should aren't any initialized super values in the rest of array
     this.values.length = maxLength
 
-    indexArr.forEach((el: true, index: number) => {
+    for (const itemIndex of (new Array(maxLength)).keys()) {
       // if index is in range of initalArr then get its item otherwise get from defaultArray
-      const value = (index < initArrLength)
-        ? initialArr?.[index]
-        : this.definition.defaultArray?.[index]
+      const value = (itemIndex < initArrLength)
+        ? initialArr?.[itemIndex]
+        : this.definition.defaultArray?.[itemIndex]
       const childDefinition: SuperItemDefinition = {
         type: this.definition.type,
         default: (this.definition.defaultArray)
-          ? this.definition.defaultArray[index]
+          ? this.definition.defaultArray[itemIndex]
           : this.definition.default,
         readonly: this.definition.readonly,
         nullable: this.definition.nullable,
         required: false,
       }
 
-      this.values[index] = this.resolveChildValue(childDefinition, index, value)
-    })
+      this.values[itemIndex] = this.resolveChildValue(childDefinition, itemIndex, value)
+    }
 
     return super.init()
   }
