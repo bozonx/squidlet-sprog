@@ -13,6 +13,7 @@ import {
 } from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {SuperArrayDefinition} from './SuperArray.js';
 
 
 export const SUPER_VALUE_PROP = '$super'
@@ -37,7 +38,9 @@ export function prepareDefinitionItem(
   }
 }
 
-export function checkDefinition(definition: SuperItemInitDefinition) {
+export function checkDefinition(definition?: SuperItemInitDefinition) {
+  if (!definition) return
+
   const {
     type,
     required,
@@ -63,6 +66,30 @@ export function checkDefinition(definition: SuperItemInitDefinition) {
       `Default value ${defaultValue} doesn't meet type: ${type}`
     )
   }
+}
+
+export function checkArrayDefinition(definition?: Partial<SuperArrayDefinition>) {
+  if (!definition) return
+
+  const {
+    type,
+    default: defaultValue,
+    defaultArray,
+    nullable,
+  } = definition
+
+  if (defaultArray) {
+    if (!Array.isArray(defaultArray)) {
+      throw new Error(`defaultArray has to be an array`)
+    }
+    else if (
+      defaultArray.findIndex((el) => !isCorrespondingType(el, type, nullable)) >= 0
+    ) {
+      throw new Error(`wrong defaultArray`)
+    }
+  }
+
+  checkDefinition(definition as SuperItemInitDefinition)
 }
 
 /**

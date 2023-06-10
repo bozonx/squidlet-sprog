@@ -9,9 +9,8 @@ import {
   DEFAULT_INIT_SUPER_DEFINITION,
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
-import {All_TYPES, AllTypes} from '../types/valueTypes.js';
-import {isCorrespondingType} from './isCorrespondingType.js';
-import {SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {AllTypes} from '../types/valueTypes.js';
+import {checkArrayDefinition, SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 // TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
@@ -151,7 +150,7 @@ export class SuperArray<T = any>
   ) {
     super()
 
-    this.checkDefinition(definition)
+    checkArrayDefinition(definition)
 
     this.definition = {
       ...omitObj(DEFAULT_INIT_SUPER_DEFINITION, 'required'),
@@ -461,46 +460,6 @@ export class SuperArray<T = any>
    */
   protected myRoSetter = (index: number, newValue: AllTypes) => {
     this.setOwnValue(index, newValue, true)
-  }
-
-
-  // TODO: можно сделать функцией
-  // TODO: повторяет checkDefinition()
-  private checkDefinition(definition?: Partial<SuperArrayDefinition>) {
-    if (!definition) return
-
-    const {
-      type,
-      default: defaultValue,
-      defaultArray,
-      nullable,
-      readonly,
-    } = definition
-
-    if (type && !Object.keys(All_TYPES).includes(type)) {
-      throw new Error(`Wrong type of SuperArray child: ${type}`)
-    }
-    else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
-      throw new Error(`nullable has to be boolean`)
-    }
-    else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
-      throw new Error(`readonly has to be boolean`)
-    }
-    else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
-      throw new Error(
-        `Default value ${defaultValue} of SuperArray doesn't meet type: ${type}`
-      )
-    }
-    else if (defaultArray) {
-      if (!Array.isArray(defaultArray)) {
-        throw new Error(`defaultArray has to be an array`)
-      }
-      else if (
-        defaultArray.findIndex((el) => !isCorrespondingType(el, type, nullable)) >= 0
-      ) {
-        throw new Error(`wrong defaultArray`)
-      }
-    }
   }
 
 }
