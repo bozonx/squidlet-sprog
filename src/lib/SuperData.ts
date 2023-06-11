@@ -8,7 +8,7 @@ import {
   joinDeepPath,
 } from 'squidlet-lib';
 import {
-  SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
+  SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
   SuperValueBase,
   SuperValuePublic,
 } from './SuperValueBase.js';
@@ -26,6 +26,7 @@ import {
 } from './superValueHelpers.js';
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {ProxyfiedSuperBase} from './SuperBase.js';
 
 
 // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
@@ -48,7 +49,7 @@ export type ProxyfiedData<T = Record<any, any>> = SuperDataPublic
 
 
 export const DATA_PUBLIC_MEMBERS = [
-  ...SUPER_PROXY_PUBLIC_MEMBERS,
+  ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
   'isData',
 ]
 export const DEFAULT_DEFINITION_KEY = '$DEFAULT'
@@ -260,7 +261,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     }
   }
 
-  $$setParent(parent: SuperValueBase, myPath: string) {
+  $$setParent(parent: ProxyfiedSuperBase, myPath: string) {
     if (this.bottomLayer) {
       throw new Error(`It doesn't support to set parent to layered SuperData`)
     }

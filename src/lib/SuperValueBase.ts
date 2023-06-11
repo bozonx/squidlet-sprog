@@ -16,7 +16,7 @@ import {
   SUPER_VALUES
 } from '../types/valueTypes.js';
 import {SuperItemDefinition} from '../types/SuperItemDefinition.js';
-import {SuperBase} from './SuperBase.js';
+import {ProxyfiedSuperBase, SUPER_BASE_PROXY_PUBLIC_MEMBERS, SuperBase, SuperBasePublic} from './SuperBase.js';
 import {
   resolveNotSuperChild,
   SUPER_VALUE_PROP,
@@ -26,7 +26,7 @@ import {
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
 
-export interface SuperValuePublic {
+export interface SuperValuePublic extends SuperBasePublic {
   isSuperValue: boolean
   getValue(pathTo: string): AllTypes | undefined
   setValue(pathTo: string, newValue: AllTypes): void
@@ -47,7 +47,8 @@ export interface SuperLinkItem {
   myHandlerIndex: number
 }
 
-export const SUPER_PROXY_PUBLIC_MEMBERS = [
+export const SUPER_VALUE_PROXY_PUBLIC_MEMBERS = [
+  ...SUPER_BASE_PROXY_PUBLIC_MEMBERS,
   'isSuperValue',
   'getValue',
   'setValue',
@@ -109,22 +110,20 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   destroy() {
-    if (this.parent && this.myPath) {
-      const pathSplat = splitDeepPath(this.myPath)
-      const myKey = lastItem(pathSplat)
-      const myDefInParent: SuperItemDefinition | undefined = this.parent.$super.getDefinition(myKey)
+    const myKey = this.myKeyOfParent
+    const myDefInParent: SuperItemDefinition | undefined = this.parent
+      && this.parent.$super.getDefinition(myKey)
 
-      if (myDefInParent) {
-        if (myDefInParent.required) {
-          throw new Error(
-            `Can't destroy child "${this.myPath}" because it is required on parent`
-          )
-        }
-        else if (!myDefInParent.nullable) {
-          throw new Error(
-            `Can't destroy child "${this.myPath}" because it is not nullable on parent`
-          )
-        }
+    if (myDefInParent) {
+      if (myDefInParent.required) {
+        throw new Error(
+          `Can't destroy child "${this.myPath}" because it is required on parent`
+        )
+      }
+      else if (!myDefInParent.nullable) {
+        throw new Error(
+          `Can't destroy child "${this.myPath}" because it is not nullable on parent`
+        )
       }
     }
 
@@ -143,11 +142,10 @@ export abstract class SuperValueBase<T = any | any[]>
 
     this.events.destroy()
 
-    // else if (myDefInParent.nullable) {
-    //   // TODO: а усли nullable - надо установить null ???
-    // }
-    // TODO: удалить себя у родителя
-    // TODO: запретить дестрой если нарушится целостность у родителя - required, struct
+    if (myDefInParent) {
+      // as we realized before parent exists and has nullable in definition of me
+      this.parent!.$super.setNull(myKey)
+    }
   }
 
   /**
@@ -155,7 +153,7 @@ export abstract class SuperValueBase<T = any | any[]>
    * @parent - parent super struct, super array or super data
    * @myPath - full path to me in tree where im am
    */
-  $$setParent(parent: SuperValueBase, myPath: string) {
+  $$setParent(parent: ProxyfiedSuperBase, myPath: string) {
     super.$$setParent(parent, myPath)
 
     // TODO: если этот же родитель был ранее, то нужно отписаться от событий и заного записаться
@@ -171,7 +169,7 @@ export abstract class SuperValueBase<T = any | any[]>
       //       или быть required
       //       можно сделать явную проверку и поднять ошибку
 
-      if (item.$$setParent) item.$$setParent(this, this.makeChildPath(childId))
+      if (item.$$setParent) item.$$setParent(this.getProxy(), this.makeChildPath(childId))
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.changeParent)
@@ -583,7 +581,7 @@ export abstract class SuperValueBase<T = any | any[]>
     child: ProxifiedSuperValue,
     childKeyOrIndex: string | number
   ) {
-    child.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex))
+    child.$super.$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex))
     // any way remove my listener if it has
     if (this.childEventHandlers[childKeyOrIndex]) {
       this.removeChildListeners(childKeyOrIndex)

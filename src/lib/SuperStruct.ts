@@ -1,6 +1,6 @@
 import {
   SuperValueBase,
-  SUPER_PROXY_PUBLIC_MEMBERS,
+  SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
   SuperValuePublic,
   SUPER_VALUE_EVENTS,
 } from './SuperValueBase.js';
@@ -13,7 +13,7 @@ import {
   prepareDefinitionItem,
   SUPER_VALUE_PROP,
 } from './superValueHelpers.js';
-import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
+import {AllTypes} from '../types/valueTypes.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -26,7 +26,7 @@ export type ProxyfiedStruct<T = Record<any, any>> = SuperStructPublic
 
 
 export const STRUCT_PUBLIC_MEMBERS = [
-  ...SUPER_PROXY_PUBLIC_MEMBERS,
+  ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
   'isStruct',
 ]
 
@@ -100,6 +100,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
         definition[keyStr as keyof T],
         defaultRo
       )
+
+      // TODO: надо убедиться что стоит либо required либо nullable
+      //    чтобы нельзя было удалять потомка установив undefined.
+      //    ставить null норм
+      // TODO: проверки на undefined впринципе можно убрать вместо этого проверять
+      //       nullable и required
     }
   }
 

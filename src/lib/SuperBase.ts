@@ -1,7 +1,15 @@
-import {
-  splitDeepPath,
-  lastItem,
-} from 'squidlet-lib';
+import {splitDeepPath, lastItem} from 'squidlet-lib';
+
+
+export interface SuperBasePublic {
+  isSuper: boolean
+}
+
+export type ProxyfiedSuperBase<T = any> = SuperBasePublic & {$super: SuperBase} & T
+
+export const SUPER_BASE_PROXY_PUBLIC_MEMBERS = [
+  'isSuper',
+]
 
 
 export abstract class SuperBase {
@@ -9,7 +17,7 @@ export abstract class SuperBase {
 
   protected proxyfiedInstance?: any
   // parent super struct or array who owns me
-  protected myParent?: SuperBase
+  protected myParent?: ProxyfiedSuperBase
   // Path to myself in upper tree. The last part is my name
   protected myPath?: string
   protected inited: boolean = false
@@ -19,7 +27,7 @@ export abstract class SuperBase {
     return this.inited
   }
 
-  get parent(): SuperBase | undefined {
+  get parent(): ProxyfiedSuperBase | undefined {
     return this.myParent
   }
 
@@ -27,8 +35,8 @@ export abstract class SuperBase {
     return this.myPath
   }
 
-  get myKeyInParent(): string | number | undefined {
-    if (!this.myPath) return
+  get myKeyOfParent(): string | number | undefined {
+    if (typeof this.pathToMe === 'undefined') return
 
     const pathSplat = splitDeepPath(this.pathToMe)
 
@@ -41,7 +49,7 @@ export abstract class SuperBase {
     this.inited = true
   }
 
-  $$setParent(parent: SuperBase, myPath: string) {
+  $$setParent(parent: ProxyfiedSuperBase, myPath: string) {
     this.myParent = parent
     this.myPath = myPath
   }

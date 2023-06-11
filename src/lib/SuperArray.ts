@@ -1,6 +1,6 @@
 import {arrayKeys, omitObj} from 'squidlet-lib';
 import {
-  SUPER_PROXY_PUBLIC_MEMBERS,
+  SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
   SUPER_VALUE_EVENTS,
   SuperValueBase,
   SuperValuePublic
@@ -50,7 +50,7 @@ export type ProxyfiedArray<T = any> = SuperArrayPublic
 
 
 const ARR_PUBLIC_MEMBERS = [
-  ...SUPER_PROXY_PUBLIC_MEMBERS,
+  ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
 
   'isArray',
   'isReadOnly',
