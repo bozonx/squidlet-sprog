@@ -71,6 +71,11 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
 }
 
 
+/**
+ * SuperStruct.
+ * * It is allowed to make en empty struct, but it is useless
+ * * It isn't possible to remove items from struct, but it is possible to set null
+ */
 export class SuperStruct<T = Record<string, AllTypes>>
   extends SuperValueBase<T>
   implements SuperStructPublic
@@ -96,16 +101,22 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr as keyof T])
 
-      this.definition[keyStr as keyof T] = prepareDefinitionItem(
+      const def = prepareDefinitionItem(
         definition[keyStr as keyof T],
         defaultRo
       )
 
-      // TODO: надо убедиться что стоит либо required либо nullable
-      //    чтобы нельзя было удалять потомка установив undefined.
-      //    ставить null норм
-      // TODO: проверки на undefined впринципе можно убрать вместо этого проверять
-      //       nullable и required
+      if (!def.required && !def.nullable) {
+        // TODO: надо убедиться что стоит либо required либо nullable
+        //    чтобы нельзя было удалять потомка установив undefined.
+        //    ставить null норм
+        // TODO: или может автоматом ставить nullable ???
+        // throw new Error(
+        //   `SuperStruct definition of "${keyStr}" is not required and not nullable!`
+        // )
+      }
+
+      this.definition[keyStr as keyof T] = def
     }
   }
 
@@ -153,6 +164,12 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   getDefinition(keyStr: string): SuperItemDefinition | undefined {
     const key = keyStr as keyof T
+
+    if (!this.definition[key]) {
+      throw new Error(
+        `SuperStruct "${this.pathToMe}" doesn't have definiton of child "${keyStr}"`
+      )
+    }
 
     return this.definition[key]
   }

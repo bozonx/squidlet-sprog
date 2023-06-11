@@ -65,7 +65,7 @@ describe('isCorrespondingType', () => {
     assert.isTrue(isCorrespondingType(sd, 'SuperData'))
     assert.isFalse(isCorrespondingType({}, 'SuperData'))
     // SuperStruct
-    const ss = new SuperStruct({}).getProxy()
+    const ss = new SuperStruct({a: {type: 'any'}}).getProxy()
     assert.isTrue(isCorrespondingType(ss, 'SuperStruct'))
     assert.isFalse(isCorrespondingType({}, 'SuperStruct'))
     assert.isFalse(isCorrespondingType(sd, 'SuperStruct'))
