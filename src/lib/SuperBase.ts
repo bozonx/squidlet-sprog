@@ -1,4 +1,7 @@
-import {SuperScope} from './scope.js';
+import {
+  splitDeepPath,
+  lastItem,
+} from 'squidlet-lib';
 
 
 export abstract class SuperBase {
@@ -22,6 +25,14 @@ export abstract class SuperBase {
 
   get pathToMe(): string | undefined {
     return this.myPath
+  }
+
+  get myKeyInParent(): string | number | undefined {
+    if (!this.myPath) return
+
+    const pathSplat = splitDeepPath(this.pathToMe)
+
+    return lastItem(pathSplat)
   }
 
 

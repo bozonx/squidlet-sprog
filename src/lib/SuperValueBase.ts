@@ -6,10 +6,12 @@ import {
   splitDeepPath,
   joinDeepPath,
   deepGetParent,
+  lastItem,
 } from 'squidlet-lib';
 import {
   AllTypes,
-  ProxifiedSuperValue, SIMPLE_TYPES,
+  ProxifiedSuperValue,
+  SIMPLE_TYPES,
   SimpleType,
   SUPER_VALUES
 } from '../types/valueTypes.js';
@@ -107,8 +109,24 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   destroy() {
+    if (this.parent && this.myPath) {
+      const pathSplat = splitDeepPath(this.myPath)
+      const myKey = lastItem(pathSplat)
+      const myDefInParent: SuperItemDefinition | undefined = this.parent.$super.getDefinition(myKey)
 
-    // TODO: запретить дестрой если нарушится целостность у родителя - required, struct
+      if (myDefInParent) {
+        if (myDefInParent.required) {
+          throw new Error(
+            `Can't destroy child "${this.myPath}" because it is required on parent`
+          )
+        }
+        else if (!myDefInParent.nullable) {
+          throw new Error(
+            `Can't destroy child "${this.myPath}" because it is not nullable on parent`
+          )
+        }
+      }
+    }
 
     this.events.emit(SUPER_VALUE_EVENTS.destroy)
 
@@ -124,6 +142,12 @@ export abstract class SuperValueBase<T = any | any[]>
     }
 
     this.events.destroy()
+
+    // else if (myDefInParent.nullable) {
+    //   // TODO: а усли nullable - надо установить null ???
+    // }
+    // TODO: удалить себя у родителя
+    // TODO: запретить дестрой если нарушится целостность у родителя - required, struct
   }
 
   /**
