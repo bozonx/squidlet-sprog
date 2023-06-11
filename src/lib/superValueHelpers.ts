@@ -5,9 +5,9 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {
   All_TYPES,
-  AllTypes,
+  AllTypes, ProxifiedSuperValue,
   SIMPLE_TYPES,
-  SimpleType,
+  SimpleType, SUPER_VALUES,
 } from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
@@ -90,39 +90,6 @@ export function checkArrayDefinition(definition?: Partial<SuperArrayDefinition>)
   checkDefinition(definition as SuperItemInitDefinition)
 }
 
-/**
- * Resolves value for simple type and
- * any, simple function, super function, classes and other.
- * It assumes that you validated value before
- */
-export function resolveNotSuperChild(
-  definition: SuperItemDefinition,
-  initialValue?: any
-): SimpleType | undefined {
-  // use initial value or default if no initial value
-  const value = (typeof initialValue === 'undefined')
-    ? definition.default
-    : initialValue
-
-  if (typeof value !== 'undefined') return value
-  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-    // if no value then make it from simple type
-    // return null if nullable or initial value for each type
-    // e.g string='', number=0, boolean=false etc
-    return resolveInitialSimpleValue(
-      definition.type as keyof typeof SIMPLE_TYPES,
-      definition.nullable
-    )
-  }
-  else if (Object.keys(All_TYPES).includes(definition.type)) {
-    // if no value or default value then return undefined for
-    // any, simple function, super function, classes and other.
-    return undefined
-  }
-
-  throw new Error(`Unsupported definition type of ${definition.type}`)
-}
-
 export function validateChildValue(
   definition: SuperItemDefinition | undefined,
   childKeyOrIndex: string | number,
@@ -166,3 +133,77 @@ export function checkValueBeforeSet(
   }
 }
 
+/**
+ * Resolves value for simple type and
+ * any, simple function, super function, classes and other.
+ * It assumes that you validated value before
+ */
+export function resolveNotSuperChild(
+  definition: SuperItemDefinition,
+  initialValue?: any
+): SimpleType | undefined {
+  // use initial value or default if no initial value
+  const value = (typeof initialValue === 'undefined')
+    ? definition.default
+    : initialValue
+
+  if (typeof value !== 'undefined') return value
+  else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+    // if no value then make it from simple type
+    // return null if nullable or initial value for each type
+    // e.g string='', number=0, boolean=false etc
+    return resolveInitialSimpleValue(
+      definition.type as keyof typeof SIMPLE_TYPES,
+      definition.nullable
+    )
+  }
+  else if (Object.keys(All_TYPES).includes(definition.type)) {
+    // if no value or default value then return undefined for
+    // any, simple function, super function, classes and other.
+    return undefined
+  }
+
+  throw new Error(`Unsupported definition type of ${definition.type}`)
+}
+
+export function makeNewSuperValueByDefinition(
+  definition: SuperItemDefinition,
+  childKeyOrIndex: string | number
+) {
+  const superChildType = definition.type as keyof typeof SUPER_VALUES
+  // it doesn't need to set whole RO because it will be set in $$setParent() in setupSuperChild()
+  const superChildRo = definition.readonly
+  let superChild
+  // no initialValue
+  if (definition.default) {
+    //instantiateSuperValue()
+    // there is has to be a defintion setup of child
+
+    // TODO: циклическая зависимость !!!
+    // superChild = new SUPER_VALUE_CLASSES[superChildType](
+    //   // use default as definition of this value
+    //   definition.default,
+    //   superChildRo
+    // )
+  }
+  else {
+    // if no definition setup of child then just make it without definition
+    // only for SuperData and SuperArray
+    if (definition.type === SUPER_VALUES.SuperStruct) {
+      throw new Error(`Can't create SuperStruct instance without definition for "${childKeyOrIndex}"`)
+    }
+    // make super child without definition
+    // superChild = new SUPER_VALUE_CLASSES[superChildType](
+    //   undefined,
+    //   superChildRo
+    // )
+  }
+
+  throw new Error(`Making super values from definition isn't supported at the moment`)
+
+  // this.setupSuperChild(superChild, childKeyOrIndex)
+  //
+  // superChild.init()
+  //
+  // return superChild.getProxy()
+}

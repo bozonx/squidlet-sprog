@@ -14,6 +14,7 @@ import {checkArrayDefinition, SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 // TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
+// TODO: поидее чтобы устанавливать значения в ro массив нужно ещё push, pop и тд методы
 
 
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {

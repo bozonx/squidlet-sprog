@@ -19,7 +19,7 @@ import {
   resolveNotSuperChild,
   SUPER_VALUE_PROP,
   validateChildValue,
-  isSuperValue, checkValueBeforeSet
+  isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 
@@ -29,6 +29,7 @@ export interface SuperValuePublic {
   getValue(pathTo: string): AllTypes | undefined
   setValue(pathTo: string, newValue: AllTypes): void
   setNull(pathTo: string): void
+  subscribe(handler: SuperChangeHandler): number
 }
 
 export interface SuperLinkItem {
@@ -543,48 +544,8 @@ export abstract class SuperValueBase<T = any | any[]>
     }
     else {
       // no initial value - make a new Super Value
-      return this.makeNewSuperValueByDefinition(definition, childKeyOrIndex)
+      return makeNewSuperValueByDefinition(definition, childKeyOrIndex)
     }
-  }
-
-  private makeNewSuperValueByDefinition(
-    definition: SuperItemDefinition,
-    childKeyOrIndex: string | number
-  ) {
-    const superChildType = definition.type as keyof typeof SUPER_VALUES
-    // it doesn't need to set whole RO because it will be set in $$setParent() in setupSuperChild()
-    const superChildRo = definition.readonly
-    let superChild
-    // no initialValue
-    if (definition.default) {
-      //instantiateSuperValue()
-      // there is has to be a defintion setup of child
-
-      // TODO: циклическая зависимость !!!
-      // superChild = new SUPER_VALUE_CLASSES[superChildType](
-      //   // use default as definition of this value
-      //   definition.default,
-      //   superChildRo
-      // )
-    }
-    else {
-      // if no definition setup of child then just make it without definition
-      // only for SuperData and SuperArray
-      if (definition.type === SUPER_VALUES.SuperStruct) {
-        throw new Error(`Can't create SuperStruct instance without definition for "${childKeyOrIndex}"`)
-      }
-      // make super child without definition
-      // superChild = new SUPER_VALUE_CLASSES[superChildType](
-      //   undefined,
-      //   superChildRo
-      // )
-    }
-
-    // this.setupSuperChild(superChild, childKeyOrIndex)
-    //
-    // superChild.init()
-    //
-    // return superChild.getProxy()
   }
 
   /**
