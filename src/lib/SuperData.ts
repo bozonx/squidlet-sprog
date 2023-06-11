@@ -283,7 +283,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       : this.defaultDefinition
 
     checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
-    // value will be validated inside resolveChildValue
+
     this.ownValues[key] = this.resolveChildValue(definition!, key, value)
 
     if (!this.ownOrderedKeys.includes(key)) this.ownOrderedKeys.push(key)

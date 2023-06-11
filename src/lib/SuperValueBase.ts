@@ -6,7 +6,6 @@ import {
   splitDeepPath,
   joinDeepPath,
   deepGetParent,
-  lastItem,
 } from 'squidlet-lib';
 import {
   AllTypes,
@@ -140,7 +139,7 @@ export abstract class SuperValueBase<T = any | any[]>
     }
 
     this.events.destroy()
-
+    // remove me for parent
     if (this.parent?.$super.isDestroyed === false) {
       // as we realized before parent exists and has nullable in definition of me
       this.parent.$super.setNull(myKey)
@@ -160,6 +159,8 @@ export abstract class SuperValueBase<T = any | any[]>
     super.$$setParent(parent, myPath)
 
     // TODO: если этот же родитель был ранее, то нужно отписаться от событий и заного записаться
+    // TODO: нужно проверить что я у родителя правильный type в definition
+    // TODO: нужно удалить и задестроить предыдущего потомка родителя на этом же месте
 
     // reregister path of all the super children
     for (const childId of this.allKeys) {
@@ -240,6 +241,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
     checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo)
     // value will be validated inside resolveChildValue
+    // if it is super value then parent will be set and subscribe on this listeners
     this.values[key as keyof T] = this.resolveChildValue(def!, key, value)
 
     this.emitChildChangeEvent(key)
@@ -336,7 +338,6 @@ export abstract class SuperValueBase<T = any | any[]>
     }
   }
 
-  // TODO: test
   batchSet(values?: T) {
     if (!values) return
 
@@ -500,39 +501,6 @@ export abstract class SuperValueBase<T = any | any[]>
     this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
   }
 
-  // TODO: впринципе можно вынести в отдельную ф-ю
-  /**
-   * Resolve onw child value according the definition and init it.
-   * It is called in init(), setOwnValue() and define()
-   * @param definition
-   * @param childKeyOrIndex
-   * @param value - if value not set then it will try to get default value
-   *   or make an initial value according to definition.type
-   */
-  protected resolveChildValue(
-    definition: SuperItemDefinition,
-    childKeyOrIndex: string | number,
-    value?: any
-  ): SimpleType | ProxifiedSuperValue | undefined {
-    validateChildValue(definition, childKeyOrIndex, value)
-
-    if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-      return this.resolveSuperChild(definition, childKeyOrIndex, value)
-    }
-    else if (
-      definition.type === 'any'
-      && typeof value === 'object'
-      && isSuperValue(value[SUPER_VALUE_PROP])
-    ) {
-      // if any type and the value is super value - then make it my child
-      this.setupSuperChild(value, childKeyOrIndex)
-
-      return value
-    }
-    // resolve other types
-    return resolveNotSuperChild(definition, value)
-  }
-
   /**
    * Set to deep child.
    * * if parent of this child is Super value then call setValue which emits an event
@@ -556,6 +524,39 @@ export abstract class SuperValueBase<T = any | any[]>
     this.events.emit(SUPER_VALUE_EVENTS.change, deepParent, pathTo)
 
     return true
+  }
+
+  /**
+   * Resolve onw child value according the definition and init it.
+   * It is called in init(), setOwnValue() and define()
+   * @param definition
+   * @param childKeyOrIndex
+   * @param value - if value not set then it will try to get default value
+   *   or make an initial value according to definition.type
+   */
+  protected resolveChildValue(
+    definition: SuperItemDefinition,
+    childKeyOrIndex: string | number,
+    value?: any
+  ): SimpleType | ProxifiedSuperValue | undefined {
+    validateChildValue(definition, childKeyOrIndex, value)
+
+    if (Object.keys(SUPER_VALUES).includes(definition.type)) {
+      return this.resolveSuperChild(definition, childKeyOrIndex, value)
+    }
+    // TODO: если SuperFunc - то надо ей сделать $$setParent
+    else if (
+      definition.type === 'any'
+      && typeof value === 'object'
+      && isSuperValue(value[SUPER_VALUE_PROP])
+    ) {
+      // if any type and the value is super value - then make it my child
+      this.setupSuperChild(value, childKeyOrIndex)
+
+      return value
+    }
+    // resolve other types
+    return resolveNotSuperChild(definition, value)
   }
 
 
