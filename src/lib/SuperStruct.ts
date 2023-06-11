@@ -135,7 +135,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   destroy = () => {
     super.destroy()
-
+    // destroy all the children
     for (const key of this.allKeys) {
       const keyName = key as keyof T
 

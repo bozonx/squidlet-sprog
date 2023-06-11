@@ -114,7 +114,7 @@ export abstract class SuperValueBase<T = any | any[]>
     const myDefInParent: SuperItemDefinition | undefined = this.parent
       && this.parent.$super.getDefinition(myKey)
 
-    if (myDefInParent) {
+    if (this.parent?.$super.isDestroyed === false && myDefInParent) {
       if (myDefInParent.required) {
         throw new Error(
           `Can't destroy child "${this.myPath}" because it is required on parent`
@@ -125,10 +125,13 @@ export abstract class SuperValueBase<T = any | any[]>
           `Can't destroy child "${this.myPath}" because it is not nullable on parent`
         )
       }
+      // else null will be set to parent's value eventually
+      // remove listeners of me on my parent
+      this.parent.$super.removeChildListeners(myKey!)
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.destroy)
-
+    // remove links to me
     for (const linkId in this.links) {
       // actually empty is also undefined
       if (typeof linkId === 'undefined') continue
@@ -136,16 +139,16 @@ export abstract class SuperValueBase<T = any | any[]>
       this.unlink(Number(linkId))
     }
 
-    for (const itemKey of this.allKeys) {
-      this.removeChildListeners(itemKey)
-    }
-
     this.events.destroy()
 
-    if (myDefInParent) {
+    if (this.parent?.$super.isDestroyed === false) {
       // as we realized before parent exists and has nullable in definition of me
-      this.parent!.$super.setNull(myKey)
+      this.parent.$super.setNull(myKey)
     }
+
+    // removing children listeners actually not need because children will be dstroyed
+    //   any way and events emitter will be destroyed too.
+    // after that you have to destroy all the your children in override of destroy()
   }
 
   /**
@@ -456,6 +459,26 @@ export abstract class SuperValueBase<T = any | any[]>
     validateChildValue(definition, key, value)
   }
 
+  /**
+   * Remove all the listeners of child
+   * @param childKeyOrIndex - it can be a stringified number like '0'
+   * @private
+   */
+  removeChildListeners(childKeyOrIndex: string | number) {
+    const child: ProxifiedSuperValue = (this.values as any)[childKeyOrIndex]
+
+    if (!this.childEventHandlers[childKeyOrIndex] || !child) return
+
+    for (const eventNumStr of Object.keys(this.childEventHandlers[childKeyOrIndex])) {
+      const handlerIndex = this.childEventHandlers[childKeyOrIndex][eventNumStr]
+      const eventNum = Number(eventNumStr)
+
+      child.$super.events.removeListener(handlerIndex, eventNum)
+    }
+
+    delete this.childEventHandlers[childKeyOrIndex]
+  }
+
 
   /**
    * This method will be returned after initializing to update readonly values
@@ -614,26 +637,6 @@ export abstract class SuperValueBase<T = any | any[]>
     //       и что делать если в definition должен быть потомок если required???
     //       создать заного потомка???
     //       а в struct что делать??? там же потомок обязателен
-  }
-
-  /**
-   * Remove all the listeners of child
-   * @param childKeyOrIndex - it can be a stringified number like '0'
-   * @private
-   */
-  private removeChildListeners(childKeyOrIndex: string | number) {
-    const child: ProxifiedSuperValue = (this.values as any)[childKeyOrIndex]
-
-    if (!this.childEventHandlers[childKeyOrIndex] || !child) return
-
-    for (const eventNumStr of Object.keys(this.childEventHandlers[childKeyOrIndex])) {
-      const handlerIndex = this.childEventHandlers[childKeyOrIndex][eventNumStr]
-      const eventNum = Number(eventNumStr)
-
-      child.$super.events.removeListener(handlerIndex, eventNum)
-    }
-
-    delete this.childEventHandlers[childKeyOrIndex]
   }
 
 }
