@@ -6,6 +6,7 @@ import {
   splitDeepPath,
   joinDeepPath,
   deepGetParent,
+  lastItem,
 } from 'squidlet-lib';
 import {
   AllTypes,
@@ -23,6 +24,7 @@ import {
   isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {isCorrespondingType} from './isCorrespondingType.js';
 
 
 export interface SuperValuePublic extends SuperBasePublic {
@@ -82,6 +84,7 @@ export abstract class SuperValueBase<T = any | any[]>
   implements SuperValuePublic
 {
   readonly isSuperValue = true
+  // TODO: может сделать protected?
   // current values
   readonly abstract values: T
   readonly events = new IndexedEventEmitter()
@@ -156,11 +159,36 @@ export abstract class SuperValueBase<T = any | any[]>
    * @myPath - full path to me in tree where im am
    */
   $$setParent(parent: ProxyfiedSuperBase, myPath: string) {
+    const pathSplat = splitDeepPath(myPath)
+    const myKeyInParent = lastItem(pathSplat)
+    const myDefInParent: SuperItemDefinition | undefined = parent.$super.getDefinition(myKeyInParent)
+
+    if (!myDefInParent) {
+      throw new Error(`Can't find definition of me`)
+    }
+    else if (!isCorrespondingType(
+      this.getProxy(),
+      myDefInParent.type,
+      myDefInParent.nullable
+    )) {
+      throw new Error(
+        `Type of me "${this.constructor?.name}" doesn't match to "${myDefInParent.type}"`
+      )
+    }
+
+    const prevChild = parent.$super.getOwnValue(myKeyInParent)
+    // destroy previous child on my plase on new parent
+    if (prevChild) prevChild.$super.destroy()
+
+    const oldParent = this.parent
+    // detach me from my old parent (or the same)
+    if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
+
+    // register my new parent
     super.$$setParent(parent, myPath)
 
-    // TODO: если этот же родитель был ранее, то нужно отписаться от событий и заного записаться
-    // TODO: нужно проверить что я у родителя правильный type в definition
-    // TODO: нужно удалить и задестроить предыдущего потомка родителя на этом же месте
+    // TODO: родитель должен заного записаться на события меня
+
 
     // reregister path of all the super children
     for (const childId of this.allKeys) {
@@ -173,10 +201,29 @@ export abstract class SuperValueBase<T = any | any[]>
       //       или быть required
       //       можно сделать явную проверку и поднять ошибку
 
+
+      // TODO: поидее надо только путь установить без родителя, чтобы избежать проверок
+
       if (item.$$setParent) item.$$setParent(this.getProxy(), this.makeChildPath(childId))
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.changeParent)
+  }
+
+  $$detachChild(childKey: string | number, force: boolean = false) {
+    this.removeChildListeners(childKey)
+
+    if (!force) {
+      const def = this.getDefinition(childKey)
+
+      if (def && (def.required || !def.nullable)) {
+        throw new Error(`Can't detach children because of it definition`)
+      }
+    }
+
+    // TODO: в super data - использовать this.ownValues
+    // remove me from values
+    this.values[childKey as keyof T] = null as any
   }
 
 
