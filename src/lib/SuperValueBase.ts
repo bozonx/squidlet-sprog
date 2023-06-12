@@ -177,12 +177,12 @@ export abstract class SuperValueBase<T = any | any[]>
       )
     }
 
-    // TODO: а это надо - это наверное уже произошло
+    // TODO: а это надо - это наверное уже произошло - setupSuperChild
     // const prevChild = parent.$super.getOwnValue(myKeyInParent)
     // // destroy previous child on my plase on new parent
     // if (prevChild) prevChild.$super.destroy()
     //
-    // // TODO: а это надо - это наверное уже произошло
+    // // TODO: а это надо - это наверное уже произошло - setupSuperChild
     // const oldParent = this.parent
     // // detach me from my old parent (or the same)
     // if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
@@ -292,7 +292,6 @@ export abstract class SuperValueBase<T = any | any[]>
 
     checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo)
     // value will be validated inside resolveChildValue
-    // if it is super value then parent will be set and subscribe on this listeners
     this.values[key as keyof T] = this.resolveChildValue(def!, key, value)
 
     this.emitChildChangeEvent(key)
@@ -659,15 +658,11 @@ export abstract class SuperValueBase<T = any | any[]>
       this.removeChildListeners(childKeyOrIndex)
     }
 
-    this.listenChildEvents(childKeyOrIndex)
+    this.listenChildEvents(child, childKeyOrIndex)
   }
 
-  private listenChildEvents(childKeyOrIndex: string | number) {
-    const child: ProxifiedSuperValue | undefined = this.values[childKeyOrIndex as keyof T]
-
-    if (!child) return
-
-      this.childEventHandlers[childKeyOrIndex] = {
+  private listenChildEvents(child: ProxifiedSuperValue, childKeyOrIndex: string | number) {
+    this.childEventHandlers[childKeyOrIndex] = {
       // bubble child events to me
       [SUPER_VALUE_EVENTS.change]: child.subscribe((target: ProxifiedSuperValue, path?: string) => {
         if (!path) {
