@@ -164,7 +164,8 @@ export abstract class SuperValueBase<T = any | any[]>
     const myDefInParent: SuperItemDefinition | undefined = parent.$super.getDefinition(myKeyInParent)
 
     if (!myDefInParent) {
-      throw new Error(`Can't find definition of me`)
+      // TODO: разкомментировать
+      //throw new Error(`Can't find definition of me`)
     }
     else if (!isCorrespondingType(
       this.getProxy(),
@@ -176,17 +177,20 @@ export abstract class SuperValueBase<T = any | any[]>
       )
     }
 
-    const prevChild = parent.$super.getOwnValue(myKeyInParent)
-    // destroy previous child on my plase on new parent
-    if (prevChild) prevChild.$super.destroy()
-
-    const oldParent = this.parent
-    // detach me from my old parent (or the same)
-    if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
+    // TODO: а это надо - это наверное уже произошло
+    // const prevChild = parent.$super.getOwnValue(myKeyInParent)
+    // // destroy previous child on my plase on new parent
+    // if (prevChild) prevChild.$super.destroy()
+    //
+    // // TODO: а это надо - это наверное уже произошло
+    // const oldParent = this.parent
+    // // detach me from my old parent (or the same)
+    // if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
 
     // register my new parent
     super.$$setParent(parent, myPath)
 
+    //this.listenChildEvents()
     // TODO: родитель должен заного записаться на события меня
 
 
@@ -648,17 +652,22 @@ export abstract class SuperValueBase<T = any | any[]>
    * * listen to child destroy
    * @protected
    */
-  private setupSuperChild(
-    child: ProxifiedSuperValue,
-    childKeyOrIndex: string | number
-  ) {
+  private setupSuperChild(child: ProxifiedSuperValue, childKeyOrIndex: string | number) {
     child.$super.$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex))
     // any way remove my listener if it has
     if (this.childEventHandlers[childKeyOrIndex]) {
       this.removeChildListeners(childKeyOrIndex)
     }
 
-    this.childEventHandlers[childKeyOrIndex] = {
+    this.listenChildEvents(childKeyOrIndex)
+  }
+
+  private listenChildEvents(childKeyOrIndex: string | number) {
+    const child: ProxifiedSuperValue | undefined = this.values[childKeyOrIndex as keyof T]
+
+    if (!child) return
+
+      this.childEventHandlers[childKeyOrIndex] = {
       // bubble child events to me
       [SUPER_VALUE_EVENTS.change]: child.subscribe((target: ProxifiedSuperValue, path?: string) => {
         if (!path) {
