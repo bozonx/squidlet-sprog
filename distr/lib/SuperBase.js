@@ -1,3 +1,7 @@
+import { splitDeepPath, lastItem } from 'squidlet-lib';
+export const SUPER_BASE_PROXY_PUBLIC_MEMBERS = [
+    'isSuper',
+];
 export class SuperBase {
     isSuper = true;
     proxyfiedInstance;
@@ -14,6 +18,12 @@ export class SuperBase {
     }
     get pathToMe() {
         return this.myPath;
+    }
+    get myKeyOfParent() {
+        if (typeof this.pathToMe === 'undefined')
+            return;
+        const pathSplat = splitDeepPath(this.pathToMe);
+        return lastItem(pathSplat);
     }
     init() {
         // means that item is completely initiated

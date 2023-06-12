@@ -1,23 +1,9 @@
-import { SIMPLE_TYPES } from '../types/valueTypes.js';
-import { SuperValueBase, SUPER_VALUE_PROP, SUPER_PROXY_PUBLIC_MEMBERS, checkDefinition, prepareDefinitionItem, SUPER_VALUE_EVENTS, validateChildValue, } from './SuperValueBase.js';
-import { resolveInitialSimpleValue } from './helpers.js';
+import { SuperValueBase, SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, } from './SuperValueBase.js';
+import { checkDefinition, prepareDefinitionItem, SUPER_VALUE_PROP, } from './superValueHelpers.js';
 export const STRUCT_PUBLIC_MEMBERS = [
-    ...SUPER_PROXY_PUBLIC_MEMBERS,
+    ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
     'isStruct',
 ];
-export function checkValueBeforeSet(isInitialized, definition, key, value, ignoreRo = false) {
-    if (!isInitialized)
-        throw new Error(`Init it first`);
-    else if (!definition)
-        throw new Error(`Doesn't have key ${key}`);
-    // obviously check it otherwise it will be set to default
-    else if (typeof value === 'undefined') {
-        throw new Error(`It isn't possible to set undefined to data child`);
-    }
-    else if (!ignoreRo && definition.readonly) {
-        throw new Error(`Can't set readonly value of name ${key}`);
-    }
-}
 /**
  * Wrapper for SuperStruct which allows to manipulate it as common object.
  * And it puts some methods to it:
@@ -27,21 +13,19 @@ export function checkValueBeforeSet(isInitialized, definition, key, value, ignor
 export function proxifyStruct(struct) {
     const handler = {
         get(target, prop) {
-            if (prop === SUPER_VALUE_PROP) {
+            // $super
+            if (prop === SUPER_VALUE_PROP)
                 return struct;
-            }
-            else if (STRUCT_PUBLIC_MEMBERS.includes(prop)) {
-                // public super struct prop
+            // public super struct prop
+            else if (STRUCT_PUBLIC_MEMBERS.includes(prop))
                 return struct[prop];
-            }
             // else prop or object itself
             return struct.values[prop];
         },
         has(target, prop) {
-            if (prop === SUPER_VALUE_PROP || STRUCT_PUBLIC_MEMBERS.includes(prop)) {
+            if (prop === SUPER_VALUE_PROP || STRUCT_PUBLIC_MEMBERS.includes(prop))
                 return true;
-            }
-            return struct.ownKeys.includes(prop);
+            return struct.allKeys.includes(prop);
         },
         set(target, prop, newValue) {
             return struct.setOwnValue(prop, newValue);
@@ -50,11 +34,16 @@ export function proxifyStruct(struct) {
             throw new Error(`It isn't possible to delete struct value`);
         },
         ownKeys() {
-            return struct.ownKeys;
+            return struct.allKeys;
         },
     };
     return new Proxy(struct.values, handler);
 }
+/**
+ * SuperStruct.
+ * * It is allowed to make en empty struct, but it is useless
+ * * It isn't possible to remove items from struct, but it is possible to set null
+ */
 export class SuperStruct extends SuperValueBase {
     isStruct = true;
     // current values
@@ -62,14 +51,24 @@ export class SuperStruct extends SuperValueBase {
     proxyFn = proxifyStruct;
     // It assumes that you will not change it after initialization
     definition = {};
-    get ownKeys() {
+    get allKeys() {
         return Object.keys(this.values);
     }
     constructor(definition, defaultRo = false) {
         super();
         for (const keyStr of Object.keys(definition)) {
             checkDefinition(definition[keyStr]);
-            this.definition[keyStr] = prepareDefinitionItem(definition[keyStr], defaultRo);
+            const def = prepareDefinitionItem(definition[keyStr], defaultRo);
+            if (!def.required && !def.nullable) {
+                // TODO: надо убедиться что стоит либо required либо nullable
+                //    чтобы нельзя было удалять потомка установив undefined.
+                //    ставить null норм
+                // TODO: или может автоматом ставить nullable ???
+                // throw new Error(
+                //   `SuperStruct definition of "${keyStr}" is not required and not nullable!`
+                // )
+            }
+            this.definition[keyStr] = def;
         }
     }
     /**
@@ -77,9 +76,8 @@ export class SuperStruct extends SuperValueBase {
      * It returns setter for readonly params
      */
     init = (initialValues) => {
-        if (this.inited) {
+        if (this.inited)
             throw new Error(`The struct has been already initialized`);
-        }
         this.events.emit(SUPER_VALUE_EVENTS.initStart);
         // set initial values
         for (const keyStr of Object.keys(this.definition)) {
@@ -90,7 +88,8 @@ export class SuperStruct extends SuperValueBase {
     };
     destroy = () => {
         super.destroy();
-        for (const key of this.ownKeys) {
+        // destroy all the children
+        for (const key of this.allKeys) {
             const keyName = key;
             if (typeof this.values[keyName] === 'object' && this.values[keyName].destroy) {
                 // it will destroy itself and its children
@@ -98,68 +97,17 @@ export class SuperStruct extends SuperValueBase {
             }
         }
     };
-    isKeyReadonly(key) {
-        if (!this.definition[key]) {
-            throw new Error(`Struct doesn't have key ${key}`);
-        }
-        return Boolean(this.definition?.[key].readonly);
-    }
-    getOwnValue(key) {
-        if (!this.isInitialized)
-            throw new Error(`Init it first`);
-        return this.values[key];
-    }
-    setOwnValue(keyStr, value, ignoreRo = false) {
-        const name = keyStr;
-        this.validateItem(name, value, ignoreRo);
-        this.values[name] = this.resolveChildValue(this.definition[name], keyStr, value);
-        this.emitChildChangeEvent(keyStr);
-        return true;
-    }
-    // TODO: наверное в default запретить пока super value
-    /**
-     * Set default value or null if the key doesn't have a default value
-     * @param key
-     */
-    toDefaultValue = (key) => {
-        if (!this.isInitialized)
-            throw new Error(`Init it first`);
-        else if (!this.definition[key]) {
-            throw new Error(`Struct doesn't have key ${key}`);
-        }
-        let defaultValue = this.definition[key].default;
-        // TODO: а если super type??? То надо вызвать default value у него ???
-        //       или ничего не делать? Если менять заного то надо дестроить предыдущий
-        // if no default value then make it from type
-        if (Object.keys(SIMPLE_TYPES).includes(this.definition[key].type)
-            && typeof defaultValue === 'undefined') {
-            defaultValue = resolveInitialSimpleValue(this.definition[key].type, this.definition[key].nullable);
-        }
-        this.setOwnValue(key, defaultValue);
-    };
     getProxy() {
         return super.getProxy();
     }
-    /////// Struct specific
-    // TODO: test
-    batchSet(values) {
-        if (!values)
-            return;
-        for (const key of Object.keys(values)) {
-            this.setOwnValue(key, values[key]);
-        }
-    }
-    // TODO: test
-    validateItem(name, value, ignoreRo) {
-        const keyStr = name;
-        const definition = this.definition[name];
-        checkValueBeforeSet(this.isInitialized, definition, keyStr, value, ignoreRo);
-        validateChildValue(definition, name, value);
-    }
     getDefinition(keyStr) {
         const key = keyStr;
+        if (!this.definition[key]) {
+            throw new Error(`SuperStruct "${this.pathToMe}" doesn't have definiton of child "${keyStr}"`);
+        }
         return this.definition[key];
     }
+    /////// Struct specific
     /**
      * Set value of self readonly value and rise an event
      */

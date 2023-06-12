@@ -1,4 +1,4 @@
-import { deleteValue, getValue, setValue } from './lang/deepValue.js';
+import { getValue, setValue } from './lang/deepValue.js';
 import { newVar } from './lang/simpleVar.js';
 import { isLess, logicAnd, isEqual, isGreater, logicNot, logicOr, isGreaterOrEqual, isLessOrEqual } from './lang/booleanLogic.js';
 import { ifElse } from './lang/ifElse.js';
@@ -13,7 +13,6 @@ export declare const sprogFuncs: {
     forEach: typeof forEach;
     getValue: typeof getValue;
     setValue: typeof setValue;
-    deleteValue: typeof deleteValue;
     newVar: typeof newVar;
     logicAnd: typeof logicAnd;
     logicOr: typeof logicOr;

@@ -22,6 +22,7 @@ export const SUPER_TYPES = {
 export const All_TYPES = {
     ...SIMPLE_TYPES,
     ...SUPER_TYPES,
+    function: 'function',
     any: 'any',
     Promise: 'Promise',
 };

@@ -1,6 +1,5 @@
 import { deepGet } from 'squidlet-lib';
 import { SuperFunc } from '../lib/SuperFunc.js';
-import { makeFuncProxy } from '../lib/functionProxy.js';
 /**
  * Call super function. It always await.
  * args:
@@ -31,8 +30,7 @@ export const callSuperFunc = (scope) => {
 export const newSuperFunc = (scope) => {
     return async (p) => {
         const props = await scope.$resolve(p.props);
-        const newSuperFunc = new SuperFunc(scope, props, p.lines);
-        return makeFuncProxy(newSuperFunc);
+        return (new SuperFunc(scope, props, p.lines)).getProxy();
     };
 };
 export const superReturn = (scope) => {

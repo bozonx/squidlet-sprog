@@ -1,16 +1,37 @@
 import { newScope } from './scope.js';
-import { makeFuncProxy } from './functionProxy.js';
 import { SuperBase } from './SuperBase.js';
 import { SuperStruct } from './SuperStruct.js';
 import { EXP_MARKER } from '../constants.js';
+import { SUPER_VALUE_PROP } from './superValueHelpers.js';
 export const SUPER_RETURN = 'superReturn';
 // TODO: можно по каждому prop добавить combined в scope как алиас
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
 // TODO: может добавить событие вызова ф-и или лучше middleware???
+export function proxifySuperFunc(obj) {
+    const funcProxyHandler = {
+        apply(target, thisArg, argArray) {
+            return obj.exec(...argArray);
+        },
+        get(target, prop) {
+            // $super
+            if (prop === SUPER_VALUE_PROP)
+                return obj;
+            return obj[prop];
+        },
+        has(target, prop) {
+            if (prop === SUPER_VALUE_PROP)
+                return true;
+            return Boolean(obj[prop]);
+        }
+    };
+    function fakeFunction() { }
+    return new Proxy(fakeFunction, funcProxyHandler);
+}
 export class SuperFunc extends SuperBase {
+    isSuperFunc = true;
     lines;
     appliedValues = {};
-    proxyFn = makeFuncProxy;
+    proxyFn = proxifySuperFunc;
     propsSetter;
     scope;
     get props() {
@@ -83,5 +104,5 @@ export class SuperFunc extends SuperBase {
 //
 //   if (values) newSuperFunc.applyValues(values)
 //
-//   return makeFuncProxy(newSuperFunc)
+//   return proxifySuperFunc(newSuperFunc)
 // }

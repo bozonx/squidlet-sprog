@@ -1,6 +1,6 @@
 import { SuperValueBase, SuperValuePublic } from './SuperValueBase.js';
-import { AllTypes } from '../types/valueTypes.js';
 import { SuperItemDefinition } from '../types/SuperItemDefinition.js';
+import { AllTypes } from '../types/valueTypes.js';
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
     defaultArray?: any[];
 }
@@ -8,8 +8,10 @@ export interface SuperArrayPublic extends SuperValuePublic {
     isArray: boolean;
     isReadOnly: boolean;
     length: number;
-    clearItem(index: number): void;
-    deleteItem(index: number, ignoreRo?: boolean): void;
+    clearIndex(index: number): void;
+    clearValue(value: any): void;
+    deleteIndex(index: number): void;
+    deleteValue(value: any): void;
     push(...items: any[]): number;
     pop(): any | undefined;
     shift(): any | undefined;
@@ -26,7 +28,7 @@ export type ProxyfiedArray<T = any> = SuperArrayPublic & {
  * Wrapper for super array which allows to manipulate it as common array.
  * And it puts some methods to it:
  * * arr.$super - instance of SuperArray
- * * arr... - see other methods in ARR_PUBLIC_MEMBERS
+ * * arr. ... - see other methods in ARR_PUBLIC_MEMBERS
  * @param arr
  */
 export declare function proxifyArray(arr: SuperArray): ProxyfiedArray;
@@ -37,43 +39,48 @@ export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements 
     private readonly definition;
     get isReadOnly(): boolean;
     get length(): number;
-    get itemDefinition(): SuperItemDefinition;
-    get ownKeys(): number[];
-    constructor(definition: Partial<SuperArrayDefinition>);
+    get allKeys(): number[];
+    constructor(definition?: Partial<SuperArrayDefinition>, defaultRo?: boolean);
     /**
      * Init with initial values.
      * It returns setter for readonly params
      */
     init: (initialArr?: T[]) => (index: number, item: AllTypes) => void;
     destroy: () => void;
+    setOwnValue(keyStr: string | number, value: AllTypes, ignoreRo?: boolean): boolean;
+    getProxy(): ProxyfiedArray<T>;
+    getDefinition(index: number): SuperItemDefinition;
+    batchSet(values?: T[]): void;
     /**
      * Listen only to add, remove or reorder array changes
      */
     onArrayChange(handler: () => void): number;
-    isKeyReadonly(key: string | number): boolean;
-    getOwnValue(key: number): AllTypes;
-    setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean;
     /**
-     * Set default value of array or undefined if there isn't any default value
-     * @param index
-     */
-    toDefaultValue: (index: number) => void;
-    getProxy(): ProxyfiedArray<T>;
-    /**
-     * Clear item in array but not remove index
+     * Clear item in array by index but not remove index
      * clearItem(1) [0,1,2] will be [0, empty, 2]
      * getting of arr[1] will return undefined
      * @param index
      */
-    clearItem: (index: number) => void;
+    clearIndex: (index: number) => void;
+    /**
+     * Clear item in array by value but not remove index
+     * clearItem(1) [0,1,2] will be [0, empty, 2]
+     * getting of arr[1] will return undefined
+     * @param value
+     */
+    clearValue: (value: any) => void;
     /**
      * Delete item and splice an array
      * deleteItem(1) [0,1,2] will be [0,2]
      * @param index
-     * @param ignoreRo
      */
-    deleteItem: (index: number, ignoreRo?: boolean) => void;
-    getDefinition(index: number): SuperItemDefinition | undefined;
+    deleteIndex: (index: number) => void;
+    /**
+     * Delete item and splice an array
+     * deleteItem(1) [0,1,2] will be [0,2]
+     * @param value
+     */
+    deleteValue: (value: any) => void;
     push: (...items: any[]) => number;
     pop: () => T | undefined;
     shift: () => T | undefined;
@@ -86,5 +93,4 @@ export declare class SuperArray<T = any> extends SuperValueBase<T[]> implements 
      * Set value of self readonly value and rise an event
      */
     protected myRoSetter: (index: number, newValue: AllTypes) => void;
-    private checkDefinition;
 }

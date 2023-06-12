@@ -30,13 +30,3 @@ export declare function setValue(scope: SuperScope): (p: {
     path: string;
     value: any;
 }) => Promise<void>;
-/**
- * Deeply delete a key
- * params:
- *   $exp: deleteValue
- *   path: pathToItemToDelete
- * Arrays are supported
- */
-export declare function deleteValue(scope: SuperScope): (p: {
-    path: string;
-}) => Promise<void>;

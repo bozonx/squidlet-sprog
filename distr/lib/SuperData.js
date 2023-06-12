@@ -1,33 +1,33 @@
-import { deepClone, spliceItem, omitObj, concatUniqStrArrays, deduplicate, splitDeepPath, joinDeepPath, deepSet } from 'squidlet-lib';
-import { checkDefinition, prepareDefinitionItem, SUPER_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, SUPER_VALUE_PROP, SuperValueBase, } from './SuperValueBase.js';
-import { SIMPLE_TYPES } from '../types/valueTypes.js';
+import { deepClone, spliceItem, omitObj, concatUniqStrArrays, deduplicate, splitDeepPath, joinDeepPath, } from 'squidlet-lib';
+import { SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, SuperValueBase, } from './SuperValueBase.js';
 import { DEFAULT_INIT_SUPER_DEFINITION } from '../types/SuperItemDefinition.js';
-import { checkValueBeforeSet } from './SuperStruct.js';
-import { resolveInitialSimpleValue } from './helpers.js';
-export const DATA_MEMBERS = [
-    ...SUPER_PROXY_PUBLIC_MEMBERS,
+import { checkDefinition, checkValueBeforeSet, prepareDefinitionItem, SUPER_VALUE_PROP, validateChildValue } from './superValueHelpers.js';
+import { SIMPLE_TYPES } from '../types/valueTypes.js';
+import { resolveInitialSimpleValue } from './resolveInitialSimpleValue.js';
+export const DATA_PUBLIC_MEMBERS = [
+    ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
     'isData',
 ];
 export const DEFAULT_DEFINITION_KEY = '$DEFAULT';
 export function proxifyData(data) {
     const handler = {
         get(target, prop) {
-            if (prop === SUPER_VALUE_PROP) {
+            // $super
+            if (prop === SUPER_VALUE_PROP)
                 return data;
-            }
-            else if (DATA_MEMBERS.includes(prop)) {
-                // public super struct prop
+            // public super data prop
+            else if (DATA_PUBLIC_MEMBERS.includes(prop))
                 return data[prop];
-            }
             // else prop or object itself or bottom layer
             return data.values[prop];
         },
         has(target, prop) {
-            if (prop === SUPER_VALUE_PROP || DATA_MEMBERS.includes(prop))
+            if (prop === SUPER_VALUE_PROP || DATA_PUBLIC_MEMBERS.includes(prop))
                 return true;
             return data.allKeys.includes(prop);
         },
         set(target, prop, newValue) {
+            // set to me or to bottom layer
             return data.setValue(prop, newValue);
         },
         deleteProperty(target, prop) {
@@ -94,16 +94,19 @@ export class SuperData extends SuperValueBase {
         return this.definition[DEFAULT_DEFINITION_KEY];
     }
     /**
-     * Keys only of me, not low layer and not children's
+     * All the keys of my and bottom layer
      */
-    get ownKeys() {
-        return [...this.ownOrderedKeys];
-    }
     get allKeys() {
         return deduplicate([
             ...(this.bottomLayer?.allKeys || []),
             ...this.ownKeys,
         ]);
+    }
+    /**
+     * Keys only of me, not bottom layer and not children's
+     */
+    get ownKeys() {
+        return [...this.ownOrderedKeys];
     }
     constructor(definition = {}, defaultRo = false, bottomLayer) {
         if (bottomLayer && !bottomLayer.isData) {
@@ -133,9 +136,8 @@ export class SuperData extends SuperValueBase {
         // else if null then do not register it at all
     }
     init = (initialValues) => {
-        if (this.inited) {
-            throw new Error(`The struct has been already initialized`);
-        }
+        if (this.inited)
+            throw new Error(`The data has been already initialized`);
         this.events.emit(SUPER_VALUE_EVENTS.initStart);
         const keys = concatUniqStrArrays(Object.keys(omitObj(this.definition, DEFAULT_DEFINITION_KEY)), Object.keys(initialValues || {}));
         // set initial values of my layer
@@ -182,19 +184,13 @@ export class SuperData extends SuperValueBase {
         }
         super.$$setParent(parent, myPath);
     }
-    isKeyReadonly(key) {
-        const def = this.getDefinition(key);
-        if (!def) {
-            throw new Error(`Data doesn't have definition of key "${key}"`);
-        }
-        return def.readonly;
-    }
     getOwnValue(key) {
         if (!this.isInitialized)
             throw new Error(`Init it first`);
         return this.ownValues[key];
     }
-    setOwnValue(key, value, ignoreRo) {
+    setOwnValue(key, value, ignoreRo = false) {
+        // get only own definition or default one
         const definition = (this.definition[key])
             ? (this.definition[key])
             : this.defaultDefinition;
@@ -220,30 +216,27 @@ export class SuperData extends SuperValueBase {
         const keyStr = String(splat[0]);
         if (splat.length === 1) {
             if (!this.ownKeys.includes(keyStr)
-                && this.bottomLayer && this.bottomLayer.allKeys.includes(splat[0])) {
+                && this.bottomLayer && this.bottomLayer.allKeys.includes(keyStr)) {
                 // if not own key but layered key
                 const lowPath = joinDeepPath([splat[0]]);
                 return this.bottomLayer.setValue(lowPath, newValue);
             }
-            else {
-                // own value - there splat[0] is number or string
-                // if it is a new var then set it to top layer
-                return this.setOwnValue(keyStr, newValue);
-            }
+            // else own value - there splat[0] is number or string
+            // if it is a new var then set it to top layer
+            return this.setOwnValue(keyStr, newValue);
         }
-        else {
-            // deep value
-            return deepSet(this.values, pathTo, newValue);
-        }
+        // deep child
+        return this.setDeepChild(pathTo, newValue);
     };
     /**
      * Set default value or null if the key doesn't have a default value
      * @param key
      */
-    toDefaultValue = (key) => {
+    toDefaultValue(key) {
         const definition = (this.definition[key])
             ? (this.definition[key])
             : this.defaultDefinition;
+        // TODO: во много похоже на SuperValueBase
         if (!this.isInitialized)
             throw new Error(`Init it first`);
         else if (!definition) {
@@ -251,6 +244,7 @@ export class SuperData extends SuperValueBase {
         }
         if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
             let defaultValue = definition.default;
+            // some simple type
             if (typeof defaultValue === 'undefined') {
                 // if no default value then make it from type
                 defaultValue = resolveInitialSimpleValue(definition.type, definition.nullable);
@@ -259,14 +253,14 @@ export class SuperData extends SuperValueBase {
             this.setOwnValue(key, defaultValue);
         }
         else {
+            // some super types and other types
             // TODO: а должна быть поддержка нижнего слоя ???
             // TODO: может toDefaults() должен учитывать нижний слой ??
-            // some super types
             if (this.ownValues[key]?.toDefaults)
                 this.ownValues[key].toDefaults();
             // if doesn't have toDefaults() then do nothing
         }
-    };
+    }
     getProxy() {
         return super.getProxy();
     }
@@ -275,13 +269,27 @@ export class SuperData extends SuperValueBase {
             throw new Error(`Init it first`);
         return deepClone(this.makeOrderedObject());
     };
-    /////// Data specific
-    batchSet(values) {
-        if (!values)
-            return;
-        for (const key of Object.keys(values)) {
-            this.setOwnValue(key, values[key]);
+    /**
+     * Get own definition or own default definition or bottom definition
+     * @param key
+     */
+    getDefinition(key) {
+        if (this.definition[key]) {
+            return this.definition[key] || this.defaultDefinition;
         }
+        else if (this.bottomLayer) {
+            // TODO: если есть default definition то до сюда не дойдёт
+            return this.bottomLayer.getDefinition(key);
+        }
+    }
+    /////// Data specific methods
+    // TODO: test
+    validateItem(key, value, ignoreRo) {
+        const definition = (this.definition[key])
+            ? (this.definition[key])
+            : this.defaultDefinition;
+        checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo);
+        validateChildValue(definition, key, value);
     }
     /**
      * Set a new definition for a specific key. You can't replace or change it.
@@ -304,7 +312,7 @@ export class SuperData extends SuperValueBase {
         let finalDef = this.definition[key] || this.defaultDefinition;
         if (!finalDef)
             throw new Error(`Can't resolve definition`);
-        if (!this.ownKeys.includes(key))
+        if (!this.ownOrderedKeys.includes(key))
             this.ownOrderedKeys.push(key);
         // resolve default or initial value as value
         const defaultValue = this.resolveChildValue(finalDef, key, initialValue);
@@ -327,14 +335,6 @@ export class SuperData extends SuperValueBase {
         }
         this.define(DEFAULT_DEFINITION_KEY, definition);
         this.events.emit(SUPER_VALUE_EVENTS.definition, DEFAULT_DEFINITION_KEY);
-    }
-    getDefinition(key) {
-        if (this.definition[key]) {
-            return this.definition[key] || this.defaultDefinition;
-        }
-        else if (this.bottomLayer) {
-            return this.bottomLayer.getDefinition(key);
-        }
     }
     /**
      * Remove value and definition in that way as they never exist.
@@ -373,5 +373,72 @@ export class SuperData extends SuperValueBase {
         for (const key of this.allKeys)
             res[key] = this.values[key];
         return res;
+    }
+    ////////// Array-like mutable methods
+    pop() {
+        // TODO: add
+    }
+    shift() {
+        // TODO: add
+    }
+    /**
+     *
+     * @param value
+     */
+    create(value) {
+        const sym = Symbol();
+        // TODO: add
+        return sym;
+    }
+    /**
+     * Create values and make symbols for them
+     * @param value
+     * @param count
+     */
+    fill(value, count) {
+        // TODO: add
+    }
+    reverse() {
+        // TODO: add
+    }
+    sort(compareFn) {
+        // TODO: add
+    }
+    //////// Not mutable methods
+    filter() {
+        // TODO: add
+    }
+    find() {
+        // TODO: add
+    }
+    findIndex() {
+        // TODO: add
+    }
+    findLast() {
+        // TODO: add
+    }
+    findLastIndex() {
+        // TODO: add
+    }
+    forEach() {
+        // TODO: add
+    }
+    includes() {
+        // TODO: add
+    }
+    indexOf() {
+        // TODO: add
+    }
+    map() {
+        // TODO: add
+    }
+    slice() {
+        // TODO: add
+    }
+    reduce() {
+        // TODO: add
+    }
+    reduceRight() {
+        // TODO: add
     }
 }

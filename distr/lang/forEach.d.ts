@@ -5,6 +5,8 @@ export declare const BREAK_CYCLE = "breakCycle";
 interface ForEachParams {
     reverse?: boolean;
     src: any[] | Record<string, any>;
+    as?: string;
+    keyAs?: string;
     do: SprogDefinition[];
 }
 /**

@@ -5,7 +5,9 @@ import { SuperBase } from './SuperBase.js';
 import { ProxyfiedStruct } from './SuperStruct.js';
 import { AllTypes } from '../types/valueTypes.js';
 export declare const SUPER_RETURN = "superReturn";
+export declare function proxifySuperFunc(obj: any): (() => any);
 export declare class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
+    readonly isSuperFunc: boolean;
     readonly lines: SprogDefinition[];
     appliedValues: Record<string, any>;
     protected proxyFn: (instance: any) => any;

@@ -1,15 +1,15 @@
-import { IndexedEventEmitter, deepGet, deepHas, deepSet, deepClone, splitDeepPath, joinDeepPath, } from 'squidlet-lib';
-import { All_TYPES, SIMPLE_TYPES, SUPER_TYPES, SUPER_VALUES } from '../types/valueTypes.js';
-import { DEFAULT_INIT_SUPER_DEFINITION } from '../types/SuperItemDefinition.js';
+import { IndexedEventEmitter, deepGet, deepHas, deepClone, splitDeepPath, joinDeepPath, deepGetParent, lastItem, } from 'squidlet-lib';
+import { SIMPLE_TYPES, SUPER_VALUES } from '../types/valueTypes.js';
+import { SUPER_BASE_PROXY_PUBLIC_MEMBERS, SuperBase } from './SuperBase.js';
+import { resolveNotSuperChild, SUPER_VALUE_PROP, validateChildValue, isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition } from './superValueHelpers.js';
+import { resolveInitialSimpleValue } from './resolveInitialSimpleValue.js';
 import { isCorrespondingType } from './isCorrespondingType.js';
-import { resolveInitialSimpleValue } from './helpers.js';
-import { SuperBase } from './SuperBase.js';
-export const SUPER_PROXY_PUBLIC_MEMBERS = [
+export const SUPER_VALUE_PROXY_PUBLIC_MEMBERS = [
+    ...SUPER_BASE_PROXY_PUBLIC_MEMBERS,
     'isSuperValue',
     'getValue',
     'setValue',
     'setNull',
-    'toDefaultValue',
     'subscribe',
 ];
 export var SUPER_VALUE_EVENTS;
@@ -24,103 +24,12 @@ export var SUPER_VALUE_EVENTS;
     SUPER_VALUE_EVENTS[SUPER_VALUE_EVENTS["unlink"] = 6] = "unlink";
     SUPER_VALUE_EVENTS[SUPER_VALUE_EVENTS["changeParent"] = 7] = "changeParent";
 })(SUPER_VALUE_EVENTS = SUPER_VALUE_EVENTS || (SUPER_VALUE_EVENTS = {}));
-export const SUPER_VALUE_PROP = '$super';
-export function isSuperValue(val) {
-    return typeof val === 'object' && val.isSuperValue;
-}
-export function prepareDefinitionItem(definition, defaultRo = false) {
-    return {
-        ...DEFAULT_INIT_SUPER_DEFINITION,
-        ...definition,
-        readonly: (defaultRo)
-            // if ro was set to false in definition then leave false. In other cases true
-            ? definition.readonly !== false
-            // or just use that value which is was set in definition
-            : Boolean(definition.readonly),
-    };
-}
-export function checkDefinition(definition) {
-    const { type, required, nullable, readonly, default: defaultValue, } = definition;
-    if (type && !Object.keys(All_TYPES).includes(type)) {
-        throw new Error(`Wrong type : ${type}`);
-    }
-    else if (typeof required !== 'undefined' && typeof required !== 'boolean') {
-        throw new Error(`required has to be boolean`);
-    }
-    else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
-        throw new Error(`nullable has to be boolean`);
-    }
-    else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
-        throw new Error(`readonly has to be boolean`);
-    }
-    else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
-        throw new Error(`Default value ${defaultValue} doesn't meet type: ${type}`);
-    }
-}
-/**
- * Resolves value for simple type and
- * any, simple function, super function, classes and other.
- * It assumes that you validated value before
- */
-function resolveNotSuperChild(definition, initialValue) {
-    // use initial value or default if no initial value
-    const value = (typeof initialValue === 'undefined')
-        ? definition.default
-        : initialValue;
-    if (typeof value !== 'undefined')
-        return value;
-    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-        // if no value then make it from simple type
-        // return null if nullable or initial value for each type
-        // e.g string='', number=0, boolean=false etc
-        return resolveInitialSimpleValue(definition.type, definition.nullable);
-    }
-    else if (Object.keys(All_TYPES).includes(definition.type)) {
-        // if no value or default value then return undefined for
-        // any, simple function, super function, classes and other.
-        return undefined;
-    }
-    throw new Error(`Unsupported definition type of ${definition.type}`);
-}
-// TODO: почему только в struct а не в data??
-export function validateChildValue(definition, childKeyOrIndex, value) {
-    if (!definition)
-        throw new Error(`no definition`);
-    else if (definition.type === 'any') {
-        return;
-    }
-    else if (Object.keys(SUPER_VALUES).includes(definition.type)) {
-        // TODO: validate super value
-    }
-    else if (definition.type === SUPER_TYPES.SuperFunc) {
-        // TODO: validate super func
-    }
-    else if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-        if (typeof value === 'undefined' && definition.required) {
-            throw new Error(`The value of ${childKeyOrIndex} is required, but hasn't defined`);
-        }
-        else if (typeof value === 'undefined' && !definition.required) {
-            return;
-        }
-        else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-            throw new Error(`The value of ${childKeyOrIndex} has type ${typeof value}, `
-                + `but not ${definition.type}`);
-        }
-        // // Value is defined in this case don't check required.
-        // // Check type
-        // else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
-        //   throw new Error(
-        //     `The value of ${childKeyOrIndex} has type ${typeof value}, `
-        //     + `but not ${definition.type}`
-        //   )
-        // }
-    }
-    // TODO: check other types
-}
 export class SuperValueBase extends SuperBase {
     isSuperValue = true;
     events = new IndexedEventEmitter();
     links = [];
+    // like {childKeyOrIndex: {eventNum: handlerIndex}}
+    childEventHandlers = {};
     get isDestroyed() {
         return this.events.isDestroyed;
     }
@@ -128,16 +37,27 @@ export class SuperValueBase extends SuperBase {
         super.init();
         // rise an event any way if any values was set or not
         this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe);
-        // TODO: это должно произойти вглубь на всех потомков, все должны друг друга слушать
-        // TODO: хотя наверное это уже произошло при установке значений
-        // listen to children to bubble their events
-        //this.startListenChildren()
         this.events.emit(SUPER_VALUE_EVENTS.inited);
         // return setter for read only props
         return this.myRoSetter;
     }
     destroy() {
+        const myKey = this.myKeyOfParent;
+        const myDefInParent = this.parent
+            && this.parent.$super.getDefinition(myKey);
+        if (this.parent?.$super.isDestroyed === false && myDefInParent) {
+            if (myDefInParent.required) {
+                throw new Error(`Can't destroy child "${this.myPath}" because it is required on parent`);
+            }
+            else if (!myDefInParent.nullable) {
+                throw new Error(`Can't destroy child "${this.myPath}" because it is not nullable on parent`);
+            }
+            // else null will be set to parent's value eventually
+            // remove listeners of me on my parent
+            this.parent.$super.removeChildListeners(myKey);
+        }
         this.events.emit(SUPER_VALUE_EVENTS.destroy);
+        // remove links to me
         for (const linkId in this.links) {
             // actually empty is also undefined
             if (typeof linkId === 'undefined')
@@ -145,6 +65,14 @@ export class SuperValueBase extends SuperBase {
             this.unlink(Number(linkId));
         }
         this.events.destroy();
+        // remove me for parent
+        if (this.parent?.$super.isDestroyed === false) {
+            // as we realized before parent exists and has nullable in definition of me
+            this.parent.$super.setNull(myKey);
+        }
+        // removing children listeners actually not need because children will be dstroyed
+        //   any way and events emitter will be destroyed too.
+        // after that you have to destroy all the your children in override of destroy()
     }
     /**
      * It is called only when parent set this item as its child
@@ -152,14 +80,55 @@ export class SuperValueBase extends SuperBase {
      * @myPath - full path to me in tree where im am
      */
     $$setParent(parent, myPath) {
+        const pathSplat = splitDeepPath(myPath);
+        const myKeyInParent = lastItem(pathSplat);
+        const myDefInParent = parent.$super.getDefinition(myKeyInParent);
+        if (!myDefInParent) {
+            // TODO: разкомментировать
+            //throw new Error(`Can't find definition of me`)
+        }
+        else if (!isCorrespondingType(this.getProxy(), myDefInParent.type, myDefInParent.nullable)) {
+            throw new Error(`Type of me "${this.constructor?.name}" doesn't match to "${myDefInParent.type}"`);
+        }
+        // TODO: а это надо - это наверное уже произошло - setupSuperChild
+        // const prevChild = parent.$super.getOwnValue(myKeyInParent)
+        // // destroy previous child on my plase on new parent
+        // if (prevChild) prevChild.$super.destroy()
+        //
+        // // TODO: а это надо - это наверное уже произошло - setupSuperChild
+        // const oldParent = this.parent
+        // // detach me from my old parent (or the same)
+        // if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
+        // register my new parent
         super.$$setParent(parent, myPath);
+        //this.listenChildEvents()
+        // TODO: родитель должен заного записаться на события меня
         // reregister path of all the super children
-        for (const childId of this.ownKeys) {
+        for (const childId of this.allKeys) {
             const item = this.values[childId];
+            // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
+            // TODO: если у нового потомка есть старый родитель, то надо отписаться от него
+            // TODO: если отсоединить потомка от другого родителя то у него может
+            //       нарушиться целостность, так как он может быть обязательным в struct
+            //       или быть required
+            //       можно сделать явную проверку и поднять ошибку
+            // TODO: поидее надо только путь установить без родителя, чтобы избежать проверок
             if (item.$$setParent)
-                item.$$setParent(this, this.makeChildPath(childId));
+                item.$$setParent(this.getProxy(), this.makeChildPath(childId));
         }
         this.events.emit(SUPER_VALUE_EVENTS.changeParent);
+    }
+    $$detachChild(childKey, force = false) {
+        this.removeChildListeners(childKey);
+        if (!force) {
+            const def = this.getDefinition(childKey);
+            if (def && (def.required || !def.nullable)) {
+                throw new Error(`Can't detach children because of it definition`);
+            }
+        }
+        // TODO: в super data - использовать this.ownValues
+        // remove me from values
+        this.values[childKey] = null;
     }
     subscribe = (handler) => {
         return this.events.addListener(SUPER_VALUE_EVENTS.change, handler);
@@ -167,6 +136,13 @@ export class SuperValueBase extends SuperBase {
     unsubscribe = (handlerIndex) => {
         this.events.removeListener(handlerIndex, SUPER_VALUE_EVENTS.change);
     };
+    isKeyReadonly(key) {
+        const def = this.getDefinition(key);
+        if (!def) {
+            throw new Error(`Struct doesn't have definition of key ${key}`);
+        }
+        return def.readonly;
+    }
     /**
      * It checks does the last parent or myself has key
      * @param pathTo
@@ -178,6 +154,28 @@ export class SuperValueBase extends SuperBase {
             throw new Error(`path has to be a string`);
         return deepHas(this.values, pathTo);
     };
+    getOwnValue(key) {
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
+        return this.values[key];
+    }
+    /**
+     * Set value to own child, not deeper and not to bottom layer.
+     * And rise an event of it child
+     * @param key
+     * @param value
+     * @param ignoreRo
+     * @returns {boolean} if true then value was found and set. If false value hasn't been set
+     */
+    //abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean
+    setOwnValue(key, value, ignoreRo = false) {
+        const def = this.getDefinition(key);
+        checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo);
+        // value will be validated inside resolveChildValue
+        this.values[key] = this.resolveChildValue(def, key, value);
+        this.emitChildChangeEvent(key);
+        return true;
+    }
     /**
      * You cat deeply get some primitive or other struct or super array.
      * If it is a primitive you can't change its value.
@@ -209,7 +207,7 @@ export class SuperValueBase extends SuperBase {
         }
         else {
             // deep value
-            return deepSet(this.values, pathTo, newValue);
+            return this.setDeepChild(pathTo, newValue);
         }
     };
     /**
@@ -224,8 +222,43 @@ export class SuperValueBase extends SuperBase {
      * Set all the values to default ones
      */
     toDefaults() {
-        for (const key of this.ownKeys) {
+        for (const key of this.allKeys) {
             this.toDefaultValue(key);
+        }
+    }
+    /**
+     * Set default value or null if the key doesn't have a default value
+     * @param key
+     */
+    toDefaultValue(key) {
+        const definition = this.getDefinition(key);
+        if (!this.isInitialized)
+            throw new Error(`Init it first`);
+        else if (!definition) {
+            throw new Error(`Struct doesn't have definition for key ${key}`);
+        }
+        if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+            let defaultValue = definition.default;
+            if (typeof defaultValue === 'undefined') {
+                // if no default value then make it from type
+                defaultValue = resolveInitialSimpleValue(definition.type, definition.nullable);
+            }
+            // set default value to simple child
+            this.setOwnValue(key, defaultValue);
+        }
+        else {
+            // some super types and other types
+            if (this.values[key]?.toDefaults) {
+                this.values[key].toDefaults();
+            }
+            // if doesn't have toDefaults() then do nothing
+        }
+    }
+    batchSet(values) {
+        if (!values)
+            return;
+        for (const key of Object.keys(values)) {
+            this.setOwnValue(key, values[key]);
         }
     }
     // TODO: review - нужно учитывать что тот элемент может задестроиться
@@ -289,6 +322,13 @@ export class SuperValueBase extends SuperBase {
         delete this.links[linkId];
         this.events.emit(SUPER_VALUE_EVENTS.unlink, linkId);
     }
+    unlinkByChildKey(childKeyOrIndex) {
+        const linkId = this.links.findIndex((el) => {
+            return el.myKey === childKeyOrIndex;
+        });
+        if (linkId >= 0)
+            this.unlink(linkId);
+    }
     /**
      * It makes full deep clone.
      * You can change the clone but changes will not affect the struct.
@@ -300,6 +340,27 @@ export class SuperValueBase extends SuperBase {
     };
     makeChildPath(childKeyOrIndex) {
         return joinDeepPath([this.pathToMe, childKeyOrIndex]);
+    }
+    validateItem(key, value, ignoreRo) {
+        const definition = this.getDefinition(key);
+        checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo);
+        validateChildValue(definition, key, value);
+    }
+    /**
+     * Remove all the listeners of child
+     * @param childKeyOrIndex - it can be a stringified number like '0'
+     * @private
+     */
+    removeChildListeners(childKeyOrIndex) {
+        const child = this.values[childKeyOrIndex];
+        if (!this.childEventHandlers[childKeyOrIndex] || !child)
+            return;
+        for (const eventNumStr of Object.keys(this.childEventHandlers[childKeyOrIndex])) {
+            const handlerIndex = this.childEventHandlers[childKeyOrIndex][eventNumStr];
+            const eventNum = Number(eventNumStr);
+            child.$super.events.removeListener(handlerIndex, eventNum);
+        }
+        delete this.childEventHandlers[childKeyOrIndex];
     }
     emitChildChangeEvent(childKeyOrIndex) {
         const fullPath = this.makeChildPath(childKeyOrIndex);
@@ -313,93 +374,113 @@ export class SuperValueBase extends SuperBase {
         this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe);
     }
     /**
+     * Set to deep child.
+     * * if parent of this child is Super value then call setValue which emits an event
+     * * if parent of child is simple array or object - just set value and emit an event
+     * @param pathTo - has to be a deep value
+     * @param newValue
+     * @protected
+     */
+    setDeepChild(pathTo, newValue) {
+        const [deepParent, lastPathPart] = deepGetParent(this.values, pathTo);
+        if (typeof lastPathPart === 'undefined') {
+            throw new Error(`Can't find deep child`);
+        }
+        else if (isSuperValue(deepParent)) {
+            return deepParent.$super.setValue(lastPathPart, newValue);
+        }
+        // simple object or array
+        deepParent[lastPathPart] = newValue;
+        this.events.emit(SUPER_VALUE_EVENTS.change, deepParent, pathTo);
+        return true;
+    }
+    /**
      * Resolve onw child value according the definition and init it.
-     * If the child is simple type then it checks its type and returns
-     * default or initial value for type.
-     * If the child is Super type then it init it if need
+     * It is called in init(), setOwnValue() and define()
+     * @param definition
+     * @param childKeyOrIndex
+     * @param value - if value not set then it will try to get default value
+     *   or make an initial value according to definition.type
      */
     resolveChildValue(definition, childKeyOrIndex, value) {
         validateChildValue(definition, childKeyOrIndex, value);
         if (Object.keys(SUPER_VALUES).includes(definition.type)) {
             return this.resolveSuperChild(definition, childKeyOrIndex, value);
         }
+        // TODO: если SuperFunc - то надо ей сделать $$setParent
+        else if (definition.type === 'any'
+            && typeof value === 'object'
+            && isSuperValue(value[SUPER_VALUE_PROP])) {
+            // if any type and the value is super value - then make it my child
+            this.setupSuperChild(value, childKeyOrIndex);
+            return value;
+        }
         // resolve other types
         return resolveNotSuperChild(definition, value);
     }
-    // TODO: review
+    /**
+     * It resolves a super value:
+     * * if initialValue set then it returns it
+     * * if no initialValue then make a new instance an init it with default value
+     * * if no initialValue and default value then just init a new instance
+     * @param definition
+     * @param childKeyOrIndex
+     * @param initialValue
+     * @private
+     */
     resolveSuperChild(definition, childKeyOrIndex, initialValue) {
-        // work with super type
-        // TODO: убрать лишние валидации
-        // TODO: check undefined initialValue
-        // TODO: startListenChildren()
-        // TODO: если передан super value
-        //    надо подменить у него parent, path и слушать buble событий от него
-        //    все его потомки должны обновить родительский path
-        // TODO: check isSuper instead
-        if (initialValue && isSuperValue(initialValue)) {
-            // this means the super struct or array has already initialized,
-            // so now we are linking it as my child
-            // TODO: проверить соответствие в default's definition
-            // TODO: установить ro если он у родителя
-            // TODO: потомок должен установить ro у детей
-            initialValue.$super.$$setParent(this, this.makeChildPath(childKeyOrIndex));
+        if (initialValue) {
+            if (!initialValue[SUPER_VALUE_PROP]) {
+                throw new Error(`child has to be proxified`);
+            }
+            else if (!isSuperValue(initialValue)) {
+                throw new Error(`child is not Super Value`);
+            }
+            // this means the super value has already initialized
+            // so now we are making it my child and start listening of its events
+            this.setupSuperChild(initialValue, childKeyOrIndex);
             return initialValue;
         }
-        else if (!definition.default) {
-            throw new Error(`There aren't initial value and default value for super value`);
-        }
-        else if (typeof definition.default !== 'object') {
-            throw new Error(`Wrong type of definition.default`);
-        }
         else {
-            // if initial value not defined then create an instance using default's definition
-            // TODO: read only должно наследоваться потомками если оно стоит у родителя
-            // TODO: если потомок super value то надо делать его через proxy
-            //       потому что иначе не сработает deepGet, deepSet etc
-            //       хотя можно для deep manipulate сделать поддержку методов setValue(), getValue()
-            let def;
-            if (definition.type === SUPER_VALUES.SuperStruct) {
-                def = {
-                    $exp: 'newSuperStruct',
-                    definition: definition.default,
-                    defaultRo: definition.readonly,
-                };
-            }
-            else if (definition.type === SUPER_VALUES.SuperArray) {
-                def = {
-                    $exp: 'newSuperArray',
-                    item: {
-                        ...definition.default.item,
-                        //readonly: definition.readonly
-                    },
-                    default: definition.default.default,
-                };
-            }
-            //this.myScope.$resolve()
+            // no initial value - make a new Super Value
+            return makeNewSuperValueByDefinition(definition, childKeyOrIndex);
         }
-        throw new Error(`Can't setup a super value of ${childKeyOrIndex}`);
     }
     /**
-     * listen to children to bubble their events
+     * it:
+     * * replace parent
+     * * start listen to children to bubble their events
+     * * listen to child destroy
      * @protected
      */
-    startListenChildren() {
-        // TODO: use it in value setup
-        // TODO: поидее должно пойти в глубину.
-        //    Но при этом если объект был переназначен другому родителю
-        //    то надо отписаться от старых событий - зайти в старого родителя и отписаться
-        for (const key of this.ownKeys) {
-            // TODO: тут должны быть ownValues или layered???
-            const value = this.values[key];
-            if (typeof value !== 'object' || !value.isSuperValue)
-                continue;
-            value.subscribe((target, path) => {
-                // if not path then it's some wierd
-                if (!path)
-                    console.warn(`Bubble event without path. But root is "${this.pathToMe}", child is "${key}"`);
-                // just bubble children's event
-                this.events.emit(SUPER_VALUE_EVENTS.change, target, path);
-            });
+    setupSuperChild(child, childKeyOrIndex) {
+        child.$super.$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex));
+        // any way remove my listener if it has
+        if (this.childEventHandlers[childKeyOrIndex]) {
+            this.removeChildListeners(childKeyOrIndex);
         }
+        this.listenChildEvents(child, childKeyOrIndex);
+    }
+    listenChildEvents(child, childKeyOrIndex) {
+        this.childEventHandlers[childKeyOrIndex] = {
+            // bubble child events to me
+            [SUPER_VALUE_EVENTS.change]: child.subscribe((target, path) => {
+                if (!path) {
+                    console.warn(`WARNING: Bubbling child event without path. Root is "${this.pathToMe}"`);
+                    return;
+                }
+                return this.events.emit(SUPER_VALUE_EVENTS.change, target, path);
+            }),
+            [SUPER_VALUE_EVENTS.destroy]: child.$super.events.addListener(SUPER_VALUE_EVENTS.destroy, () => this.handleSuperChildDestroy(childKeyOrIndex)),
+        };
+    }
+    handleSuperChildDestroy(childKeyOrIndex) {
+        this.unlinkByChildKey(childKeyOrIndex);
+        this.removeChildListeners(childKeyOrIndex);
+        // TODO: его надо удалить из this.values тоже
+        //       но тогда останется его definition
+        //       и что делать если в definition должен быть потомок если required???
+        //       создать заного потомка???
+        //       а в struct что делать??? там же потомок обязателен
     }
 }

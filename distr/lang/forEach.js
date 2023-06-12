@@ -1,7 +1,6 @@
 import { newScope } from '../lib/scope.js';
 import { EXP_MARKER } from '../constants.js';
 import { SUPER_RETURN } from '../lib/SuperFunc.js';
-// TODO: add rename of value and index
 export const CONTINUE_CYCLE = 'continueCycle';
 export const BREAK_CYCLE = 'breakCycle';
 /**
@@ -25,6 +24,8 @@ export function forEach(scope) {
     return async (p) => {
         const src = await scope.$resolve(p.src);
         const reverse = await scope.$resolve(p.reverse);
+        const as = await scope.$resolve(p.as);
+        const keyAs = await scope.$resolve(p.keyAs);
         if (Array.isArray(src)) {
             if (!src.length)
                 return;
@@ -34,7 +35,7 @@ export function forEach(scope) {
             for (let i = firstIndex; (reverse) ? i >= 0 : i < src.length; (reverse) ? i-- : i++) {
                 let toStepNum = -1;
                 const toStep = (stepNum) => toStepNum = stepNum;
-                const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex, toStep);
+                const result = await doIteration(p.do, scope, i, i, src[i], firstIndex, lastIndex, toStep, as, keyAs);
                 if (result === '$$' + BREAK_CYCLE)
                     break;
                 else if (typeof result !== 'undefined')
@@ -54,7 +55,7 @@ export function forEach(scope) {
                 const keyStr = keys[i];
                 let toStepNum = -1;
                 const toStep = (stepNum) => toStepNum = stepNum;
-                const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex, toStep);
+                const result = await doIteration(p.do, scope, i, keyStr, src[keyStr], firstIndex, lastIndex, toStep, as, keyAs);
                 if (result === '$$' + BREAK_CYCLE)
                     break;
                 else if (typeof result !== 'undefined')
@@ -68,12 +69,12 @@ export function forEach(scope) {
         }
     };
 }
-async function doIteration(lines, scope, i, key, value, firstIndex, lastIndex, toStep) {
+async function doIteration(lines, scope, i, key, value, firstIndex, lastIndex, toStep, as, keyAs) {
     const isRecursive = lastIndex === 0 && firstIndex !== 0;
     const localScopeInitial = {
         i,
-        key,
-        value,
+        [keyAs || 'key']: key,
+        [as || 'value']: value,
         $isFirst: i === firstIndex,
         $isLast: i === lastIndex,
         $skipNext() {
