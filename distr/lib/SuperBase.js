@@ -33,6 +33,9 @@ export class SuperBase {
         this.myParent = parent;
         this.myPath = myPath;
     }
+    $$setPath(myNewPath) {
+        this.myPath = myNewPath;
+    }
     /**
      * Return proxy of my self and make it if it is the first time
      */

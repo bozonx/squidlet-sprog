@@ -6,6 +6,9 @@ export const SUPER_VALUE_PROP = '$super';
 export function isSuperValue(val) {
     return typeof val === 'object' && val.isSuperValue;
 }
+export function isSuperKind(val) {
+    return typeof val === 'object' && val.isSuper;
+}
 export function prepareDefinitionItem(definition, defaultRo = false) {
     return {
         ...DEFAULT_INIT_SUPER_DEFINITION,

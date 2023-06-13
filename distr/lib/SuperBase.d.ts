@@ -18,6 +18,7 @@ export declare abstract class SuperBase {
     get myKeyOfParent(): string | number | undefined;
     init(): any;
     $$setParent(parent: ProxyfiedSuperBase, myPath: string): void;
+    $$setPath(myNewPath: string): void;
     /**
      * Return proxy of my self and make it if it is the first time
      */

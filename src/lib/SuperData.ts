@@ -259,9 +259,12 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     super.destroy()
 
     for (const key of Object.keys(this.ownValues)) {
-      if (typeof this.ownValues[key] === 'object' && this.ownValues[key].destroy) {
+      if (
+        typeof this.ownValues[key] === 'object'
+        && this.ownValues[key][SUPER_VALUE_PROP]?.destroy
+      ) {
         // it will destroy itself and its children
-        (this.ownValues[key] as SuperValueBase).destroy()
+        (this.ownValues[key][SUPER_VALUE_PROP] as SuperValueBase).destroy()
       }
     }
   }

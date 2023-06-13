@@ -116,8 +116,9 @@ export class SuperArray extends SuperValueBase {
         super.destroy();
         const values = this.values;
         for (const indexStr of values) {
-            if (typeof values[indexStr] === 'object' && values[indexStr].destroy) {
-                values[indexStr].destroy();
+            if (typeof values[indexStr] === 'object'
+                && values[indexStr][SUPER_VALUE_PROP]?.destroy) {
+                values[indexStr][SUPER_VALUE_PROP].destroy();
             }
         }
     };

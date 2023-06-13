@@ -199,8 +199,11 @@ export class SuperArray<T = any>
     const values: any[] = this.values
 
     for (const indexStr of values) {
-      if (typeof values[indexStr] === 'object' && values[indexStr].destroy) {
-        (values[indexStr] as SuperValueBase).destroy()
+      if (
+        typeof values[indexStr] === 'object'
+        && values[indexStr][SUPER_VALUE_PROP]?.destroy
+      ) {
+        (values[indexStr][SUPER_VALUE_PROP] as SuperValueBase).destroy()
       }
     }
   }

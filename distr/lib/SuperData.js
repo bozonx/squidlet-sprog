@@ -80,6 +80,7 @@ export function proxifyLayeredValue(topOwnValues, bottomData) {
 export class SuperData extends SuperValueBase {
     isData = true;
     // values only of this layer. Do not use it, use setValue, getValue instead
+    // TODO: why not T ???
     ownValues = {};
     // proxy which allows to manipulate with all layers. Do not use it at all.
     // it only for getValue and setValue and other inner methods.
@@ -107,6 +108,9 @@ export class SuperData extends SuperValueBase {
      */
     get ownKeys() {
         return [...this.ownOrderedKeys];
+    }
+    get ownValuesStrict() {
+        return this.ownValues;
     }
     constructor(definition = {}, defaultRo = false, bottomLayer) {
         if (bottomLayer && !bottomLayer.isData) {
@@ -172,9 +176,10 @@ export class SuperData extends SuperValueBase {
     destroy = () => {
         super.destroy();
         for (const key of Object.keys(this.ownValues)) {
-            if (typeof this.ownValues[key] === 'object' && this.ownValues[key].destroy) {
+            if (typeof this.ownValues[key] === 'object'
+                && this.ownValues[key][SUPER_VALUE_PROP]?.destroy) {
                 // it will destroy itself and its children
-                this.ownValues[key].destroy();
+                this.ownValues[key][SUPER_VALUE_PROP].destroy();
             }
         }
     };
@@ -183,6 +188,11 @@ export class SuperData extends SuperValueBase {
             throw new Error(`It doesn't support to set parent to layered SuperData`);
         }
         super.$$setParent(parent, myPath);
+    }
+    $$setPath(myNewPath) {
+        this.myPath = myNewPath;
+        if (this.bottomLayer)
+            this.bottomLayer.$$setPath(myNewPath);
     }
     getOwnValue(key) {
         if (!this.isInitialized)

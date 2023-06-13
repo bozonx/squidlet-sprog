@@ -30,10 +30,12 @@ export declare class SuperData<T extends Record<string, AllTypes> = Record<strin
      * Keys only of me, not bottom layer and not children's
      */
     get ownKeys(): string[];
+    get ownValuesStrict(): T;
     constructor(definition?: Record<string, SuperItemInitDefinition>, defaultRo?: boolean, bottomLayer?: SuperData);
     init: (initialValues?: T) => (name: keyof T, newValue: AllTypes) => void;
     destroy: () => void;
     $$setParent(parent: ProxyfiedSuperBase, myPath: string): void;
+    $$setPath(myNewPath: string): void;
     getOwnValue(key: string): AllTypes;
     setOwnValue(key: string, value: AllTypes, ignoreRo?: boolean): boolean;
     /**

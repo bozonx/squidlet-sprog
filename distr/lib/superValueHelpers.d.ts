@@ -3,6 +3,7 @@ import { AllTypes, SimpleType } from '../types/valueTypes.js';
 import { SuperArrayDefinition } from './SuperArray.js';
 export declare const SUPER_VALUE_PROP = "$super";
 export declare function isSuperValue(val: any): boolean;
+export declare function isSuperKind(val: any): boolean;
 export declare function prepareDefinitionItem(definition: SuperItemInitDefinition, defaultRo?: boolean): SuperItemDefinition;
 export declare function checkDefinition(definition?: SuperItemInitDefinition): void;
 export declare function checkArrayDefinition(definition?: Partial<SuperArrayDefinition>): void;

@@ -91,9 +91,10 @@ export class SuperStruct extends SuperValueBase {
         // destroy all the children
         for (const key of this.allKeys) {
             const keyName = key;
-            if (typeof this.values[keyName] === 'object' && this.values[keyName].destroy) {
+            if (typeof this.values[keyName] === 'object'
+                && this.values[keyName][SUPER_VALUE_PROP]?.destroy) {
                 // it will destroy itself and its children
-                this.values[keyName].destroy();
+                this.values[keyName][SUPER_VALUE_PROP].destroy();
             }
         }
     };

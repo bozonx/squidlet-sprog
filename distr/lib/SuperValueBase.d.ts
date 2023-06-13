@@ -36,22 +36,26 @@ export declare abstract class SuperValueBase<T = any | any[]> extends SuperBase 
     private childEventHandlers;
     get isDestroyed(): boolean;
     /**
+     * It strictly gets own values, without layers
+     */
+    get ownValuesStrict(): T;
+    /**
      * Get all the keys or indexes
      */
     abstract allKeys: (string | number)[];
     init(): any;
     destroy(): void;
     /**
-     * It is called only when parent set this item as its child
+     * It is called only when parent set this item as its child.
+     * It is called only in deep of resolveChildValue() method
+     * which is called only in init(). setOwnValue() and define().
+     * It doesn't need to validate me in parent because this was made
+     * in validateChildValue() before.
      * @parent - parent super struct, super array or super data
      * @myPath - full path to me in tree where im am
      */
     $$setParent(parent: ProxyfiedSuperBase, myPath: string): void;
     $$detachChild(childKey: string | number, force?: boolean): void;
-    /**
-     * Get only own value not from bottom layer and not deep
-     * @param key
-     */
     abstract getDefinition(key: string | number): SuperItemDefinition | undefined;
     subscribe: (handler: SuperChangeHandler) => number;
     unsubscribe: (handlerIndex: number) => void;
@@ -61,6 +65,10 @@ export declare abstract class SuperValueBase<T = any | any[]> extends SuperBase 
      * @param pathTo
      */
     hasKey: (pathTo: string) => boolean;
+    /**
+     * Get only own value not from bottom layer and not deep
+     * @param key
+     */
     getOwnValue(key: number | string): AllTypes;
     /**
      * Set value to own child, not deeper and not to bottom layer.
@@ -154,7 +162,7 @@ export declare abstract class SuperValueBase<T = any | any[]> extends SuperBase 
      * * if no initialValue and default value then just init a new instance
      * @param definition
      * @param childKeyOrIndex
-     * @param initialValue
+     * @param mySuperChild
      * @private
      */
     private resolveSuperChild;
@@ -166,6 +174,6 @@ export declare abstract class SuperValueBase<T = any | any[]> extends SuperBase 
      * @protected
      */
     private setupSuperChild;
-    private listenChildEvents;
     private handleSuperChildDestroy;
+    private listenChildEvents;
 }

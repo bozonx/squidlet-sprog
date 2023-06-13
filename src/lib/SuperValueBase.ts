@@ -6,7 +6,6 @@ import {
   splitDeepPath,
   joinDeepPath,
   deepGetParent,
-  lastItem,
 } from 'squidlet-lib';
 import {
   AllTypes,
@@ -24,7 +23,6 @@ import {
   isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition, isSuperKind
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
-import {isCorrespondingType} from './isCorrespondingType.js';
 
 
 export interface SuperValuePublic extends SuperBasePublic {

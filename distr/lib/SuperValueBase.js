@@ -1,9 +1,8 @@
-import { IndexedEventEmitter, deepGet, deepHas, deepClone, splitDeepPath, joinDeepPath, deepGetParent, lastItem, } from 'squidlet-lib';
+import { IndexedEventEmitter, deepGet, deepHas, deepClone, splitDeepPath, joinDeepPath, deepGetParent, } from 'squidlet-lib';
 import { SIMPLE_TYPES, SUPER_VALUES } from '../types/valueTypes.js';
 import { SUPER_BASE_PROXY_PUBLIC_MEMBERS, SuperBase } from './SuperBase.js';
-import { resolveNotSuperChild, SUPER_VALUE_PROP, validateChildValue, isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition } from './superValueHelpers.js';
+import { resolveNotSuperChild, SUPER_VALUE_PROP, validateChildValue, isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition, isSuperKind } from './superValueHelpers.js';
 import { resolveInitialSimpleValue } from './resolveInitialSimpleValue.js';
-import { isCorrespondingType } from './isCorrespondingType.js';
 export const SUPER_VALUE_PROXY_PUBLIC_MEMBERS = [
     ...SUPER_BASE_PROXY_PUBLIC_MEMBERS,
     'isSuperValue',
@@ -32,6 +31,12 @@ export class SuperValueBase extends SuperBase {
     childEventHandlers = {};
     get isDestroyed() {
         return this.events.isDestroyed;
+    }
+    /**
+     * It strictly gets own values, without layers
+     */
+    get ownValuesStrict() {
+        return this.values;
     }
     init() {
         super.init();
@@ -75,60 +80,37 @@ export class SuperValueBase extends SuperBase {
         // after that you have to destroy all the your children in override of destroy()
     }
     /**
-     * It is called only when parent set this item as its child
+     * It is called only when parent set this item as its child.
+     * It is called only in deep of resolveChildValue() method
+     * which is called only in init(). setOwnValue() and define().
+     * It doesn't need to validate me in parent because this was made
+     * in validateChildValue() before.
      * @parent - parent super struct, super array or super data
      * @myPath - full path to me in tree where im am
      */
     $$setParent(parent, myPath) {
-        const pathSplat = splitDeepPath(myPath);
-        const myKeyInParent = lastItem(pathSplat);
-        const myDefInParent = parent.$super.getDefinition(myKeyInParent);
-        if (!myDefInParent) {
-            // TODO: разкомментировать
-            //throw new Error(`Can't find definition of me`)
-        }
-        else if (!isCorrespondingType(this.getProxy(), myDefInParent.type, myDefInParent.nullable)) {
-            throw new Error(`Type of me "${this.constructor?.name}" doesn't match to "${myDefInParent.type}"`);
-        }
-        // TODO: а это надо - это наверное уже произошло - setupSuperChild
-        // const prevChild = parent.$super.getOwnValue(myKeyInParent)
-        // // destroy previous child on my plase on new parent
-        // if (prevChild) prevChild.$super.destroy()
-        //
-        // // TODO: а это надо - это наверное уже произошло - setupSuperChild
-        // const oldParent = this.parent
-        // // detach me from my old parent (or the same)
-        // if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
         // register my new parent
         super.$$setParent(parent, myPath);
-        //this.listenChildEvents()
-        // TODO: родитель должен заного записаться на события меня
-        // reregister path of all the super children
+        // change path of all the super children including bottom layer
+        // it doesn't need to set parent because their parent hasn't changed
         for (const childId of this.allKeys) {
-            const item = this.values[childId];
-            // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
-            // TODO: если у нового потомка есть старый родитель, то надо отписаться от него
-            // TODO: если отсоединить потомка от другого родителя то у него может
-            //       нарушиться целостность, так как он может быть обязательным в struct
-            //       или быть required
-            //       можно сделать явную проверку и поднять ошибку
-            // TODO: поидее надо только путь установить без родителя, чтобы избежать проверок
-            if (item.$$setParent)
-                item.$$setParent(this.getProxy(), this.makeChildPath(childId));
+            const child = this.values[childId];
+            if (isSuperKind(child)) {
+                child[SUPER_VALUE_PROP].$$setPath(this.makeChildPath(childId));
+            }
         }
         this.events.emit(SUPER_VALUE_EVENTS.changeParent);
     }
     $$detachChild(childKey, force = false) {
-        this.removeChildListeners(childKey);
         if (!force) {
             const def = this.getDefinition(childKey);
             if (def && (def.required || !def.nullable)) {
                 throw new Error(`Can't detach children because of it definition`);
             }
         }
-        // TODO: в super data - использовать this.ownValues
+        this.removeChildListeners(childKey);
         // remove me from values
-        this.values[childKey] = null;
+        this.ownValuesStrict[childKey] = null;
     }
     subscribe = (handler) => {
         return this.events.addListener(SUPER_VALUE_EVENTS.change, handler);
@@ -154,6 +136,10 @@ export class SuperValueBase extends SuperBase {
             throw new Error(`path has to be a string`);
         return deepHas(this.values, pathTo);
     };
+    /**
+     * Get only own value not from bottom layer and not deep
+     * @param key
+     */
     getOwnValue(key) {
         if (!this.isInitialized)
             throw new Error(`Init it first`);
@@ -167,7 +153,6 @@ export class SuperValueBase extends SuperBase {
      * @param ignoreRo
      * @returns {boolean} if true then value was found and set. If false value hasn't been set
      */
-    //abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean
     setOwnValue(key, value, ignoreRo = false) {
         const def = this.getDefinition(key);
         checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo);
@@ -353,12 +338,12 @@ export class SuperValueBase extends SuperBase {
      */
     removeChildListeners(childKeyOrIndex) {
         const child = this.values[childKeyOrIndex];
-        if (!this.childEventHandlers[childKeyOrIndex] || !child)
+        if (!child || !isSuperValue(child) || !this.childEventHandlers[childKeyOrIndex])
             return;
         for (const eventNumStr of Object.keys(this.childEventHandlers[childKeyOrIndex])) {
             const handlerIndex = this.childEventHandlers[childKeyOrIndex][eventNumStr];
             const eventNum = Number(eventNumStr);
-            child.$super.events.removeListener(handlerIndex, eventNum);
+            child[SUPER_VALUE_PROP].events.removeListener(handlerIndex, eventNum);
         }
         delete this.childEventHandlers[childKeyOrIndex];
     }
@@ -387,7 +372,7 @@ export class SuperValueBase extends SuperBase {
             throw new Error(`Can't find deep child`);
         }
         else if (isSuperValue(deepParent)) {
-            return deepParent.$super.setValue(lastPathPart, newValue);
+            return deepParent[SUPER_VALUE_PROP].setValue(lastPathPart, newValue);
         }
         // simple object or array
         deepParent[lastPathPart] = newValue;
@@ -411,6 +396,8 @@ export class SuperValueBase extends SuperBase {
         else if (definition.type === 'any'
             && typeof value === 'object'
             && isSuperValue(value[SUPER_VALUE_PROP])) {
+            // TODO: почему ???
+            // TODO: там же на события навешиваются, которых может не быть у SuperFunc
             // if any type and the value is super value - then make it my child
             this.setupSuperChild(value, childKeyOrIndex);
             return value;
@@ -425,21 +412,21 @@ export class SuperValueBase extends SuperBase {
      * * if no initialValue and default value then just init a new instance
      * @param definition
      * @param childKeyOrIndex
-     * @param initialValue
+     * @param mySuperChild
      * @private
      */
-    resolveSuperChild(definition, childKeyOrIndex, initialValue) {
-        if (initialValue) {
-            if (!initialValue[SUPER_VALUE_PROP]) {
+    resolveSuperChild(definition, childKeyOrIndex, mySuperChild) {
+        if (mySuperChild) {
+            if (!mySuperChild[SUPER_VALUE_PROP]) {
                 throw new Error(`child has to be proxified`);
             }
-            else if (!isSuperValue(initialValue)) {
+            else if (!isSuperValue(mySuperChild)) {
                 throw new Error(`child is not Super Value`);
             }
             // this means the super value has already initialized
             // so now we are making it my child and start listening of its events
-            this.setupSuperChild(initialValue, childKeyOrIndex);
-            return initialValue;
+            this.setupSuperChild(mySuperChild, childKeyOrIndex);
+            return mySuperChild;
         }
         else {
             // no initial value - make a new Super Value
@@ -453,26 +440,25 @@ export class SuperValueBase extends SuperBase {
      * * listen to child destroy
      * @protected
      */
-    setupSuperChild(child, childKeyOrIndex) {
-        child.$super.$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex));
+    setupSuperChild(mySuperChild, childKeyOrIndex) {
+        //const pathSplat = splitDeepPath(myPath)
+        //const myKeyInParent = lastItem(pathSplat)
+        //const myDefInParent: SuperItemDefinition | undefined = parent.$super.getDefinition(myKeyInParent)
+        // TODO: reivew
+        // const prevChild = parent[SUPER_VALUE_PROP].ownValuesStrict[myKeyInParent]
+        // // destroy previous child on my place on the new parent
+        // if (prevChild && !prevChild[SUPER_VALUE_PROP].isDestroyed) prevChild.$super.destroy()
+        //
+        // const oldParent = this.parent
+        // // detach me from my old parent (or the same)
+        // if (oldParent) oldParent[SUPER_VALUE_PROP].$$detachChild(myKeyInParent, true)
+        mySuperChild[SUPER_VALUE_PROP].$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex));
         // any way remove my listener if it has
         if (this.childEventHandlers[childKeyOrIndex]) {
             this.removeChildListeners(childKeyOrIndex);
         }
-        this.listenChildEvents(child, childKeyOrIndex);
-    }
-    listenChildEvents(child, childKeyOrIndex) {
-        this.childEventHandlers[childKeyOrIndex] = {
-            // bubble child events to me
-            [SUPER_VALUE_EVENTS.change]: child.subscribe((target, path) => {
-                if (!path) {
-                    console.warn(`WARNING: Bubbling child event without path. Root is "${this.pathToMe}"`);
-                    return;
-                }
-                return this.events.emit(SUPER_VALUE_EVENTS.change, target, path);
-            }),
-            [SUPER_VALUE_EVENTS.destroy]: child.$super.events.addListener(SUPER_VALUE_EVENTS.destroy, () => this.handleSuperChildDestroy(childKeyOrIndex)),
-        };
+        // start listening my children
+        this.listenChildEvents(mySuperChild, childKeyOrIndex);
     }
     handleSuperChildDestroy(childKeyOrIndex) {
         this.unlinkByChildKey(childKeyOrIndex);
@@ -482,5 +468,18 @@ export class SuperValueBase extends SuperBase {
         //       и что делать если в definition должен быть потомок если required???
         //       создать заного потомка???
         //       а в struct что делать??? там же потомок обязателен
+    }
+    listenChildEvents(mySuperChild, childKeyOrIndex) {
+        this.childEventHandlers[childKeyOrIndex] = {
+            // bubble child events to me
+            [SUPER_VALUE_EVENTS.change]: mySuperChild.subscribe((target, path) => {
+                if (!path) {
+                    console.warn(`WARNING: Bubbling child event without path. Root is "${this.pathToMe}"`);
+                    return;
+                }
+                return this.events.emit(SUPER_VALUE_EVENTS.change, target, path);
+            }),
+            [SUPER_VALUE_EVENTS.destroy]: mySuperChild[SUPER_VALUE_PROP].events.addListener(SUPER_VALUE_EVENTS.destroy, () => this.handleSuperChildDestroy(childKeyOrIndex)),
+        };
     }
 }
