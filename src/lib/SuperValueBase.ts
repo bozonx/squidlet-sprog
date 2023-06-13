@@ -235,15 +235,6 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
 
-  //abstract isKeyReadonly(key: string | number): boolean
-
-  /**
-   * Get only own value not from bottom layer and not deep
-   * @param key
-   */
-  //abstract getOwnValue(key: string | number): AllTypes
-
-
   abstract getDefinition(key: string | number): SuperItemDefinition | undefined
 
   subscribe = (handler: SuperChangeHandler): number => {
@@ -275,6 +266,10 @@ export abstract class SuperValueBase<T = any | any[]>
     return deepHas(this.values as any, pathTo)
   }
 
+  /**
+   * Get only own value not from bottom layer and not deep
+   * @param key
+   */
   getOwnValue(key: number | string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
