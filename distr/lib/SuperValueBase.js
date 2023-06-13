@@ -47,6 +47,8 @@ export class SuperValueBase extends SuperBase {
         return this.myRoSetter;
     }
     destroy() {
+        if (this.isDestroyed)
+            return;
         const myKey = this.myKeyOfParent;
         const myDefInParent = this.parent
             && this.parent.$super.getDefinition(myKey);
@@ -73,6 +75,9 @@ export class SuperValueBase extends SuperBase {
         // remove me for parent
         if (this.parent?.$super.isDestroyed === false) {
             // as we realized before parent exists and has nullable in definition of me
+            // TODO: не правильно работает так как требудет установить значение на
+            //       элементе который уже задестроен
+            //       возмжно вызов дестроя событий происходит позже
             this.parent.$super.setNull(myKey);
         }
         // removing children listeners actually not need because children will be dstroyed

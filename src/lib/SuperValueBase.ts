@@ -117,6 +117,8 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   destroy() {
+    if (this.isDestroyed) return
+
     const myKey = this.myKeyOfParent
     const myDefInParent: SuperItemDefinition | undefined = this.parent
       && this.parent.$super.getDefinition(myKey)
@@ -150,6 +152,9 @@ export abstract class SuperValueBase<T = any | any[]>
     // remove me for parent
     if (this.parent?.$super.isDestroyed === false) {
       // as we realized before parent exists and has nullable in definition of me
+      // TODO: не правильно работает так как требудет установить значение на
+      //       элементе который уже задестроен
+      //       возмжно вызов дестроя событий происходит позже
       this.parent.$super.setNull(myKey)
     }
 
