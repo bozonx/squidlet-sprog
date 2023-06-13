@@ -622,13 +622,13 @@ export abstract class SuperValueBase<T = any | any[]>
     //const myDefInParent: SuperItemDefinition | undefined = parent.$super.getDefinition(myKeyInParent)
 
     // TODO: reivew
-    const prevChild = parent[SUPER_VALUE_PROP].ownValuesStrict[myKeyInParent]
-    // destroy previous child on my place on the new parent
-    if (prevChild && !prevChild[SUPER_VALUE_PROP].isDestroyed) prevChild.$super.destroy()
-
-    const oldParent = this.parent
-    // detach me from my old parent (or the same)
-    if (oldParent) oldParent[SUPER_VALUE_PROP].$$detachChild(myKeyInParent, true)
+    // const prevChild = parent[SUPER_VALUE_PROP].ownValuesStrict[myKeyInParent]
+    // // destroy previous child on my place on the new parent
+    // if (prevChild && !prevChild[SUPER_VALUE_PROP].isDestroyed) prevChild.$super.destroy()
+    //
+    // const oldParent = this.parent
+    // // detach me from my old parent (or the same)
+    // if (oldParent) oldParent[SUPER_VALUE_PROP].$$detachChild(myKeyInParent, true)
 
 
     mySuperChild[SUPER_VALUE_PROP].$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex))
