@@ -54,6 +54,10 @@ export abstract class SuperBase {
     this.myPath = myPath
   }
 
+  $$setPath(myNewPath: string) {
+    this.myPath = myNewPath
+  }
+
   /**
    * Return proxy of my self and make it if it is the first time
    */

@@ -173,21 +173,22 @@ export abstract class SuperValueBase<T = any | any[]>
     // register my new parent
     super.$$setParent(parent, myPath)
 
+    //const children = this.ownValuesStrict
     // reregister path of all the super children
+
+    // change path of all the children including bottom layer
     for (const childId of this.allKeys) {
-      const item = this.ownValuesStrict[childId as keyof T] as SuperBase
+      const child = this.values[childId as keyof T] as ProxyfiedSuperBase
 
       // TODO: это же должно произойти и на нижнем слое
 
       //if (item.$super.$$setPath) item.$super.$$setPath(this.makeChildPath(childId))
-      if (item.$$setParent) item.$$setParent(this.getProxy(), this.makeChildPath(childId))
+      if (typeof child === 'object' && child[SUPER_VALUE_PROP].$$setParent) {
+        item.$super.$$setParent(this.getProxy(), this.makeChildPath(childId))
+      }
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.changeParent)
-  }
-
-  $$setPath(myNewPath: string) {
-
   }
 
   $$detachChild(childKey: string | number, force: boolean = false) {
@@ -487,13 +488,15 @@ export abstract class SuperValueBase<T = any | any[]>
   removeChildListeners(childKeyOrIndex: string | number) {
     const child: ProxifiedSuperValue = (this.values as any)[childKeyOrIndex]
 
+    // TODO: проверить что child super value
+
     if (!this.childEventHandlers[childKeyOrIndex] || !child) return
 
     for (const eventNumStr of Object.keys(this.childEventHandlers[childKeyOrIndex])) {
       const handlerIndex = this.childEventHandlers[childKeyOrIndex][eventNumStr]
       const eventNum = Number(eventNumStr)
 
-      child.$super.events.removeListener(handlerIndex, eventNum)
+      child[SUPER_VALUE_PROP].events.removeListener(handlerIndex, eventNum)
     }
 
     delete this.childEventHandlers[childKeyOrIndex]
@@ -535,7 +538,7 @@ export abstract class SuperValueBase<T = any | any[]>
       throw new Error(`Can't find deep child`)
     }
     else if (isSuperValue(deepParent)) {
-      return deepParent.$super.setValue(lastPathPart, newValue)
+      return deepParent[SUPER_VALUE_PROP].setValue(lastPathPart, newValue)
     }
     // simple object or array
     deepParent[lastPathPart] = newValue
@@ -569,6 +572,9 @@ export abstract class SuperValueBase<T = any | any[]>
       && typeof value === 'object'
       && isSuperValue(value[SUPER_VALUE_PROP])
     ) {
+
+      // TODO: почему ???
+      // TODO: там же на события навешиваются, которых может не быть у SuperFunc
       // if any type and the value is super value - then make it my child
       this.setupSuperChild(value, childKeyOrIndex)
 
@@ -586,26 +592,26 @@ export abstract class SuperValueBase<T = any | any[]>
    * * if no initialValue and default value then just init a new instance
    * @param definition
    * @param childKeyOrIndex
-   * @param initialValue
+   * @param mySuperChild
    * @private
    */
   private resolveSuperChild(
     definition: SuperItemDefinition,
     childKeyOrIndex: string | number,
-    initialValue?: ProxifiedSuperValue
+    mySuperChild?: ProxifiedSuperValue
   ): ProxifiedSuperValue | undefined {
-    if (initialValue) {
-      if (!initialValue[SUPER_VALUE_PROP]) {
+    if (mySuperChild) {
+      if (!mySuperChild[SUPER_VALUE_PROP]) {
         throw new Error(`child has to be proxified`)
       }
-      else if (!isSuperValue(initialValue)) {
+      else if (!isSuperValue(mySuperChild)) {
         throw new Error(`child is not Super Value`)
       }
       // this means the super value has already initialized
       // so now we are making it my child and start listening of its events
-      this.setupSuperChild(initialValue, childKeyOrIndex)
+      this.setupSuperChild(mySuperChild, childKeyOrIndex)
 
-      return initialValue
+      return mySuperChild
     }
     else {
       // no initial value - make a new Super Value
@@ -620,27 +626,28 @@ export abstract class SuperValueBase<T = any | any[]>
    * * listen to child destroy
    * @protected
    */
-  private setupSuperChild(child: ProxifiedSuperValue, childKeyOrIndex: string | number) {
+  private setupSuperChild(mySuperChild: ProxifiedSuperValue, childKeyOrIndex: string | number) {
     //const pathSplat = splitDeepPath(myPath)
     //const myKeyInParent = lastItem(pathSplat)
     //const myDefInParent: SuperItemDefinition | undefined = parent.$super.getDefinition(myKeyInParent)
 
-    const prevChild = parent.$super.ownValuesStrict[myKeyInParent]
+    // TODO: reivew
+    const prevChild = parent[SUPER_VALUE_PROP].ownValuesStrict[myKeyInParent]
     // destroy previous child on my place on the new parent
-    if (prevChild && !prevChild.$super.isDestroyed) prevChild.$super.destroy()
+    if (prevChild && !prevChild[SUPER_VALUE_PROP].isDestroyed) prevChild.$super.destroy()
 
     const oldParent = this.parent
     // detach me from my old parent (or the same)
-    if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
+    if (oldParent) oldParent[SUPER_VALUE_PROP].$$detachChild(myKeyInParent, true)
 
 
-    child.$super.$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex))
+    mySuperChild[SUPER_VALUE_PROP].$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex))
     // any way remove my listener if it has
     if (this.childEventHandlers[childKeyOrIndex]) {
       this.removeChildListeners(childKeyOrIndex)
     }
     // start listening my children
-    this.listenChildEvents(child, childKeyOrIndex)
+    this.listenChildEvents(mySuperChild, childKeyOrIndex)
   }
 
   private handleSuperChildDestroy(childKeyOrIndex: string | number) {
@@ -654,10 +661,10 @@ export abstract class SuperValueBase<T = any | any[]>
     //       а в struct что делать??? там же потомок обязателен
   }
 
-  private listenChildEvents(myChild: ProxifiedSuperValue, childKeyOrIndex: string | number) {
+  private listenChildEvents(mySuperChild: ProxifiedSuperValue, childKeyOrIndex: string | number) {
     this.childEventHandlers[childKeyOrIndex] = {
       // bubble child events to me
-      [SUPER_VALUE_EVENTS.change]: myChild.subscribe((target: ProxifiedSuperValue, path?: string) => {
+      [SUPER_VALUE_EVENTS.change]: mySuperChild.subscribe((target: ProxifiedSuperValue, path?: string) => {
         if (!path) {
           console.warn(`WARNING: Bubbling child event without path. Root is "${this.pathToMe}"`)
 
@@ -666,7 +673,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
         return this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
       }),
-      [SUPER_VALUE_EVENTS.destroy]: myChild.$super.events.addListener(
+      [SUPER_VALUE_EVENTS.destroy]: mySuperChild[SUPER_VALUE_PROP].events.addListener(
         SUPER_VALUE_EVENTS.destroy,
         () => this.handleSuperChildDestroy(childKeyOrIndex)
       ),
@@ -674,18 +681,3 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
 }
-
-
-
-// if (!myDefInParent) {
-//   //throw new Error(`Can't find definition of me`)
-// }
-// else if (!isCorrespondingType(
-//   this.getProxy(),
-//   myDefInParent.type,
-//   myDefInParent.nullable
-// )) {
-//   throw new Error(
-//     `Type of me "${this.constructor?.name}" doesn't match to "${myDefInParent.type}"`
-//   )
-// }
