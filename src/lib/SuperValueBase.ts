@@ -173,6 +173,7 @@ export abstract class SuperValueBase<T = any | any[]>
     // register my new parent
     super.$$setParent(parent, myPath)
     // change path of all the super children including bottom layer
+    // it doesn't need to set parent because their parent hasn't changed
     for (const childId of this.allKeys) {
       const child = this.values[childId as keyof T] as ProxyfiedSuperBase
 
@@ -248,8 +249,6 @@ export abstract class SuperValueBase<T = any | any[]>
    * @param ignoreRo
    * @returns {boolean} if true then value was found and set. If false value hasn't been set
    */
-  //abstract setOwnValue(key: string | number, value: AllTypes, ignoreRo?: boolean): boolean
-
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
     const def = this.getDefinition(key)
 
@@ -481,9 +480,7 @@ export abstract class SuperValueBase<T = any | any[]>
   removeChildListeners(childKeyOrIndex: string | number) {
     const child: ProxifiedSuperValue = (this.values as any)[childKeyOrIndex]
 
-    // TODO: проверить что child super value
-
-    if (!this.childEventHandlers[childKeyOrIndex] || !child) return
+    if (!child || !isSuperValue(child) || !this.childEventHandlers[childKeyOrIndex]) return
 
     for (const eventNumStr of Object.keys(this.childEventHandlers[childKeyOrIndex])) {
       const handlerIndex = this.childEventHandlers[childKeyOrIndex][eventNumStr]
