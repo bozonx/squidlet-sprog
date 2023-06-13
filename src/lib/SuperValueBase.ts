@@ -161,67 +161,36 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * It is called only when parent set this item as its child
+   * It is called only when parent set this item as its child.
+   * It is called only in deep of resolveChildValue() method
+   * which is called only in init(). setOwnValue() and define().
+   * It doesn't need to validate me in parent because this was made
+   * in validateChildValue() before.
    * @parent - parent super struct, super array or super data
    * @myPath - full path to me in tree where im am
    */
   $$setParent(parent: ProxyfiedSuperBase, myPath: string) {
-    const pathSplat = splitDeepPath(myPath)
-    const myKeyInParent = lastItem(pathSplat)
-    const myDefInParent: SuperItemDefinition | undefined = parent.$super.getDefinition(myKeyInParent)
-
-    if (!myDefInParent) {
-      // TODO: разкомментировать
-      //throw new Error(`Can't find definition of me`)
-    }
-    else if (!isCorrespondingType(
-      this.getProxy(),
-      myDefInParent.type,
-      myDefInParent.nullable
-    )) {
-      throw new Error(
-        `Type of me "${this.constructor?.name}" doesn't match to "${myDefInParent.type}"`
-      )
-    }
-
-    const prevChild = parent.$super.ownValuesStrict[myKeyInParent]
-    // destroy previous child on my place on the new parent
-    if (prevChild && !prevChild.$super.isDestroyed) prevChild.$super.destroy()
-
-    const oldParent = this.parent
-    // detach me from my old parent (or the same)
-    if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
-
     // register my new parent
     super.$$setParent(parent, myPath)
 
-    //this.listenChildEvents()
-    // TODO: родитель должен заного записаться на события меня
-
-
     // reregister path of all the super children
     for (const childId of this.allKeys) {
-      const item = this.values[childId as keyof T] as SuperBase
+      const item = this.ownValuesStrict[childId as keyof T] as SuperBase
 
-      // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
-      // TODO: если у нового потомка есть старый родитель, то надо отписаться от него
-      // TODO: если отсоединить потомка от другого родителя то у него может
-      //       нарушиться целостность, так как он может быть обязательным в struct
-      //       или быть required
-      //       можно сделать явную проверку и поднять ошибку
+      // TODO: это же должно произойти и на нижнем слое
 
-
-      // TODO: поидее надо только путь установить без родителя, чтобы избежать проверок
-
+      //if (item.$super.$$setPath) item.$super.$$setPath(this.makeChildPath(childId))
       if (item.$$setParent) item.$$setParent(this.getProxy(), this.makeChildPath(childId))
     }
 
     this.events.emit(SUPER_VALUE_EVENTS.changeParent)
   }
 
-  $$detachChild(childKey: string | number, force: boolean = false) {
-    this.removeChildListeners(childKey)
+  $$setPath(myNewPath: string) {
 
+  }
+
+  $$detachChild(childKey: string | number, force: boolean = false) {
     if (!force) {
       const def = this.getDefinition(childKey)
 
@@ -230,6 +199,7 @@ export abstract class SuperValueBase<T = any | any[]>
       }
     }
 
+    this.removeChildListeners(childKey)
     // remove me from values
     this.ownValuesStrict[childKey as keyof T] = null as any
   }
@@ -651,6 +621,19 @@ export abstract class SuperValueBase<T = any | any[]>
    * @protected
    */
   private setupSuperChild(child: ProxifiedSuperValue, childKeyOrIndex: string | number) {
+    //const pathSplat = splitDeepPath(myPath)
+    //const myKeyInParent = lastItem(pathSplat)
+    //const myDefInParent: SuperItemDefinition | undefined = parent.$super.getDefinition(myKeyInParent)
+
+    const prevChild = parent.$super.ownValuesStrict[myKeyInParent]
+    // destroy previous child on my place on the new parent
+    if (prevChild && !prevChild.$super.isDestroyed) prevChild.$super.destroy()
+
+    const oldParent = this.parent
+    // detach me from my old parent (or the same)
+    if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
+
+
     child.$super.$$setParent(this.getProxy(), this.makeChildPath(childKeyOrIndex))
     // any way remove my listener if it has
     if (this.childEventHandlers[childKeyOrIndex]) {
@@ -658,6 +641,17 @@ export abstract class SuperValueBase<T = any | any[]>
     }
     // start listening my children
     this.listenChildEvents(child, childKeyOrIndex)
+  }
+
+  private handleSuperChildDestroy(childKeyOrIndex: string | number) {
+    this.unlinkByChildKey(childKeyOrIndex)
+    this.removeChildListeners(childKeyOrIndex)
+
+    // TODO: его надо удалить из this.values тоже
+    //       но тогда останется его definition
+    //       и что делать если в definition должен быть потомок если required???
+    //       создать заного потомка???
+    //       а в struct что делать??? там же потомок обязателен
   }
 
   private listenChildEvents(myChild: ProxifiedSuperValue, childKeyOrIndex: string | number) {
@@ -679,15 +673,19 @@ export abstract class SuperValueBase<T = any | any[]>
     }
   }
 
-  private handleSuperChildDestroy(childKeyOrIndex: string | number) {
-    this.unlinkByChildKey(childKeyOrIndex)
-    this.removeChildListeners(childKeyOrIndex)
-
-    // TODO: его надо удалить из this.values тоже
-    //       но тогда останется его definition
-    //       и что делать если в definition должен быть потомок если required???
-    //       создать заного потомка???
-    //       а в struct что делать??? там же потомок обязателен
-  }
-
 }
+
+
+
+// if (!myDefInParent) {
+//   //throw new Error(`Can't find definition of me`)
+// }
+// else if (!isCorrespondingType(
+//   this.getProxy(),
+//   myDefInParent.type,
+//   myDefInParent.nullable
+// )) {
+//   throw new Error(
+//     `Type of me "${this.constructor?.name}" doesn't match to "${myDefInParent.type}"`
+//   )
+// }

@@ -778,11 +778,16 @@ describe('SuperData', () => {
   //   assert.deepEqual(cloned, {p1: 5})
   // })
 
+  // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
   // TODO: test removeChildListeners()
   // TODO: test all the events
   // TODO: test toDefaultValue when child is super data
   // TODO: test batchSet
   // TODO: test array like
   // TODO: test init array like values
+  // TODO: если отсоединить потомка от другого родителя то у него может
+  //       нарушиться целостность, так как он может быть обязательным в struct
+  //       или быть required
+  //       можно сделать явную проверку и поднять ошибку
 
 })
