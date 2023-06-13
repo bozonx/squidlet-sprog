@@ -184,13 +184,13 @@ export abstract class SuperValueBase<T = any | any[]>
       )
     }
 
-    // const prevChild = parent.$super.getOwnValue(myKeyInParent)
-    // // destroy previous child on my place on the new parent
-    // if (prevChild && !prevChild.$super.isDestroyed) prevChild.$super.destroy()
-    //
-    // const oldParent = this.parent
-    // // detach me from my old parent (or the same)
-    // if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
+    const prevChild = parent.$super.ownValuesStrict[myKeyInParent]
+    // destroy previous child on my place on the new parent
+    if (prevChild && !prevChild.$super.isDestroyed) prevChild.$super.destroy()
+
+    const oldParent = this.parent
+    // detach me from my old parent (or the same)
+    if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
 
     // register my new parent
     super.$$setParent(parent, myPath)
