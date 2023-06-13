@@ -274,6 +274,12 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     super.$$setParent(parent, myPath)
   }
 
+  $$setPath(myNewPath: string) {
+    this.myPath = myNewPath
+
+    if (this.bottomLayer) this.bottomLayer.$$setPath(myNewPath)
+  }
+
 
   getOwnValue(key: string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)

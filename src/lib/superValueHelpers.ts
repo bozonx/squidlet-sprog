@@ -21,6 +21,11 @@ export function isSuperValue(val: any): boolean {
   return typeof val === 'object' && val.isSuperValue
 }
 
+export function isSuperKind(val: any): boolean {
+  return typeof val === 'object' && val.isSuper
+}
+
+
 export function prepareDefinitionItem(
   definition: SuperItemInitDefinition,
   defaultRo: boolean = false

@@ -21,7 +21,7 @@ import {
   resolveNotSuperChild,
   SUPER_VALUE_PROP,
   validateChildValue,
-  isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition
+  isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition, isSuperKind
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
@@ -172,19 +172,12 @@ export abstract class SuperValueBase<T = any | any[]>
   $$setParent(parent: ProxyfiedSuperBase, myPath: string) {
     // register my new parent
     super.$$setParent(parent, myPath)
-
-    //const children = this.ownValuesStrict
-    // reregister path of all the super children
-
-    // change path of all the children including bottom layer
+    // change path of all the super children including bottom layer
     for (const childId of this.allKeys) {
       const child = this.values[childId as keyof T] as ProxyfiedSuperBase
 
-      // TODO: это же должно произойти и на нижнем слое
-
-      //if (item.$super.$$setPath) item.$super.$$setPath(this.makeChildPath(childId))
-      if (typeof child === 'object' && child[SUPER_VALUE_PROP].$$setParent) {
-        item.$super.$$setParent(this.getProxy(), this.makeChildPath(childId))
+      if (isSuperKind(child)) {
+        child[SUPER_VALUE_PROP].$$setPath(this.makeChildPath(childId))
       }
     }
 
