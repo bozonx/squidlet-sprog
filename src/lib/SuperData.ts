@@ -143,6 +143,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
 {
   readonly isData = true
   // values only of this layer. Do not use it, use setValue, getValue instead
+  // TODO: why not T ???
   readonly ownValues: Record<string, any> = {}
   // proxy which allows to manipulate with all layers. Do not use it at all.
   // it only for getValue and setValue and other inner methods.
@@ -173,6 +174,10 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    */
   get ownKeys(): string[] {
     return [...this.ownOrderedKeys]
+  }
+
+  get ownValuesStrict(): T {
+    return this.ownValues as T
   }
 
 

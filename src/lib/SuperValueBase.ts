@@ -97,6 +97,13 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
+   * It strictly gets own values, without layers
+   */
+  get ownValuesStrict(): T {
+    return this.values
+  }
+
+  /**
    * Get all the keys or indexes
    */
   abstract allKeys: (string | number)[]
@@ -177,12 +184,10 @@ export abstract class SuperValueBase<T = any | any[]>
       )
     }
 
-    // TODO: а это надо - это наверное уже произошло - setupSuperChild
     // const prevChild = parent.$super.getOwnValue(myKeyInParent)
-    // // destroy previous child on my plase on new parent
-    // if (prevChild) prevChild.$super.destroy()
+    // // destroy previous child on my place on the new parent
+    // if (prevChild && !prevChild.$super.isDestroyed) prevChild.$super.destroy()
     //
-    // // TODO: а это надо - это наверное уже произошло - setupSuperChild
     // const oldParent = this.parent
     // // detach me from my old parent (or the same)
     // if (oldParent) oldParent.$super.$$detachChild(myKeyInParent, true)
@@ -225,9 +230,8 @@ export abstract class SuperValueBase<T = any | any[]>
       }
     }
 
-    // TODO: в super data - использовать this.ownValues
     // remove me from values
-    this.values[childKey as keyof T] = null as any
+    this.ownValuesStrict[childKey as keyof T] = null as any
   }
 
 
@@ -657,14 +661,14 @@ export abstract class SuperValueBase<T = any | any[]>
     if (this.childEventHandlers[childKeyOrIndex]) {
       this.removeChildListeners(childKeyOrIndex)
     }
-
+    // start listening my children
     this.listenChildEvents(child, childKeyOrIndex)
   }
 
-  private listenChildEvents(child: ProxifiedSuperValue, childKeyOrIndex: string | number) {
+  private listenChildEvents(myChild: ProxifiedSuperValue, childKeyOrIndex: string | number) {
     this.childEventHandlers[childKeyOrIndex] = {
       // bubble child events to me
-      [SUPER_VALUE_EVENTS.change]: child.subscribe((target: ProxifiedSuperValue, path?: string) => {
+      [SUPER_VALUE_EVENTS.change]: myChild.subscribe((target: ProxifiedSuperValue, path?: string) => {
         if (!path) {
           console.warn(`WARNING: Bubbling child event without path. Root is "${this.pathToMe}"`)
 
@@ -673,7 +677,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
         return this.events.emit(SUPER_VALUE_EVENTS.change, target, path)
       }),
-      [SUPER_VALUE_EVENTS.destroy]: child.$super.events.addListener(
+      [SUPER_VALUE_EVENTS.destroy]: myChild.$super.events.addListener(
         SUPER_VALUE_EVENTS.destroy,
         () => this.handleSuperChildDestroy(childKeyOrIndex)
       ),
