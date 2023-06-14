@@ -199,7 +199,7 @@ export class SuperArray<T = any>
     const values: any[] = this.values
 
     for (const indexStr of values) {
-      if (isSuperValue(values[indexStr][SUPER_VALUE_PROP])) {
+      if (isSuperValue(values[indexStr])) {
         (values[indexStr][SUPER_VALUE_PROP] as SuperValueBase).destroy()
       }
     }
