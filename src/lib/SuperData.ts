@@ -19,7 +19,7 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {
   checkDefinition,
-  checkValueBeforeSet,
+  checkValueBeforeSet, isSuperValue,
   prepareDefinitionItem,
   SUPER_VALUE_PROP,
   validateChildValue
@@ -259,10 +259,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     super.destroy()
 
     for (const key of Object.keys(this.ownValues)) {
-      if (
-        typeof this.ownValues[key] === 'object'
-        && this.ownValues[key][SUPER_VALUE_PROP]?.destroy
-      ) {
+      if (isSuperValue(this.ownValues[key])) {
         // it will destroy itself and its children
         (this.ownValues[key][SUPER_VALUE_PROP] as SuperValueBase).destroy()
       }
@@ -376,7 +373,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       // TODO: а должна быть поддержка нижнего слоя ???
       // TODO: может toDefaults() должен учитывать нижний слой ??
 
-      if (this.ownValues[key]?.toDefaults) this.ownValues[key].toDefaults()
+      if (isSuperValue(this.ownValues[key])) this.ownValues[key].toDefaults()
       // if doesn't have toDefaults() then do nothing
     }
   }

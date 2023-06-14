@@ -65,7 +65,7 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     return sprogFn(thisScope)(params)
   },
   async $resolve(defOrValue: any): Promise<any> {
-    if (typeof defOrValue === 'object' && defOrValue[EXP_MARKER]) {
+    if (defOrValue && typeof defOrValue === 'object' && defOrValue[EXP_MARKER]) {
       return this.$run(defOrValue)
     }
     // simple value

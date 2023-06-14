@@ -1,5 +1,5 @@
 import { SuperValueBase, SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, } from './SuperValueBase.js';
-import { checkDefinition, prepareDefinitionItem, SUPER_VALUE_PROP, } from './superValueHelpers.js';
+import { checkDefinition, isSuperValue, prepareDefinitionItem, SUPER_VALUE_PROP, } from './superValueHelpers.js';
 export const STRUCT_PUBLIC_MEMBERS = [
     ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
     'isStruct',
@@ -91,8 +91,7 @@ export class SuperStruct extends SuperValueBase {
         // destroy all the children
         for (const key of this.allKeys) {
             const keyName = key;
-            if (typeof this.values[keyName] === 'object'
-                && this.values[keyName][SUPER_VALUE_PROP]?.destroy) {
+            if (isSuperValue(this.values[keyName])) {
                 // it will destroy itself and its children
                 this.values[keyName][SUPER_VALUE_PROP].destroy();
             }

@@ -25,7 +25,7 @@ const scopeFunctions = {
         return sprogFn(thisScope)(params);
     },
     async $resolve(defOrValue) {
-        if (typeof defOrValue === 'object' && defOrValue[EXP_MARKER]) {
+        if (defOrValue && typeof defOrValue === 'object' && defOrValue[EXP_MARKER]) {
             return this.$run(defOrValue);
         }
         // simple value

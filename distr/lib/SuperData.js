@@ -1,7 +1,7 @@
 import { deepClone, spliceItem, omitObj, concatUniqStrArrays, deduplicate, splitDeepPath, joinDeepPath, } from 'squidlet-lib';
 import { SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, SuperValueBase, } from './SuperValueBase.js';
 import { DEFAULT_INIT_SUPER_DEFINITION } from '../types/SuperItemDefinition.js';
-import { checkDefinition, checkValueBeforeSet, prepareDefinitionItem, SUPER_VALUE_PROP, validateChildValue } from './superValueHelpers.js';
+import { checkDefinition, checkValueBeforeSet, isSuperValue, prepareDefinitionItem, SUPER_VALUE_PROP, validateChildValue } from './superValueHelpers.js';
 import { SIMPLE_TYPES } from '../types/valueTypes.js';
 import { resolveInitialSimpleValue } from './resolveInitialSimpleValue.js';
 export const DATA_PUBLIC_MEMBERS = [
@@ -176,8 +176,7 @@ export class SuperData extends SuperValueBase {
     destroy = () => {
         super.destroy();
         for (const key of Object.keys(this.ownValues)) {
-            if (typeof this.ownValues[key] === 'object'
-                && this.ownValues[key][SUPER_VALUE_PROP]?.destroy) {
+            if (isSuperValue(this.ownValues[key])) {
                 // it will destroy itself and its children
                 this.ownValues[key][SUPER_VALUE_PROP].destroy();
             }
@@ -266,7 +265,7 @@ export class SuperData extends SuperValueBase {
             // some super types and other types
             // TODO: а должна быть поддержка нижнего слоя ???
             // TODO: может toDefaults() должен учитывать нижний слой ??
-            if (this.ownValues[key]?.toDefaults)
+            if (isSuperValue(this.ownValues[key]))
                 this.ownValues[key].toDefaults();
             // if doesn't have toDefaults() then do nothing
         }

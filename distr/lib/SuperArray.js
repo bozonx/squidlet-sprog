@@ -1,7 +1,7 @@
 import { arrayKeys, omitObj } from 'squidlet-lib';
 import { SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, SuperValueBase } from './SuperValueBase.js';
 import { DEFAULT_INIT_SUPER_DEFINITION, } from '../types/SuperItemDefinition.js';
-import { checkArrayDefinition, SUPER_VALUE_PROP } from './superValueHelpers.js';
+import { checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP } from './superValueHelpers.js';
 const ARR_PUBLIC_MEMBERS = [
     ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
     'isArray',
@@ -116,8 +116,7 @@ export class SuperArray extends SuperValueBase {
         super.destroy();
         const values = this.values;
         for (const indexStr of values) {
-            if (typeof values[indexStr] === 'object'
-                && values[indexStr][SUPER_VALUE_PROP]?.destroy) {
+            if (isSuperValue(values[indexStr][SUPER_VALUE_PROP])) {
                 values[indexStr][SUPER_VALUE_PROP].destroy();
             }
         }

@@ -44,7 +44,7 @@ export function forEach(scope) {
                     i = toStepNum;
             }
         }
-        else if (typeof src === 'object') {
+        else if (src && typeof src === 'object') {
             const keys = Object.keys(src);
             if (!keys.length)
                 return;

@@ -237,8 +237,7 @@ export class SuperValueBase extends SuperBase {
             this.setOwnValue(key, defaultValue);
         }
         else {
-            // some super types and other types
-            if (this.values[key]?.toDefaults) {
+            if (isSuperValue(this.values[key])) {
                 this.values[key].toDefaults();
             }
             // if doesn't have toDefaults() then do nothing
@@ -399,6 +398,7 @@ export class SuperValueBase extends SuperBase {
         }
         // TODO: если SuperFunc - то надо ей сделать $$setParent
         else if (definition.type === 'any'
+            && value
             && typeof value === 'object'
             && isSuperValue(value[SUPER_VALUE_PROP])) {
             // TODO: почему ???

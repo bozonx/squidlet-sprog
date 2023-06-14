@@ -4,10 +4,10 @@ import { isCorrespondingType } from './isCorrespondingType.js';
 import { resolveInitialSimpleValue } from './resolveInitialSimpleValue.js';
 export const SUPER_VALUE_PROP = '$super';
 export function isSuperValue(val) {
-    return typeof val === 'object' && val.isSuperValue;
+    return val && typeof val === 'object' && val.isSuperValue;
 }
 export function isSuperKind(val) {
-    return typeof val === 'object' && val.isSuper;
+    return val && typeof val === 'object' && val.isSuper;
 }
 export function prepareDefinitionItem(definition, defaultRo = false) {
     return {

@@ -10,7 +10,7 @@ import {
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
 import {AllTypes} from '../types/valueTypes.js';
-import {checkArrayDefinition, SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 // TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
@@ -199,10 +199,7 @@ export class SuperArray<T = any>
     const values: any[] = this.values
 
     for (const indexStr of values) {
-      if (
-        typeof values[indexStr] === 'object'
-        && values[indexStr][SUPER_VALUE_PROP]?.destroy
-      ) {
+      if (isSuperValue(values[indexStr][SUPER_VALUE_PROP])) {
         (values[indexStr][SUPER_VALUE_PROP] as SuperValueBase).destroy()
       }
     }

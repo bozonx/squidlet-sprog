@@ -747,7 +747,7 @@ describe('SuperData', () => {
     spy2.should.have.been.calledTwice
   })
 
-  it.only('destroy', async () => {
+  it('destroy', async () => {
     const spy1 = sinon.spy()
     const spy2 = sinon.spy()
     const rootProxy = (new SuperData()).getProxy()

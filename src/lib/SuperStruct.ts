@@ -9,7 +9,7 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {
-  checkDefinition,
+  checkDefinition, isSuperKind, isSuperValue,
   prepareDefinitionItem,
   SUPER_VALUE_PROP,
 } from './superValueHelpers.js';
@@ -150,10 +150,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const key of this.allKeys) {
       const keyName = key as keyof T
 
-      if (
-        typeof this.values[keyName] === 'object'
-        && (this.values[keyName] as any)[SUPER_VALUE_PROP]?.destroy
-      ) {
+      if (isSuperValue(this.values[keyName])) {
         // it will destroy itself and its children
         ((this.values[keyName] as any)[SUPER_VALUE_PROP] as SuperValueBase).destroy()
       }

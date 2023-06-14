@@ -345,8 +345,7 @@ export abstract class SuperValueBase<T = any | any[]>
       this.setOwnValue(key, defaultValue)
     }
     else {
-      // some super types and other types
-      if ((this.values[key as keyof T] as SuperValueBase)?.toDefaults) {
+      if (isSuperValue(this.values[key as keyof T])) {
         (this.values[key as keyof T] as SuperValueBase).toDefaults()
       }
       // if doesn't have toDefaults() then do nothing
@@ -562,6 +561,7 @@ export abstract class SuperValueBase<T = any | any[]>
     // TODO: если SuperFunc - то надо ей сделать $$setParent
     else if (
       definition.type === 'any'
+      && value
       && typeof value === 'object'
       && isSuperValue(value[SUPER_VALUE_PROP])
     ) {

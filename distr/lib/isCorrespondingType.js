@@ -22,14 +22,14 @@ export function isCorrespondingType(value, type, nullable = false) {
     }
     // For super values and super func
     else if (Object.keys(SUPER_TYPES).includes(type)) {
-        if (typeof value !== 'object' || !value[SUPER_VALUE_PROP])
+        if (!value || typeof value !== 'object' || !value[SUPER_VALUE_PROP])
             return false;
         return value[SUPER_VALUE_PROP].constructor?.name === type;
     }
     else if (Array.isArray(value))
         return type === SIMPLE_TYPES.array;
     // for Promise
-    else if (typeof value === 'object' && type !== SIMPLE_TYPES.object) {
+    else if (value && typeof value === 'object' && type !== SIMPLE_TYPES.object) {
         return value.constructor?.name === type;
     }
     return typeof value === type;

@@ -18,11 +18,11 @@ export const SUPER_VALUE_PROP = '$super'
 
 
 export function isSuperValue(val: any): boolean {
-  return typeof val === 'object' && val.isSuperValue
+  return val && typeof val === 'object' && val.isSuperValue
 }
 
 export function isSuperKind(val: any): boolean {
-  return typeof val === 'object' && val.isSuper
+  return val && typeof val === 'object' && val.isSuper
 }
 
 
