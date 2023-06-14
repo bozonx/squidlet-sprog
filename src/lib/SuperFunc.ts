@@ -1,6 +1,6 @@
 import {newScope, SuperScope} from './scope.js'
 import {SprogDefinition} from '../types/types.js';
-import {SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -14,6 +14,12 @@ export const SUPER_RETURN = 'superReturn'
 // TODO: можно по каждому prop добавить combined в scope как алиас
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
 // TODO: может добавить событие вызова ф-и или лучше middleware???
+
+// export interface SuperFuncDefinition {
+//   $exp: string
+//   props: Record<string, SuperItemDefinition>,
+//   lines: SprogDefinition[]
+// }
 
 
 export function proxifySuperFunc(obj: any): (() => any) {
@@ -110,9 +116,6 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
       await this.scope.$run(line)
     }
-
-    // TODO: отловить return в if, switch, цикл через scope
-
   }
 
 
