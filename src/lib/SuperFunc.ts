@@ -1,6 +1,6 @@
 import {newScope, SuperScope} from './scope.js'
 import {SprogDefinition} from '../types/types.js';
-import {SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {RedefineDefinition, SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -15,10 +15,13 @@ export const SUPER_RETURN = 'superReturn'
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
 // TODO: может добавить событие вызова ф-и или лучше middleware???
 // TODO: если в prop не указан default значит он required
+// TODO: make redefine
+
 
 export interface SuperFuncDefinition {
-  props: Record<string, SuperItemDefinition>,
+  props: Record<string, SuperItemDefinition>
   lines: SprogDefinition[]
+  redefine?: Record<string, RedefineDefinition>
 }
 
 
@@ -67,11 +70,14 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   constructor(
     scope: SuperScope,
     props: Record<keyof T, SuperItemInitDefinition>,
-    lines: SprogDefinition[]
+    lines: SprogDefinition[],
+    redefine?: Record<string, RedefineDefinition>
   ) {
     super()
 
     this.scope = newScope(undefined, scope)
+
+    // TODO: redefine - rename props
 
     const propsStruct: ProxyfiedStruct = (new SuperStruct(props, true)).getProxy()
 

@@ -13,6 +13,7 @@ interface SuperItemDefinitionExtra {
 }
 
 export type SuperItemInitDefinition = SuperItemDefinitionBase & Partial<SuperItemDefinitionExtra>
+export type RedefineDefinition = SuperItemInitDefinition & {rename?: string}
 export type SuperItemDefinition = SuperItemDefinitionBase & SuperItemDefinitionExtra
 
 

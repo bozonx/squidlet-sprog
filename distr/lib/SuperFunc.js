@@ -34,9 +34,10 @@ export class SuperFunc extends SuperBase {
     get props() {
         return this.scope['props'];
     }
-    constructor(scope, props, lines) {
+    constructor(scope, props, lines, redefine) {
         super();
         this.scope = newScope(undefined, scope);
+        // TODO: redefine - rename props
         const propsStruct = (new SuperStruct(props, true)).getProxy();
         this.propsSetter = propsStruct.$super.init();
         // set prop to scope
