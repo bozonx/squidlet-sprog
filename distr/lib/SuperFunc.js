@@ -4,14 +4,6 @@ import { SuperStruct } from './SuperStruct.js';
 import { EXP_MARKER } from '../constants.js';
 import { SUPER_VALUE_PROP } from './superValueHelpers.js';
 export const SUPER_RETURN = 'superReturn';
-// TODO: можно по каждому prop добавить combined в scope как алиас
-// TODO: если в prop есть супер значение то им должно быть проставлено readonly
-// TODO: может добавить событие вызова ф-и или лучше middleware???
-// export interface SuperFuncDefinition {
-//   $exp: string
-//   props: Record<string, SuperItemDefinition>,
-//   lines: SprogDefinition[]
-// }
 export function proxifySuperFunc(obj) {
     const funcProxyHandler = {
         apply(target, thisArg, argArray) {

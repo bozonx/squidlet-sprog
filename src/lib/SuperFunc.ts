@@ -14,12 +14,12 @@ export const SUPER_RETURN = 'superReturn'
 // TODO: можно по каждому prop добавить combined в scope как алиас
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
 // TODO: может добавить событие вызова ф-и или лучше middleware???
+// TODO: если в prop не указан default значит он required
 
-// export interface SuperFuncDefinition {
-//   $exp: string
-//   props: Record<string, SuperItemDefinition>,
-//   lines: SprogDefinition[]
-// }
+export interface SuperFuncDefinition {
+  props: Record<string, SuperItemDefinition>,
+  lines: SprogDefinition[]
+}
 
 
 export function proxifySuperFunc(obj: any): (() => any) {
