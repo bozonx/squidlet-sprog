@@ -30,6 +30,9 @@ const scopeFunctions = {
         }
         // simple value
         return defOrValue;
+    },
+    $newScope(initialVars, previousScope) {
+        return newScope(initialVars, previousScope);
     }
 };
 export function proxyScope(data) {

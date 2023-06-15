@@ -25,6 +25,10 @@ export interface SuperScope {
      * @param defOrValue
      */
     $resolve(defOrValue: any): Promise<any>;
+    /**
+     * Make a new scope which is inherited by this scope
+     */
+    $newScope<T = any>(initialVars: T, previousScope?: SuperScope): T & SuperScope;
     [index: string]: any;
 }
 export declare const SCOPE_FUNCTIONS: string[];
