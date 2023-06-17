@@ -127,6 +127,11 @@ export declare abstract class SuperValueBase<T = any | any[]> extends SuperBase 
      */
     removeChildListeners(childKeyOrIndex: string | number): void;
     /**
+     * It this has some sprog definitions ther it returns true.
+     * It checks only structs, arrays and data, not super functions
+     */
+    hasSuperValueDeepChildren(): boolean;
+    /**
      * This method will be returned after initializing to update readonly values
      * @protected
      */

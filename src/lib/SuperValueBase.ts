@@ -6,6 +6,7 @@ import {
   splitDeepPath,
   joinDeepPath,
   deepGetParent,
+  deepFindObj
 } from 'squidlet-lib';
 import {
   AllTypes,
@@ -23,6 +24,7 @@ import {
   isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition, isSuperKind
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {EXP_MARKER} from '../constants.js';
 
 
 export interface SuperValuePublic extends SuperBasePublic {
@@ -492,6 +494,19 @@ export abstract class SuperValueBase<T = any | any[]>
     }
 
     delete this.childEventHandlers[childKeyOrIndex]
+  }
+
+  /**
+   * It this has some sprog definitions ther it returns true.
+   * It checks only structs, arrays and data, not super functions
+   */
+  hasSuperValueDeepChildren(): boolean {
+    // TODO: в массиве если не type: any то все definition одинаковые, нет смысла прохоидстья по всем
+    const result = deepFindObj(this.values as any | any[], (obj: Record<any, any>) => {
+      if (obj[SUPER_VALUE_PROP]) return true
+    })
+
+    return Boolean(result)
   }
 
 

@@ -1,4 +1,4 @@
-import { IndexedEventEmitter, deepGet, deepHas, deepClone, splitDeepPath, joinDeepPath, deepGetParent, } from 'squidlet-lib';
+import { IndexedEventEmitter, deepGet, deepHas, deepClone, splitDeepPath, joinDeepPath, deepGetParent, deepFindObj } from 'squidlet-lib';
 import { SIMPLE_TYPES, SUPER_VALUES } from '../types/valueTypes.js';
 import { SUPER_BASE_PROXY_PUBLIC_MEMBERS, SuperBase } from './SuperBase.js';
 import { resolveNotSuperChild, SUPER_VALUE_PROP, validateChildValue, isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition, isSuperKind } from './superValueHelpers.js';
@@ -350,6 +350,18 @@ export class SuperValueBase extends SuperBase {
             child[SUPER_VALUE_PROP].events.removeListener(handlerIndex, eventNum);
         }
         delete this.childEventHandlers[childKeyOrIndex];
+    }
+    /**
+     * It this has some sprog definitions ther it returns true.
+     * It checks only structs, arrays and data, not super functions
+     */
+    hasSuperValueDeepChildren() {
+        // TODO: в массиве если не type: any то все definition одинаковые, нет смысла прохоидстья по всем
+        const result = deepFindObj(this.values, (obj) => {
+            if (obj[SUPER_VALUE_PROP])
+                return true;
+        });
+        return Boolean(result);
     }
     emitChildChangeEvent(childKeyOrIndex) {
         const fullPath = this.makeChildPath(childKeyOrIndex);
