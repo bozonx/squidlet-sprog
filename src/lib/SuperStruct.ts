@@ -129,6 +129,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
    * It returns setter for readonly params
    */
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
+
+    // TODO: initialValues а если там указанны super значения, а в definition простые?
+
     if (this.inited) throw new Error(`The struct has been already initialized`)
 
     this.events.emit(SUPER_VALUE_EVENTS.initStart)
@@ -137,6 +140,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
 
+      // TODO: если expression вместо значения ?? сразу выполнить или просто пропустить
       this.values[keyName] = this.resolveChildValue(
         this.definition[keyName],
         keyStr,

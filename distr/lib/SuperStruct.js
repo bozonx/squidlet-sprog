@@ -77,12 +77,14 @@ export class SuperStruct extends SuperValueBase {
      * It returns setter for readonly params
      */
     init = (initialValues) => {
+        // TODO: initialValues а если там указанны super значения, а в definition простые?
         if (this.inited)
             throw new Error(`The struct has been already initialized`);
         this.events.emit(SUPER_VALUE_EVENTS.initStart);
         // set initial values
         for (const keyStr of Object.keys(this.definition)) {
             const keyName = keyStr;
+            // TODO: если expression вместо значения ?? сразу выполнить или просто пропустить
             this.values[keyName] = this.resolveChildValue(this.definition[keyName], keyStr, initialValues?.[keyName]);
         }
         return super.init();
