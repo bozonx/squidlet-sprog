@@ -1,9 +1,10 @@
-import { SuperData } from './lib/SuperData.js';
-import { SuperStruct } from './lib/SuperStruct.js';
-import { SuperArray } from './lib/SuperArray.js';
 export const EXP_MARKER = '$exp';
-export const SUPER_VALUE_CLASSES = {
-    SuperData: SuperData,
-    SuperStruct: SuperStruct,
-    SuperArray: SuperArray,
-};
+// export type SuperClasses = new(
+//   definition?: Record<string, SuperItemInitDefinition>,
+//   defaultRo?: boolean
+// ) => SuperValues
+// export const SUPER_VALUE_CLASSES: Record<keyof typeof SUPER_VALUES, SuperClasses> = {
+//   SuperData: SuperData,
+//   SuperStruct: SuperStruct as SuperClasses,
+//   SuperArray: SuperArray as SuperClasses,
+// }
