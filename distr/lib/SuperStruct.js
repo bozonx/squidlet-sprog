@@ -1,5 +1,6 @@
 import { SuperValueBase, SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, } from './SuperValueBase.js';
 import { checkDefinition, isSuperValue, prepareDefinitionItem, SUPER_VALUE_PROP, } from './superValueHelpers.js';
+import { isSprogExpr } from '../lang/helpers.js';
 export const STRUCT_PUBLIC_MEMBERS = [
     ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
     'isStruct',
@@ -108,6 +109,29 @@ export class SuperStruct extends SuperValueBase {
         return this.definition[key];
     }
     /////// Struct specific
+    /**
+     * Execute expressions of elements of struct
+     * or set value from simpleValues if value is not expression
+     * @param scope
+     * @param simpleValues
+     */
+    async execute(scope, simpleValues) {
+        // TODO: это же в массиве и в data (с учетом наложения)
+        for (const propKey of this.allKeys) {
+            // TODO: вглубину
+            const prop = this.values[propKey];
+            if (isSprogExpr(prop)) {
+                // if expression
+                this.setOwnValue(propKey, await scope.$run(prop));
+            }
+            else {
+                // if it isn't common sprog expr
+                // set value for simple values, not expressions
+                if (simpleValues?.[propKey])
+                    this.setOwnValue(propKey, simpleValues[propKey]);
+            }
+        }
+    }
     /**
      * Set value of self readonly value and rise an event
      */

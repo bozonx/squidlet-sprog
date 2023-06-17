@@ -1,6 +1,7 @@
 import { SuperValueBase, SuperValuePublic } from './SuperValueBase.js';
 import { SuperItemDefinition, SuperItemInitDefinition } from '../types/SuperItemDefinition.js';
 import { AllTypes } from '../types/valueTypes.js';
+import { SuperScope } from './scope.js';
 export interface SuperStructPublic extends SuperValuePublic {
     isStruct: boolean;
 }
@@ -35,6 +36,13 @@ export declare class SuperStruct<T = Record<string, AllTypes>> extends SuperValu
     destroy: () => void;
     getProxy(): T & ProxyfiedStruct<T>;
     getDefinition(keyStr: string): SuperItemDefinition | undefined;
+    /**
+     * Execute expressions of elements of struct
+     * or set value from simpleValues if value is not expression
+     * @param scope
+     * @param simpleValues
+     */
+    execute(scope: SuperScope, simpleValues?: Record<any, any>): Promise<void>;
     /**
      * Set value of self readonly value and rise an event
      */

@@ -1,5 +1,6 @@
 export * from './lib/scope.js';
 export * from './sprogFuncs.js';
+export * from './lang/helpers.js';
 // types
 export * from './lib/SuperPromise.js';
 export * from './lib/SuperData.js';

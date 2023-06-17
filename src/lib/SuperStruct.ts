@@ -14,6 +14,9 @@ import {
   SUPER_VALUE_PROP,
 } from './superValueHelpers.js';
 import {AllTypes} from '../types/valueTypes.js';
+import {SuperScope} from './scope.js';
+import {isSprogExpr} from '../lang/helpers.js';
+import {SprogDefinition} from '../types/types.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -175,6 +178,35 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
   /////// Struct specific
+
+  /**
+   * Execute expressions of elements of struct
+   * or set value from simpleValues if value is not expression
+   * @param scope
+   * @param simpleValues
+   */
+  async execute(scope: SuperScope, simpleValues?: Record<any, any>) {
+
+    // TODO: это же в массиве и в data (с учетом наложения)
+
+    for (const propKey of this.allKeys) {
+
+      // TODO: вглубину
+
+      const prop = this.values[propKey as keyof T]
+
+      if (isSprogExpr(prop)) {
+        // if expression
+        this.setOwnValue(propKey, await scope.$run(prop as SprogDefinition))
+      }
+      else {
+        // if it isn't common sprog expr
+        // set value for simple values, not expressions
+        if (simpleValues?.[propKey]) this.setOwnValue(propKey, simpleValues[propKey])
+      }
+    }
+  }
+
 
   /**
    * Set value of self readonly value and rise an event

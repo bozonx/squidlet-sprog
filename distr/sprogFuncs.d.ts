@@ -23,6 +23,7 @@ export declare const sprogFuncs: {
     isGreaterOrEqual: typeof isGreaterOrEqual;
     isLessOrEqual: typeof isLessOrEqual;
     callSuperFunc: import("./index.js").SprogFn;
+    superExp: import("./index.js").SprogFn;
     newSuperFunc: import("./index.js").SprogFn;
     superReturn: import("./index.js").SprogFn;
     newSuperData: typeof newSuperData;
