@@ -121,17 +121,20 @@ export class SuperStruct extends SuperValueBase {
             return;
         // TODO: это же в массиве и в data (с учетом наложения)
         // TODO: вглубину
+        const roIfnore = true;
         for (const key of Object.keys(values)) {
             const item = values[key];
             if (typeof item === 'undefined')
                 continue;
             if (isSprogExpr(item)) {
+                const res = await scope.$run(item);
                 // if expression
-                this.setOwnValue(key, await scope.$run(item));
+                if (typeof res !== 'undefined')
+                    this.setOwnValue(key, res, roIfnore);
             }
             else {
                 // if it just simple value
-                this.setOwnValue(key, values[key]);
+                this.setOwnValue(key, values[key], roIfnore);
             }
         }
     }
