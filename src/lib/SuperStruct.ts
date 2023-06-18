@@ -184,29 +184,28 @@ export class SuperStruct<T = Record<string, AllTypes>>
   /////// Struct specific
 
   /**
-   * Execute expressions of elements of struct
-   * or set value from simpleValues if value is not expression
+   * Execute expressions which set in values or set simple value
    * @param scope
-   * @param simpleValues
+   * @param values - expressions of simple values
    */
-  async execute(scope: SuperScope, simpleValues?: Record<any, any>) {
+  async execute(scope: SuperScope, values?: Record<any, any>) {
+    if (!values) return
 
     // TODO: это же в массиве и в data (с учетом наложения)
+    // TODO: вглубину
 
-    for (const propKey of this.allKeys) {
+    for (const key of Object.keys(values)) {
+      const item = values[key]
 
-      // TODO: вглубину
+      if (typeof item === 'undefined') continue
 
-      const prop = this.values[propKey as keyof T]
-
-      if (isSprogExpr(prop)) {
+      if (isSprogExpr(item)) {
         // if expression
-        this.setOwnValue(propKey, await scope.$run(prop as SprogDefinition))
+        this.setOwnValue(key, await scope.$run(item as SprogDefinition))
       }
       else {
-        // if it isn't common sprog expr
-        // set value for simple values, not expressions
-        if (simpleValues?.[propKey]) this.setOwnValue(propKey, simpleValues[propKey])
+        // if it just simple value
+        this.setOwnValue(key, values[key])
       }
     }
   }

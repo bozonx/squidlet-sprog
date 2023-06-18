@@ -112,25 +112,26 @@ export class SuperStruct extends SuperValueBase {
     }
     /////// Struct specific
     /**
-     * Execute expressions of elements of struct
-     * or set value from simpleValues if value is not expression
+     * Execute expressions which set in values or set simple value
      * @param scope
-     * @param simpleValues
+     * @param values - expressions of simple values
      */
-    async execute(scope, simpleValues) {
+    async execute(scope, values) {
+        if (!values)
+            return;
         // TODO: это же в массиве и в data (с учетом наложения)
-        for (const propKey of this.allKeys) {
-            // TODO: вглубину
-            const prop = this.values[propKey];
-            if (isSprogExpr(prop)) {
+        // TODO: вглубину
+        for (const key of Object.keys(values)) {
+            const item = values[key];
+            if (typeof item === 'undefined')
+                continue;
+            if (isSprogExpr(item)) {
                 // if expression
-                this.setOwnValue(propKey, await scope.$run(prop));
+                this.setOwnValue(key, await scope.$run(item));
             }
             else {
-                // if it isn't common sprog expr
-                // set value for simple values, not expressions
-                if (simpleValues?.[propKey])
-                    this.setOwnValue(propKey, simpleValues[propKey]);
+                // if it just simple value
+                this.setOwnValue(key, values[key]);
             }
         }
     }

@@ -353,6 +353,34 @@ describe('SuperStruct', () => {
     assert.deepEqual(cloned, {p1: 5})
   })
 
+  it('execute expressions', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 1
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+    struct.$super.init()
+
+    await struct.$super.execute(newScope({scopeVal: 2}), {
+      p1: {
+        $exp: 'getValue',
+        path: 'scopeVal',
+      }
+    })
+
+    spy.should.have.been.calledTwice
+    assert.equal(struct.getValue('p1'), 2)
+  })
+
 
   // TODO: children - simple objects and array - check deepness and changes of them
   // TODO: обычная ф-я ???

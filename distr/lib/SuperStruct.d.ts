@@ -37,12 +37,11 @@ export declare class SuperStruct<T = Record<string, AllTypes>> extends SuperValu
     getProxy(): T & ProxyfiedStruct<T>;
     getDefinition(keyStr: string): SuperItemDefinition | undefined;
     /**
-     * Execute expressions of elements of struct
-     * or set value from simpleValues if value is not expression
+     * Execute expressions which set in values or set simple value
      * @param scope
-     * @param simpleValues
+     * @param values - expressions of simple values
      */
-    execute(scope: SuperScope, simpleValues?: Record<any, any>): Promise<void>;
+    execute(scope: SuperScope, values?: Record<any, any>): Promise<void>;
     /**
      * Set value of self readonly value and rise an event
      */
