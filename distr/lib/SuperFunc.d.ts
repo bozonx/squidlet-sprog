@@ -19,7 +19,7 @@ export declare class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     private readonly paramsSetter;
     private readonly scope;
     get params(): ProxyfiedStruct;
-    constructor(scope: SuperScope, params: Record<keyof T, SuperItemInitDefinition>, lines: SprogDefinition[], redefine?: Record<string, RedefineDefinition>);
+    constructor(scope: SuperScope, paramsDefinitions: Record<keyof T, SuperItemInitDefinition>, lines: SprogDefinition[], redefine?: Record<string, RedefineDefinition>);
     /**
      * Apply values of function's params to exec function later.
      * It replaces previously applied values

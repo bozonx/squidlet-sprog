@@ -69,20 +69,20 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
   constructor(
     scope: SuperScope,
-    params: Record<keyof T, SuperItemInitDefinition>,
+    paramsDefinitions: Record<keyof T, SuperItemInitDefinition>,
     lines: SprogDefinition[],
     redefine?: Record<string, RedefineDefinition>
   ) {
     super()
 
     this.scope = newScope(undefined, scope)
-    const paramsStruct: ProxyfiedStruct = (new SuperStruct(params, true)).getProxy()
+    const paramsStruct: ProxyfiedStruct = (new SuperStruct(paramsDefinitions, true)).getProxy()
 
     this.paramsSetter = paramsStruct.$super.init()
 
-    // TODO: в scope уже есть params в abstract UI
-    //  лучше перименовать в params
-    // set prop to scope
+    console.log(4444, paramsStruct.$super.clone())
+
+    // set params to scope
     this.scope.$super.define(
       'params',
       { type: 'SuperStruct', readonly: true },
@@ -114,6 +114,8 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     for (const key of Object.keys(finalValues)) {
       this.paramsSetter(key, finalValues[key])
     }
+
+    console.log(3333, this.scope.$super.clone().params)
 
     for (const line of this.lines) {
       if (line[EXP_MARKER] === SUPER_RETURN) {
