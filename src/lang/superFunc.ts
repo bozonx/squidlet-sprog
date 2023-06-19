@@ -35,10 +35,10 @@ export const callSuperFunc: SprogFn = (scope: SuperScope) => {
  */
 export const newSuperFunc: SprogFn = (scope: SuperScope) => {
   return async (p: SuperFuncDefinition): Promise<any> => {
-    const props = await scope.$resolve(p.props)
+    const params = await scope.$resolve(p.params)
     const redefine = await scope.$resolve(p.redefine)
 
-    return (new SuperFunc(scope, props, p.lines, redefine)).getProxy()
+    return (new SuperFunc(scope, params, p.lines, redefine)).getProxy()
   }
 }
 

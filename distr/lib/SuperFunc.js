@@ -29,37 +29,38 @@ export class SuperFunc extends SuperBase {
     lines;
     appliedValues = {};
     proxyFn = proxifySuperFunc;
-    propsSetter;
+    paramsSetter;
     scope;
-    get props() {
-        return this.scope['props'];
+    get params() {
+        return this.scope['params'];
     }
-    constructor(scope, props, lines, redefine) {
+    constructor(scope, params, lines, redefine) {
         super();
         this.scope = newScope(undefined, scope);
-        // TODO: redefine - rename props
-        const propsStruct = (new SuperStruct(props, true)).getProxy();
-        this.propsSetter = propsStruct.$super.init();
+        const paramsStruct = (new SuperStruct(params, true)).getProxy();
+        this.paramsSetter = paramsStruct.$super.init();
+        // TODO: в scope уже есть params в abstract UI
+        //  лучше перименовать в params
         // set prop to scope
-        scope.$super.define('props', { type: 'SuperStruct', readonly: true }, propsStruct);
+        this.scope.$super.define('params', { type: 'SuperStruct', readonly: true }, paramsStruct);
         this.lines = lines;
     }
     /**
-     * Apply values of function's props to exec function later.
+     * Apply values of function's params to exec function later.
      * It replaces previously applied values
      */
     applyValues = (values) => {
-        this.validateProps(values);
+        this.validateParams(values);
         this.appliedValues = values;
     };
     exec = async (values) => {
-        this.validateProps(values);
+        this.validateParams(values);
         const finalValues = {
             ...this.appliedValues,
             ...values,
         };
         for (const key of Object.keys(finalValues)) {
-            this.propsSetter(key, finalValues[key]);
+            this.paramsSetter(key, finalValues[key]);
         }
         for (const line of this.lines) {
             if (line[EXP_MARKER] === SUPER_RETURN) {
@@ -68,11 +69,11 @@ export class SuperFunc extends SuperBase {
             await this.scope.$run(line);
         }
     };
-    validateProps(values) {
+    validateParams(values) {
         if (!values)
             return;
         for (const key of Object.keys(values)) {
-            this.props.$super.validateItem(key, values[key], true);
+            this.params.$super.validateItem(key, values[key], true);
         }
     }
 }

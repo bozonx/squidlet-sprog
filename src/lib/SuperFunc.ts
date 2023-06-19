@@ -19,7 +19,7 @@ export const SUPER_RETURN = 'superReturn'
 
 
 export interface SuperFuncDefinition {
-  props: Record<string, SuperItemDefinition>
+  params: Record<string, SuperItemDefinition>
   lines: SprogDefinition[]
   redefine?: Record<string, RedefineDefinition>
 }
@@ -58,35 +58,35 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
   protected proxyFn: (instance: any) => any = proxifySuperFunc
 
-  private readonly propsSetter
+  private readonly paramsSetter
   private readonly scope: SuperScope
 
 
-  get props(): ProxyfiedStruct {
-    return this.scope['props']
+  get params(): ProxyfiedStruct {
+    return this.scope['params']
   }
 
 
   constructor(
     scope: SuperScope,
-    props: Record<keyof T, SuperItemInitDefinition>,
+    params: Record<keyof T, SuperItemInitDefinition>,
     lines: SprogDefinition[],
     redefine?: Record<string, RedefineDefinition>
   ) {
     super()
 
     this.scope = newScope(undefined, scope)
+    const paramsStruct: ProxyfiedStruct = (new SuperStruct(params, true)).getProxy()
 
-    // TODO: redefine - rename props
+    this.paramsSetter = paramsStruct.$super.init()
 
-    const propsStruct: ProxyfiedStruct = (new SuperStruct(props, true)).getProxy()
-
-    this.propsSetter = propsStruct.$super.init()
+    // TODO: в scope уже есть params в abstract UI
+    //  лучше перименовать в params
     // set prop to scope
-    scope.$super.define(
-      'props',
+    this.scope.$super.define(
+      'params',
       { type: 'SuperStruct', readonly: true },
-      propsStruct
+      paramsStruct
     )
 
     this.lines = lines
@@ -94,17 +94,17 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
 
   /**
-   * Apply values of function's props to exec function later.
+   * Apply values of function's params to exec function later.
    * It replaces previously applied values
    */
   applyValues = (values: Record<string, any>) => {
-    this.validateProps(values)
+    this.validateParams(values)
 
     this.appliedValues = values
   }
 
   exec = async (values?: Record<string, any>): Promise<any> => {
-    this.validateProps(values)
+    this.validateParams(values)
 
     const finalValues = {
       ...this.appliedValues,
@@ -112,7 +112,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     }
 
     for (const key of Object.keys(finalValues)) {
-      this.propsSetter(key, finalValues[key])
+      this.paramsSetter(key, finalValues[key])
     }
 
     for (const line of this.lines) {
@@ -125,11 +125,11 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   }
 
 
-  private validateProps(values?: Record<string, any>) {
+  private validateParams(values?: Record<string, any>) {
     if (!values) return
 
     for (const key of Object.keys(values)) {
-      this.props.$super.validateItem(key, values[key], true)
+      this.params.$super.validateItem(key, values[key], true)
     }
   }
 
