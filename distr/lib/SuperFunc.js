@@ -39,7 +39,6 @@ export class SuperFunc extends SuperBase {
         this.scope = newScope(undefined, scope);
         const paramsStruct = (new SuperStruct(paramsDefinitions, true)).getProxy();
         this.paramsSetter = paramsStruct.$super.init();
-        console.log(4444, paramsStruct.$super.clone());
         // set params to scope
         this.scope.$super.define('params', { type: 'SuperStruct', readonly: true }, paramsStruct);
         this.lines = lines;
@@ -61,7 +60,6 @@ export class SuperFunc extends SuperBase {
         for (const key of Object.keys(finalValues)) {
             this.paramsSetter(key, finalValues[key]);
         }
-        console.log(3333, this.scope.$super.clone().params);
         for (const line of this.lines) {
             if (line[EXP_MARKER] === SUPER_RETURN) {
                 return this.scope.$run(line);
