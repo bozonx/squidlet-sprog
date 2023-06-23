@@ -4,8 +4,16 @@ import { EXP_MARKER } from '../constants.js';
 import { SuperData } from './SuperData.js';
 import { stdLib } from '../stdLib.js';
 import { SUPER_VALUE_PROP } from './superValueHelpers.js';
-export const SCOPE_FUNCTIONS = ['$cloneSelf', '$getScopedFn', '$run', '$resolve'];
+export const SCOPE_FUNCTIONS = [
+    '$cloneSelf',
+    '$getScopedFn',
+    '$run',
+    '$resolve',
+    '$newScope',
+    '$inherit',
+];
 const scopeFunctions = {
+    // TODO: не работает если есть вложенный scope
     $cloneSelf() {
         return this.$super.clone();
     },
@@ -33,7 +41,11 @@ const scopeFunctions = {
     },
     $newScope(initialVars, previousScope) {
         return newScope(initialVars, previousScope);
-    }
+    },
+    $inherit(initialVars) {
+        const thisScope = this;
+        return newScope(initialVars, thisScope);
+    },
 };
 export function proxyScope(data) {
     const handler = {

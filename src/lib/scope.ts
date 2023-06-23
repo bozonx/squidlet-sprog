@@ -45,10 +45,19 @@ export interface SuperScope {
 }
 
 
-export const SCOPE_FUNCTIONS = ['$cloneSelf', '$getScopedFn', '$run', '$resolve' ]
+export const SCOPE_FUNCTIONS = [
+  '$cloneSelf',
+  '$getScopedFn',
+  '$run',
+  '$resolve',
+  '$newScope',
+  '$inherit',
+]
 
 
 const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
+
+  // TODO: не работает если есть вложенный scope
   $cloneSelf(): Record<string, any> {
     return this.$super.clone()
   },
@@ -78,7 +87,12 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
   },
   $newScope<T = any>(initialVars: T, previousScope?: SuperScope): T & SuperScope {
     return newScope(initialVars, previousScope)
-  }
+  },
+  $inherit<T = any>(initialVars: T): T & SuperScope {
+    const thisScope = this as SuperScope
+
+    return newScope(initialVars, thisScope)
+  },
 }
 
 export function proxyScope(data: SuperData): SuperScope {
