@@ -1,4 +1,4 @@
-import {newScope, removeExpressions} from "../../src/index.js";
+import {newScope, removeExpressions, removeSimple} from "../../src/index.js";
 
 
 describe('helpers', () => {
@@ -40,7 +40,7 @@ describe('helpers', () => {
 
   it.only('removeSimple', async () => {
     assert.deepEqual(
-      removeExpressions({
+      removeSimple({
         a: 1,
         b: {$exp: 'getValue'},
         c: 's',
@@ -59,16 +59,16 @@ describe('helpers', () => {
         e: {$exp: 'getValue'},
       }),
       {
-        a: 1,
-        c: 's',
+        b: {$exp: 'getValue'},
         d: {
-          a: 2,
-          c: 3,
+          b: {$exp: 'getValue'},
           d: {
-            a: 1,
-            d: 'g'
-          }
-        }
+            b: {$exp: 'getValue'},
+            c: {$exp: 'getValue'},
+          },
+          e: {$exp: 'getValue'},
+        },
+        e: {$exp: 'getValue'},
       }
     )
   })
