@@ -1,3 +1,4 @@
+import { deepEachObjAsync } from 'squidlet-lib';
 import { SuperValueBase, SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, } from './SuperValueBase.js';
 import { checkDefinition, isSuperValue, prepareDefinitionItem, SUPER_VALUE_PROP, } from './superValueHelpers.js';
 import { isSprogExpr } from '../lang/helpers.js';
@@ -117,26 +118,20 @@ export class SuperStruct extends SuperValueBase {
      * @param values - expressions of simple values
      */
     async execute(scope, values) {
-        if (!values)
-            return;
         // TODO: это же в массиве и в data (с учетом наложения)
-        // TODO: вглубину
         const roIfnore = true;
-        for (const key of Object.keys(values)) {
-            const item = values[key];
-            if (typeof item === 'undefined')
-                continue;
-            if (isSprogExpr(item)) {
-                const res = await scope.$run(item);
+        await deepEachObjAsync(values, async (obj, key) => {
+            if (isSprogExpr(obj)) {
+                const res = await scope.$run(obj);
                 // if expression
                 if (typeof res !== 'undefined')
                     this.setOwnValue(key, res, roIfnore);
             }
             else {
                 // if it just simple value
-                this.setOwnValue(key, values[key], roIfnore);
+                this.setOwnValue(key, obj, roIfnore);
             }
-        }
+        });
     }
     /**
      * Set value of self readonly value and rise an event
