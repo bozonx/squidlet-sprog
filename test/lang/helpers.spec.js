@@ -1,4 +1,4 @@
-import {removeExpressions, removeSimple} from "../../src/index.js";
+import {removeExpressions, leaveOnlyExpressions} from "../../src/index.js";
 
 
 describe('helpers', () => {
@@ -37,9 +37,9 @@ describe('helpers', () => {
     )
   })
 
-  it('removeSimple', async () => {
+  it('leaveOnlyExpressions', async () => {
     assert.deepEqual(
-      removeSimple({
+      leaveOnlyExpressions({
         a: 1,
         b: {$exp: 'getValue'},
         c: 's',

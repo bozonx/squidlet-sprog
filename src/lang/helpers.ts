@@ -34,9 +34,9 @@ export function removeExpressions(values: Record<any, any>): Record<any, any> {
 }
 
 /**
- * Remove props which are have simple values, not expressions
+ * Deeply remove props which are not expressions
  */
-export function removeSimple(values: Record<any, any>): Record<any, any> {
+export function leaveOnlyExpressions(values: Record<any, any>): Record<any, any> {
   const res: Record<any, any> = { ...values }
 
   deepEachObj(
