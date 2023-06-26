@@ -7,9 +7,9 @@ describe('helpers', () => {
     assert.deepEqual(
       removeExpressions({
         a: 1,
-        exp: {$exp: 'getValue'},
-        b: 's',
-        expDeep: {
+        b: {$exp: 'getValue'},
+        c: 's',
+        d: {
           a: 2,
           b: {$exp: 'getValue'},
           c: 3,
@@ -21,17 +21,52 @@ describe('helpers', () => {
           },
           e: {$exp: 'getValue'},
         },
-        exp2: {$exp: 'getValue'},
+        e: {$exp: 'getValue'},
       }),
       {
         a: 1,
-        b: 's',
-        expDeep: {
+        c: 's',
+        d: {
           a: 2,
           c: 3,
           d: {
             a: 1,
-            b: 'g'
+            d: 'g'
+          }
+        }
+      }
+    )
+  })
+
+  it.only('removeSimple', async () => {
+    assert.deepEqual(
+      removeExpressions({
+        a: 1,
+        b: {$exp: 'getValue'},
+        c: 's',
+        d: {
+          a: 2,
+          b: {$exp: 'getValue'},
+          c: 3,
+          d: {
+            a: 1,
+            b: {$exp: 'getValue'},
+            c: {$exp: 'getValue'},
+            d: 'g'
+          },
+          e: {$exp: 'getValue'},
+        },
+        e: {$exp: 'getValue'},
+      }),
+      {
+        a: 1,
+        c: 's',
+        d: {
+          a: 2,
+          c: 3,
+          d: {
+            a: 1,
+            d: 'g'
           }
         }
       }
