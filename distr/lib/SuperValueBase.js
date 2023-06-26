@@ -384,6 +384,7 @@ export class SuperValueBase extends SuperBase {
      * @protected
      */
     setDeepChild(pathTo, newValue) {
+        // TODO: нужен ли тут strict ???
         const [deepParent, lastPathPart] = deepGetParent(this.values, pathTo);
         if (typeof lastPathPart === 'undefined') {
             throw new Error(`Can't find deep child`);

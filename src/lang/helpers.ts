@@ -1,14 +1,16 @@
-import {deepEachObj, deepDelete, isPlainObject} from 'squidlet-lib';
+import {deepEachObj, deepDelete, isPlainObject, DONT_GO_DEEPER} from 'squidlet-lib';
 import {EXP_MARKER} from '../constants.js';
 import {SUPER_EXP_TYPE, SuperExpType} from '../lib/SuperExp.js';
 
 
+// TODO: test
 export function isSprogLang(someValue: any): boolean {
   if (!someValue || typeof someValue !== 'object') return false
 
   return Boolean(someValue[EXP_MARKER])
 }
 
+// TODO: test
 export function isSprogExpr(someValue: any): boolean {
   if (!someValue || typeof someValue !== 'object' || !someValue[EXP_MARKER]) return false
 
@@ -41,8 +43,8 @@ export function removeSimple(values: Record<any, any>): Record<any, any> {
     values,
     (el, key, path) => {
       if (isSprogExpr(el)) {
-        // TODO: проблема в том что надо остановиться и не идти дальше
-        return
+        // if it is an expression - do not go deeper
+        return DONT_GO_DEEPER
       }
       if (Array.isArray(el) || isPlainObject(el)) {
         return
