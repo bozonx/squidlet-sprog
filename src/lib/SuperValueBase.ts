@@ -540,6 +540,7 @@ export abstract class SuperValueBase<T = any | any[]>
    * @protected
    */
   protected setDeepChild(pathTo: string, newValue: AllTypes): boolean {
+    // TODO: нужен ли тут strict ???
     const [deepParent, lastPathPart] = deepGetParent(this.values as any, pathTo)
 
     if (typeof lastPathPart === 'undefined') {
