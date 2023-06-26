@@ -126,15 +126,21 @@ export class SuperStruct extends SuperValueBase {
             //       хотя наверное не может
             if (isSprogExpr(obj)) {
                 const res = await scope.$run(obj);
+                // TODO: получило $exp
+                console.log(666, res);
                 // if expression
                 if (typeof res !== 'undefined')
                     deepSet(valuesToSet, path, res);
+                // TODO: не должно идти дальше в глубь!!!!!
+                //       но тогда вообще всё прерывается
+                return true;
             }
             else {
                 // if it just simple value
                 //deepSet(valuesToSet, path, obj)
             }
         });
+        console.log(555, valuesToSet);
         for (const key of Object.keys(valuesToSet)) {
             if (roSetter)
                 roSetter(key, valuesToSet[key]);
