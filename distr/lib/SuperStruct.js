@@ -1,4 +1,4 @@
-import { deepEachObjAsync } from 'squidlet-lib';
+import { deepEachObjAsync, deepSet, } from 'squidlet-lib';
 import { SuperValueBase, SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS, } from './SuperValueBase.js';
 import { checkDefinition, isSuperValue, prepareDefinitionItem, SUPER_VALUE_PROP, } from './superValueHelpers.js';
 import { isSprogExpr } from '../lang/helpers.js';
@@ -116,22 +116,31 @@ export class SuperStruct extends SuperValueBase {
      * Execute expressions which set in values or set simple value
      * @param scope
      * @param values - expressions of simple values
+     * @param roSetter - setter for ro elements
      */
-    async execute(scope, values) {
+    async execute(scope, values, roSetter) {
         // TODO: это же в массиве и в data (с учетом наложения)
-        const roIfnore = true;
-        await deepEachObjAsync(values, async (obj, key) => {
+        const valuesToSet = {};
+        await deepEachObjAsync(values, async (obj, key, path) => {
+            // TODO: вложенным может быть super data, array и тд???
+            //       хотя наверное не может
             if (isSprogExpr(obj)) {
                 const res = await scope.$run(obj);
                 // if expression
                 if (typeof res !== 'undefined')
-                    this.setOwnValue(key, res, roIfnore);
+                    deepSet(valuesToSet, path, res);
             }
             else {
                 // if it just simple value
-                this.setOwnValue(key, obj, roIfnore);
+                //deepSet(valuesToSet, path, obj)
             }
         });
+        for (const key of Object.keys(valuesToSet)) {
+            if (roSetter)
+                roSetter(key, valuesToSet[key]);
+            else
+                this.setOwnValue(key, valuesToSet[key]);
+        }
     }
     /**
      * Set value of self readonly value and rise an event

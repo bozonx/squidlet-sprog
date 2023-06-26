@@ -257,6 +257,7 @@ export abstract class SuperValueBase<T = any | any[]>
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
     const def = this.getDefinition(key)
 
+    // TODO: если это глубокий простой объект или массив то тоже будет проверка?
     checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo)
     // value will be validated inside resolveChildValue
     this.values[key as keyof T] = this.resolveChildValue(def!, key, value)

@@ -40,8 +40,9 @@ export declare class SuperStruct<T = Record<string, AllTypes>> extends SuperValu
      * Execute expressions which set in values or set simple value
      * @param scope
      * @param values - expressions of simple values
+     * @param roSetter - setter for ro elements
      */
-    execute(scope: SuperScope, values?: Record<any, any>): Promise<void>;
+    execute(scope: SuperScope, values?: Record<any, any>, roSetter?: (name: string, value: any) => void): Promise<void>;
     /**
      * Set value of self readonly value and rise an event
      */

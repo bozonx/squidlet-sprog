@@ -160,6 +160,7 @@ export class SuperValueBase extends SuperBase {
      */
     setOwnValue(key, value, ignoreRo = false) {
         const def = this.getDefinition(key);
+        // TODO: если это глубокий простой объект или массив то тоже будет проверка?
         checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo);
         // value will be validated inside resolveChildValue
         this.values[key] = this.resolveChildValue(def, key, value);
