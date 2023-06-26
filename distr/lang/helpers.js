@@ -1,4 +1,4 @@
-import { deepFindObj, deepDelete } from 'squidlet-lib';
+import { deepEachObj, deepDelete } from 'squidlet-lib';
 import { EXP_MARKER } from '../constants.js';
 import { SUPER_EXP_TYPE } from '../lib/SuperExp.js';
 export function isSprogLang(someValue) {
@@ -23,13 +23,11 @@ export function removeExpressions(values) {
         else if (Array.isArray(value)
             || (value && typeof value !== 'object' && !value.constructor)) {
             // check does it have sprog deep
-            // TODO: а если их несколько ??? и ещё и в глубине несколько
-            deepFindObj(value, (el, key, path) => {
+            deepEachObj(value, (el, key, path) => {
                 const isExpr = isSprogExpr(el);
-                if (isExpr) {
+                // TODO: не работает
+                if (isExpr)
                     deepDelete(res, path);
-                    return true;
-                }
             });
         }
         // all other values are simple
@@ -69,7 +67,7 @@ export function removeExpressions(values) {
 //       // check does it have sprog deep
 //       // TODO: а если их несколько ??? и ещё и в глубине несколько
 //       const found = deepFindObj(
-//         value,
+//         res,
 //         (el, key, path) => {
 //           const isExpr = isSprogExpr(el)
 //
