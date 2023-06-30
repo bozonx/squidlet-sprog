@@ -575,6 +575,7 @@ export abstract class SuperValueBase<T = any | any[]>
     if (Object.keys(SUPER_VALUES).includes(definition.type)) {
       return this.resolveSuperChild(definition, childKeyOrIndex, value)
     }
+    // TODO: может быть expression
     // TODO: если SuperFunc - то надо ей сделать $$setParent
     else if (
       definition.type === 'any'

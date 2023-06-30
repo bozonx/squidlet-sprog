@@ -37,7 +37,7 @@ describe('isCorrespondingType', () => {
     assert.isTrue(isCorrespondingType('5', 'any'))
   })
 
-  it.only('check simple type', async () => {
+  it('check simple type', async () => {
     // string
     assert.isTrue(isCorrespondingType('5', 'string'))
     assert.isTrue(isCorrespondingType('5', ['string', 'boolean']))
@@ -106,25 +106,38 @@ describe('isCorrespondingType', () => {
     // SuperData
     const sd = new SuperData().getProxy()
     assert.isTrue(isCorrespondingType(sd, 'SuperData'))
+    assert.isTrue(isCorrespondingType(sd, ['SuperData']))
     assert.isFalse(isCorrespondingType({}, 'SuperData'))
+    assert.isFalse(isCorrespondingType({}, ['SuperData', 'SuperStruct']))
     // SuperStruct
     const ss = new SuperStruct({a: {type: 'any'}}).getProxy()
     assert.isTrue(isCorrespondingType(ss, 'SuperStruct'))
+    assert.isTrue(isCorrespondingType(ss, ['SuperStruct']))
     assert.isFalse(isCorrespondingType({}, 'SuperStruct'))
     assert.isFalse(isCorrespondingType(sd, 'SuperStruct'))
-    // // SuperArray
+    // SuperArray
     const sa = new SuperArray({}).getProxy()
     assert.isTrue(isCorrespondingType(sa, 'SuperArray'))
+    assert.isTrue(isCorrespondingType(sa, ['SuperArray']))
     assert.isFalse(isCorrespondingType({}, 'SuperArray'))
     assert.isFalse(isCorrespondingType(sd, 'SuperArray'))
     assert.isFalse(isCorrespondingType(ss, 'SuperArray'))
     // SuperFunc
     const sf = new SuperFunc(newScope(), {}, []).getProxy()
     assert.isTrue(isCorrespondingType(sf, 'SuperFunc'))
+    assert.isTrue(isCorrespondingType(sf, ['SuperFunc']))
     assert.isFalse(isCorrespondingType({}, 'SuperFunc'))
     assert.isFalse(isCorrespondingType(sd, 'SuperFunc'))
     assert.isFalse(isCorrespondingType(sd, 'SuperFunc'))
     assert.isFalse(isCorrespondingType(sa, 'SuperFunc'))
+  })
+
+  it('custom types', async () => {
+    class Abc {}
+    assert.isTrue(isCorrespondingType(new Abc(), 'Abc'))
+    assert.isTrue(isCorrespondingType(new Abc(), ['SuperFunc', 'Abc']))
+    assert.isFalse(isCorrespondingType(new Abc(), 'Abcd'))
+    assert.isFalse(isCorrespondingType(new Abc(), ['Abcd', 'SuperFunc']))
   })
 
 })

@@ -4,6 +4,7 @@ import {SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
 // TODO: а прям нужен nullable ??? можно же несколько типов указать
+
 /**
  * Is value corresponding to a type or one type of group of types.
  * @param value
@@ -59,7 +60,6 @@ export function isCorrespondingType(
     else if (
       Object.keys(SUPER_TYPES).includes(typeItem)
       && value
-      // TODO: а если superArray ???
       && typeof value === 'object'
       && value[SUPER_VALUE_PROP]
       && value[SUPER_VALUE_PROP].constructor?.name === typeItem
