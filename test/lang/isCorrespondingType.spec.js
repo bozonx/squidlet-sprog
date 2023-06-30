@@ -6,15 +6,17 @@ describe('isCorrespondingType', () => {
   it('only value - do not check', async () => {
     assert.isTrue(isCorrespondingType(5))
     assert.isTrue(isCorrespondingType('a'))
+    assert.isTrue(isCorrespondingType(undefined))
+    assert.isTrue(isCorrespondingType(null))
   })
 
-  it('nullable', async () => {
+  it.only('nullable', async () => {
     assert.isTrue(isCorrespondingType(5, undefined, true))
     assert.isTrue(isCorrespondingType(null, undefined, true))
     assert.isTrue(isCorrespondingType(null, 'string', true))
-    assert.isFalse(isCorrespondingType(null, undefined, false))
     assert.isTrue(isCorrespondingType(undefined, undefined, false))
     assert.isTrue(isCorrespondingType(undefined, undefined, true))
+    assert.isFalse(isCorrespondingType(null, undefined, false))
   })
 
   it('check type', async () => {

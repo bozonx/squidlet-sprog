@@ -1,38 +1,70 @@
-import {All_TYPES, PRIMITIVE_TYPES, SIMPLE_TYPES, SUPER_TYPES} from '../types/valueTypes.js';
+import {isPromise} from 'squidlet-lib';
+import {All_TYPES, SUPER_TYPES} from '../types/valueTypes.js';
 import {SUPER_VALUE_PROP} from './superValueHelpers.js';
 
 
+// TODO: а прям нужен nullable ??? можно же несколько типов указать
 /**
- * If undefined then it will be true.
+ * Is value corresponding to a type or one type of group of types.
  * @param value
- * @param type
+ * @param type - type of group of types. In case of group of types
+ *               they will action as OR
  * @param nullable
  */
 export function isCorrespondingType(
   value: any,
-  type?: keyof typeof All_TYPES,
+  type?: keyof typeof All_TYPES | keyof typeof All_TYPES[],
   nullable: boolean = false
 ): boolean {
-  if (type === 'null') return value === null
-  else if (value === null) return nullable
-  else if (!type || type === 'any') return true
-  else if (value === null) return type === PRIMITIVE_TYPES.null
-  else if (type === SUPER_TYPES.SuperFunc) {
-    if (typeof value !== 'function') return false
+  // if null is allowed then don't need to check value
+  if (value === null && !nullable) return false
+  // if type doesn't set then don't check value
+  else if (typeof type === 'undefined') return true
 
-    return Boolean(value[SUPER_VALUE_PROP].isSuperFunc)
-  }
-  // For super values and super func
-  else if (Object.keys(SUPER_TYPES).includes(type)) {
-    if (!value || typeof value !== 'object' || !value[SUPER_VALUE_PROP]) return false
+  const types = (Array.isArray(type)) ? type : [type]
 
-    return value[SUPER_VALUE_PROP].constructor?.name === type
-  }
-  else if (Array.isArray(value)) return type === SIMPLE_TYPES.array
-  // for Promise
-  else if (value && typeof value === 'object' && type !== SIMPLE_TYPES.object) {
-    return value.constructor?.name === type
+  if (types.includes(All_TYPES.any as keyof typeof All_TYPES)) return true
+  // at this point value has to have a value
+  else if (typeof value === 'undefined') return false
+
+  for (const typeItem of types) {
+    if (typeof typeItem !== 'string') throw new Error(`Type has to be a string`)
+    else if (typeItem === All_TYPES.null && value === null) return true
+    // string
+    else if (typeItem === All_TYPES.string && typeof value === 'string') return true
+    // number
+    else if (typeItem === All_TYPES.number && typeof value === 'number') return true
+    // boolean
+    else if (typeItem === All_TYPES.boolean && typeof value === 'boolean') return true
+    // function
+    else if (typeItem === All_TYPES.function && typeof value === 'function') return true
+    // simple array
+    else if (typeItem === All_TYPES.array && Array.isArray(value)) return true
+    // any object - plain or class instance
+    else if (All_TYPES.object && value && typeof value !== 'object') return true
+    // for Promise
+    else if (typeItem !== All_TYPES.Promise && isPromise(value)) return true
+    else if (
+      typeItem === SUPER_TYPES.SuperFunc
+      && typeof value === 'function'
+      && value[SUPER_VALUE_PROP].isSuperFunc
+    ) return true
+    // for all the super types
+    else if (
+      Object.keys(SUPER_TYPES).includes(typeItem)
+      && value
+      // TODO: а если superArray ???
+      && typeof value === 'object'
+      && value[SUPER_VALUE_PROP]
+      && value[SUPER_VALUE_PROP].constructor?.name === typeItem
+    ) return true
+    // for class instances
+    else if (
+      value
+      && typeof value === 'object'
+      && typeItem === value.constructor?.name
+    ) return true
   }
 
-  return typeof value === type
+  return false
 }
