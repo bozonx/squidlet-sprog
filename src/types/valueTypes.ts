@@ -25,6 +25,7 @@ export const SIMPLE_TYPES = {
   ...PRIMITIVE_TYPES,
   array: 'array',
   object: 'object',
+  plainObject: 'plainObject',
 }
 export const SUPER_VALUES = {
   SuperStruct: 'SuperStruct',

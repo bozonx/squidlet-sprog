@@ -31,7 +31,7 @@ describe('isCorrespondingType', () => {
     assert.isFalse(isCorrespondingType(false, 'null', false))
   })
 
-  it.only('any', async () => {
+  it('any', async () => {
     assert.isTrue(isCorrespondingType(false, 'any'))
     assert.isTrue(isCorrespondingType(5, 'any'))
     assert.isTrue(isCorrespondingType('5', 'any'))
@@ -69,6 +69,18 @@ describe('isCorrespondingType', () => {
     assert.isFalse(isCorrespondingType('', ['array', 'object']))
     assert.isFalse(isCorrespondingType({}, 'array'))
     assert.isFalse(isCorrespondingType({}, ['array', 'string']))
+    // plain object
+    assert.isTrue(isCorrespondingType({}, 'plainObject'))
+    assert.isTrue(isCorrespondingType({}, ['plainObject', 'string']))
+    assert.isFalse(isCorrespondingType({}, 'array'))
+    assert.isFalse(isCorrespondingType({}, ['array', 'string']))
+    assert.isFalse(isCorrespondingType([], 'plainObject'))
+    assert.isFalse(isCorrespondingType([], ['plainObject']))
+    class po {}
+    assert.isFalse(isCorrespondingType(new po(), 'plainObject'))
+    assert.isFalse(isCorrespondingType(new po(), 'array'))
+    assert.isFalse(isCorrespondingType(new po(), ['string', 'plainObject']))
+    assert.isFalse(isCorrespondingType(new po(), ['array']))
     // any object
     assert.isTrue(isCorrespondingType({}, 'object'))
     assert.isTrue(isCorrespondingType({}, ['object', 'string']))

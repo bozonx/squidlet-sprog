@@ -8,6 +8,7 @@ const TYPE_INITIAL_VALUES: Record<keyof typeof SIMPLE_TYPES, SimpleType> = {
   'null': null,
   array: [],
   object: {},
+  plainObject: {},
 }
 
 export function resolveInitialSimpleValue(

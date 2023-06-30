@@ -1,4 +1,4 @@
-import {isPromise} from 'squidlet-lib';
+import {isPromise, isPlainObject} from 'squidlet-lib';
 import {All_TYPES, SUPER_TYPES} from '../types/valueTypes.js';
 import {SUPER_VALUE_PROP} from './superValueHelpers.js';
 
@@ -38,7 +38,8 @@ export function isCorrespondingType(
     else if (typeItem === All_TYPES.function && typeof value === 'function') return true
     // simple array
     else if (typeItem === All_TYPES.array && Array.isArray(value)) return true
-    // TODO: add plain object
+    // plain object
+    else if (typeItem === All_TYPES.plainObject && isPlainObject(value)) return true
     // any object - plain or class instance
     else if (
       typeItem === All_TYPES.object
