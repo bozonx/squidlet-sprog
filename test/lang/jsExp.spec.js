@@ -4,15 +4,15 @@ import {jsExp} from "../../src/lang/jsExp.js";
 
 
 describe('jsExp', () => {
-  it.only('common', async () => {
-    const scope = newScope({v1: 1})
+  it('simple exp', async () => {
+    const scope = newScope()
 
     const res = await scope.$run({
       $exp: 'jsExp',
-      exp: 'return v1',
+      exp: 'return 1 + 1',
     })
 
-    assert.equal(res, 1)
+    assert.equal(res, 2)
   })
 
   it('return value', async () => {

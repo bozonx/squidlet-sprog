@@ -5,6 +5,6 @@ colors: true
 loader:
   - ts-node/esm
 require:
-  - ts-node/register
+#  - ts-node/register
   - ./test/main.js
 spec: ./test/**/*.spec.js
