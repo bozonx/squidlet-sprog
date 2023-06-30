@@ -16,7 +16,8 @@ describe('isCorrespondingType', () => {
     assert.isTrue(isCorrespondingType(null, 'string', true))
     assert.isTrue(isCorrespondingType(undefined, undefined, false))
     assert.isTrue(isCorrespondingType(undefined, undefined, true))
-    assert.isFalse(isCorrespondingType(null, undefined, false))
+    // this is because undefined type = any
+    assert.isTrue(isCorrespondingType(null, undefined, false))
   })
 
   it('check type', async () => {

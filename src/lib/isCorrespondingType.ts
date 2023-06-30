@@ -13,17 +13,17 @@ import {SUPER_VALUE_PROP} from './superValueHelpers.js';
  */
 export function isCorrespondingType(
   value: any,
-  type?: keyof typeof All_TYPES | keyof typeof All_TYPES[],
+  type: keyof typeof All_TYPES | keyof typeof All_TYPES[] = 'any',
   nullable: boolean = false
 ): boolean {
-  // if null is allowed then don't need to check value
-  if (value === null && !nullable) return false
-  // if type doesn't set then don't check value
-  else if (typeof type === 'undefined') return true
+  const types = (Array.isArray(type))
+    ? type
+    : [type]
 
-  const types = (Array.isArray(type)) ? type : [type]
-
-  if (types.includes(All_TYPES.any as keyof typeof All_TYPES)) return true
+  if (nullable) types.push(All_TYPES.null as keyof typeof All_TYPES)
+  // if no type to check then return true - means any type
+  if (!types.length) return true
+  else if (types.includes(All_TYPES.any as keyof typeof All_TYPES)) return true
   // at this point value has to have a value
   else if (typeof value === 'undefined') return false
 
