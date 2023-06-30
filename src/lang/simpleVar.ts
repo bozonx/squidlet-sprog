@@ -33,6 +33,13 @@ export function newVar(scope: SuperScope) {
   }
 }
 
+export function newValue(scope: SuperScope) {
+  return async (p: {value: any}) => {
+    // execute value if need wright now
+    return await scope.$resolve(p.value)
+  }
+}
+
 // /**
 //  * Delete var from top level of scope
 //  * params:

@@ -1,5 +1,6 @@
 import {omitObj} from 'squidlet-lib';
 import {newScope} from "../../src/index.js";
+import {newValue} from "../../src/lang/simpleVar.js";
 
 
 describe('simpleVar', () => {
@@ -51,7 +52,7 @@ describe('simpleVar', () => {
     assert.equal(scope['v1'], 6)
   })
 
-  it('no definition', async () => {
+  it('newVar no definition', async () => {
     const scope = newScope()
     const def = {
       $exp: 'newVar',
@@ -64,7 +65,7 @@ describe('simpleVar', () => {
     assert.equal(scope['v1'], 6)
   })
 
-  it('prohibit to redefine var', async () => {
+  it('newVar prohibit to redefine var', async () => {
     const scope = newScope()
 
     await scope.$run({
@@ -78,6 +79,29 @@ describe('simpleVar', () => {
       name: 'v1',
       value: 8,
     }))
+  })
+
+  it.only('newValue - simple value', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newValue',
+      value: 6,
+    }
+
+    assert.equal(await scope.$run(def), 6)
+  })
+
+  it('newValue - expr', async () => {
+    const scope = newScope({a: 1})
+    const def = {
+      $exp: 'newValue',
+      value: {
+        $exp: 'getValue',
+        path: 'a'
+      },
+    }
+
+    assert.equal(await scope.$run(def), 1)
   })
 
 })

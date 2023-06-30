@@ -70,6 +70,9 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     return sprogFn(thisScope)
   },
   $run(definition: SprogDefinition): Promise<any | void> {
+
+    // TODO: это же получается execute - значит надо выполнить его у data
+
     const sprogFn = sprogFuncs[definition.$exp]
     const params: any = omitObj(definition, '$exp')
     const thisScope = this as SuperScope
