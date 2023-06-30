@@ -16,9 +16,7 @@ export function isCorrespondingType(
   type: keyof typeof All_TYPES | keyof typeof All_TYPES[] = 'any',
   nullable: boolean = false
 ): boolean {
-  const types = (Array.isArray(type))
-    ? type
-    : [type]
+  const types = (Array.isArray(type)) ? type : [type]
 
   if (nullable) types.push(All_TYPES.null as keyof typeof All_TYPES)
   // if no type to check then return true - means any type
@@ -40,10 +38,17 @@ export function isCorrespondingType(
     else if (typeItem === All_TYPES.function && typeof value === 'function') return true
     // simple array
     else if (typeItem === All_TYPES.array && Array.isArray(value)) return true
+    // TODO: add plain object
     // any object - plain or class instance
-    else if (All_TYPES.object && value && typeof value !== 'object') return true
+    else if (
+      typeItem === All_TYPES.object
+      && value
+      && !Array.isArray(value)
+      && typeof value === 'object'
+    ) return true
     // for Promise
-    else if (typeItem !== All_TYPES.Promise && isPromise(value)) return true
+    else if (typeItem === All_TYPES.Promise && isPromise(value)) return true
+      // superFunc
     else if (
       typeItem === SUPER_TYPES.SuperFunc
       && typeof value === 'function'

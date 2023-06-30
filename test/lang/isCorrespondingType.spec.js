@@ -10,30 +10,18 @@ describe('isCorrespondingType', () => {
     assert.isTrue(isCorrespondingType(null))
   })
 
-  it.only('nullable', async () => {
+  it('nullable', async () => {
     assert.isTrue(isCorrespondingType(5, undefined, true))
     assert.isTrue(isCorrespondingType(null, undefined, true))
     assert.isTrue(isCorrespondingType(null, 'string', true))
     assert.isTrue(isCorrespondingType(undefined, undefined, false))
     assert.isTrue(isCorrespondingType(undefined, undefined, true))
+    assert.isTrue(isCorrespondingType(null, ['null', 'number']), true)
     // this is because undefined type = any
     assert.isTrue(isCorrespondingType(null, undefined, false))
-  })
-
-  it('check type', async () => {
-    // number
-    assert.isTrue(isCorrespondingType(5, 'number'))
-    assert.isFalse(isCorrespondingType('5', 'number'))
-    // string
-    assert.isFalse(isCorrespondingType(5, 'string'))
-    assert.isTrue(isCorrespondingType('5', 'string'))
-    // boolean
-    assert.isTrue(isCorrespondingType(false, 'boolean'))
-    assert.isFalse(isCorrespondingType('false', 'boolean'))
-    // any
-    assert.isTrue(isCorrespondingType(false, 'any'))
-    assert.isTrue(isCorrespondingType(5, 'any'))
-    assert.isTrue(isCorrespondingType('5', 'any'))
+    assert.isTrue(isCorrespondingType(null, 'any', false))
+    assert.isTrue(isCorrespondingType(null, ['any'], false))
+    assert.isTrue(isCorrespondingType(null, [], false))
     // null
     assert.isTrue(isCorrespondingType(null, 'null'))
     assert.isTrue(isCorrespondingType(null, 'null', true))
@@ -41,25 +29,65 @@ describe('isCorrespondingType', () => {
     assert.isFalse(isCorrespondingType(false, 'null'))
     assert.isFalse(isCorrespondingType(false, 'null', true))
     assert.isFalse(isCorrespondingType(false, 'null', false))
-    // array
-    assert.isTrue(isCorrespondingType([], 'array'))
-    assert.isFalse(isCorrespondingType('', 'array'))
-    assert.isFalse(isCorrespondingType({}, 'array'))
-    // object
-    assert.isTrue(isCorrespondingType({}, 'object'))
-    class a {}
-    assert.isTrue(isCorrespondingType(new a(), 'object'))
-    assert.isFalse(isCorrespondingType([], 'object'))
+  })
+
+  it.only('any', async () => {
+    assert.isTrue(isCorrespondingType(false, 'any'))
+    assert.isTrue(isCorrespondingType(5, 'any'))
+    assert.isTrue(isCorrespondingType('5', 'any'))
+  })
+
+  it.only('check simple type', async () => {
+    // string
+    assert.isTrue(isCorrespondingType('5', 'string'))
+    assert.isTrue(isCorrespondingType('5', ['string', 'boolean']))
+    assert.isFalse(isCorrespondingType(5, 'string'))
+    assert.isFalse(isCorrespondingType(5, ['boolean', 'string']))
+    // number
+    assert.isTrue(isCorrespondingType(5, 'number'))
+    assert.isTrue(isCorrespondingType(5, ['number']))
+    assert.isTrue(isCorrespondingType(5, ['null', 'number']))
+    assert.isFalse(isCorrespondingType('5', 'number'))
+    assert.isFalse(isCorrespondingType('5', ['number']))
+    assert.isFalse(isCorrespondingType('5', ['boolean', 'number']))
+    // boolean
+    assert.isTrue(isCorrespondingType(false, 'boolean'))
+    assert.isTrue(isCorrespondingType(false, ['number', 'boolean']))
+    assert.isFalse(isCorrespondingType('false', 'boolean'))
+    assert.isFalse(isCorrespondingType('false', ['number', 'boolean']))
     // function
     function f () {}
     assert.isTrue(isCorrespondingType(f, 'function'))
     async function f2() {}
     assert.isTrue(isCorrespondingType(f2, 'function'))
     assert.isFalse(isCorrespondingType({}, 'function'))
+    // simple array
+    assert.isTrue(isCorrespondingType([], 'array'))
+    assert.isTrue(isCorrespondingType([], ['object', 'array']))
+    assert.isFalse(isCorrespondingType([], ['object']))
+    assert.isFalse(isCorrespondingType('', 'array'))
+    assert.isFalse(isCorrespondingType('', ['array', 'object']))
+    assert.isFalse(isCorrespondingType({}, 'array'))
+    assert.isFalse(isCorrespondingType({}, ['array', 'string']))
+    // any object
+    assert.isTrue(isCorrespondingType({}, 'object'))
+    assert.isTrue(isCorrespondingType({}, ['object', 'string']))
+    assert.isFalse(isCorrespondingType({}, 'array'))
+    assert.isFalse(isCorrespondingType({}, ['array', 'string']))
+    assert.isFalse(isCorrespondingType([], 'object'))
+    assert.isFalse(isCorrespondingType([], ['object']))
+    class a {}
+    assert.isTrue(isCorrespondingType(new a(), 'object'))
+    assert.isFalse(isCorrespondingType(new a(), 'array'))
+    assert.isTrue(isCorrespondingType(new a(), ['string', 'object']))
+    assert.isFalse(isCorrespondingType(new a(), ['array']))
     // Promise
     assert.isTrue(isCorrespondingType(Promise.resolve(), 'Promise'))
+    assert.isTrue(isCorrespondingType(Promise.resolve(), ['null', 'Promise']))
     assert.isTrue(isCorrespondingType(Promise.reject('a'), 'Promise'))
+    assert.isTrue(isCorrespondingType(Promise.reject('a'), ['Promise']))
     assert.isFalse(isCorrespondingType({}, 'Promise'))
+    assert.isFalse(isCorrespondingType({}, ['Promise', 'array']))
   })
 
   it('check super types', async () => {
