@@ -380,7 +380,6 @@ export abstract class SuperValueBase<T = any | any[]>
     roSetter?: (name: string, value: any) => void
   ) {
     const valuesToSet = await scope.$runAll(values)
-
     for (const key of Object.keys(valuesToSet)) {
       // TODO: this.values - возьмет и из нижнего слоя в data, а надо брать только из своего
       // TODO: для struct - запретить ключи не из definition

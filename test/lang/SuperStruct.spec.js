@@ -353,7 +353,7 @@ describe('SuperStruct', () => {
     assert.deepEqual(cloned, {p1: 5})
   })
 
-  it.only('execute expressions', async () => {
+  it('execute expressions', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {
