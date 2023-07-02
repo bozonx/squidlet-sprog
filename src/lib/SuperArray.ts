@@ -11,6 +11,7 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {SuperScope} from './scope.js';
 
 
 // TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
@@ -231,6 +232,16 @@ export class SuperArray<T = any>
     for (const key of values.keys()) {
       this.setOwnValue(key, (values as any[])[key])
     }
+  }
+
+  async execute(
+    scope: SuperScope,
+    values: any[],
+    roSetter?: (name: string, value: any) => void
+  ) {
+    if (!Array.isArray(values)) return
+
+    return super.execute(scope, values, roSetter)
   }
 
   ///// Array specific methods

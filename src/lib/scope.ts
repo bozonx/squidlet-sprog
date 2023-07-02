@@ -101,6 +101,9 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     const result = (Array.isArray(arrOrObjWithExpressions)) ? [] : {}
     // each plain object
     await deepEachObjAsync(arrOrObjWithExpressions, async (obj: Record<any, any>, key: string | number, path: string) => {
+
+      console.log(333, obj, key, path)
+
       // skip not expressions
       if (!isSprogExpr(obj)) return
 

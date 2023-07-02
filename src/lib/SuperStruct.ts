@@ -1,4 +1,4 @@
-import {arrayDifference} from 'squidlet-lib';
+import {arrayDifference, isPlainObject} from 'squidlet-lib';
 import {
   SuperValueBase,
   SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
@@ -183,10 +183,10 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
   async execute(
     scope: SuperScope,
-    values?: Record<any, any>,
+    values: Record<any, any>,
     roSetter?: (name: string, value: any) => void
   ) {
-    if (!values) return
+    if (!isPlainObject(values)) return
 
     if (arrayDifference(Object.keys(values), this.allKeys).length > 0) {
       throw new Error(`Is is not allowed to add keys which arent in definition`)

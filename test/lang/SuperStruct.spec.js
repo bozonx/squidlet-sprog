@@ -381,7 +381,7 @@ describe('SuperStruct', () => {
     assert.equal(struct.getValue('p1'), 2)
   })
 
-  it.only(`execute - don't allow to add new keys`, async () => {
+  it(`execute - don't allow to add new keys`, async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {

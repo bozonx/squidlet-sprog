@@ -365,7 +365,6 @@ export abstract class SuperValueBase<T = any | any[]>
     }
   }
 
-  // TODO: test for struct
   // TODO: test for data - как работает с слоем
   // TODO: test for array
   /**
@@ -380,6 +379,11 @@ export abstract class SuperValueBase<T = any | any[]>
     roSetter?: (name: string, value: any) => void
   ) {
     const valuesToSet = await scope.$runAll(values)
+
+
+    console.log(111, values, valuesToSet)
+
+
     for (const key of Object.keys(valuesToSet)) {
       // TODO: this.values - возьмет и из нижнего слоя в data, а надо брать только из своего
       const fullValue = deepMerge(valuesToSet[key], this.values[key as keyof T])

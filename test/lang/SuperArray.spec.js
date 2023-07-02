@@ -340,6 +340,32 @@ describe('SuperArray', () => {
 
   })
 
+  it.only('execute expressions', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        nullable: true
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init()
+
+    await arr.$super.execute(newScope({scopeVal: 2}), [
+      {
+        $exp: 'getValue',
+        path: 'scopeVal',
+      }
+    ])
+
+    assert.equal(arr.getValue('[0]'), 2)
+    spy.should.have.been.calledTwice
+  })
+
   it('array specific methods', async () => {
 
     // TODO: array specific methods
