@@ -382,7 +382,6 @@ export abstract class SuperValueBase<T = any | any[]>
     const valuesToSet = await scope.$runAll(values)
     for (const key of Object.keys(valuesToSet)) {
       // TODO: this.values - возьмет и из нижнего слоя в data, а надо брать только из своего
-      // TODO: для struct - запретить ключи не из definition
       const fullValue = deepMerge(valuesToSet[key], this.values[key as keyof T])
       // set simple value of while deep structure
       if (roSetter) roSetter(key, fullValue)

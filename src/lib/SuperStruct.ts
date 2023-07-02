@@ -1,3 +1,4 @@
+import {deduplicate} from 'squidlet-lib';
 import {
   SuperValueBase,
   SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
@@ -178,6 +179,20 @@ export class SuperStruct<T = Record<string, AllTypes>>
     }
 
     return this.definition[key]
+  }
+
+  async execute(
+    scope: SuperScope,
+    values?: Record<any, any>,
+    roSetter?: (name: string, value: any) => void
+  ) {
+    if (!values) return
+
+    if (deduplicate([...Object.keys(values), ...this.allKeys]).length > 0) {
+      throw new Error(`Is is not allowed to add keys which arent in definition`)
+    }
+
+    return super.execute(scope, values, roSetter)
   }
 
   /////// Struct specific

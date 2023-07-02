@@ -381,6 +381,33 @@ describe('SuperStruct', () => {
     assert.equal(struct.getValue('p1'), 2)
   })
 
+  it.only(`execute - don't allow to add new keys`, async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 1
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+    struct.$super.init()
+
+    const promise = struct.$super.execute(newScope({scopeVal: 2}), {
+      p2: {
+        $exp: 'getValue',
+        path: 'scopeVal',
+      }
+    })
+
+    assert.isResolved(promise)
+  })
+
   it.only('execute deep expressions', async () => {
     const scope = newScope()
     const spy = sinon.spy()
@@ -410,12 +437,14 @@ describe('SuperStruct', () => {
       }
     })
 
-    //spy.should.have.been.calledTwice
+    spy.should.have.been.calledTwice
     assert.deepEqual(struct.getValue('p'), {
       pp1: 2,
       pp2: 1,
     })
   })
+
+
 
 
   // TODO: children - simple objects and array - check deepness and changes of them
