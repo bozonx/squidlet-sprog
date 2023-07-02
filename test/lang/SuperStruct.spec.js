@@ -405,10 +405,10 @@ describe('SuperStruct', () => {
       }
     })
 
-    assert.isResolved(promise)
+    await assert.isRejected(promise)
   })
 
-  it.only('execute deep expressions', async () => {
+  it('execute deep expressions', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {

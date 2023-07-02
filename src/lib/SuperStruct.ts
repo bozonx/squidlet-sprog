@@ -1,4 +1,4 @@
-import {deduplicate} from 'squidlet-lib';
+import {arrayDifference} from 'squidlet-lib';
 import {
   SuperValueBase,
   SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
@@ -188,7 +188,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
   ) {
     if (!values) return
 
-    if (deduplicate([...Object.keys(values), ...this.allKeys]).length > 0) {
+    if (arrayDifference(Object.keys(values), this.allKeys).length > 0) {
       throw new Error(`Is is not allowed to add keys which arent in definition`)
     }
 
