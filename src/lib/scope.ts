@@ -1,10 +1,11 @@
-import {omitObj} from 'squidlet-lib';
+import {omitObj, deepEachObjAsync, deepSet, DONT_GO_DEEPER} from 'squidlet-lib';
 import {sprogFuncs} from '../sprogFuncs.js';
 import {EXP_MARKER} from '../constants.js';
 import {SprogDefinition} from '../types/types.js';
 import {SuperData} from './SuperData.js';
 import {stdLib} from '../stdLib.js';
 import {SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {isSprogExpr} from '../lang/helpers.js';
 
 
 export type SprogScopedFn = (p: any) => Promise<any | void>
@@ -30,6 +31,14 @@ export interface SuperScope {
   $run(definition: SprogDefinition): Promise<any | void>
 
   /**
+   * Execute all the expressions in the given plain object or array
+   * and return object or array ONLY with values of executed expressions.
+   * It you need to have a full array or object you can make deepMerge()
+   * @param values
+   */
+  $runAll(values?: any | any[]): Promise<any | any[] | undefined>
+
+  /**
    * If is is an expression then run it.
    * If not then return a value
    * @param defOrValue
@@ -41,6 +50,12 @@ export interface SuperScope {
    */
   $newScope<T = any>(initialVars: T, previousScope?: SuperScope): T & SuperScope
 
+  /**
+   * Make a new scope which is inherited by this scope
+   * @param initialVars
+   */
+  $inherit<T = any>(initialVars: T): T & SuperScope
+
   [index: string]: any
 }
 
@@ -49,6 +64,7 @@ export const SCOPE_FUNCTIONS = [
   '$cloneSelf',
   '$getScopedFn',
   '$run',
+  '$runAll',
   '$resolve',
   '$newScope',
   '$inherit',
@@ -70,9 +86,6 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     return sprogFn(thisScope)
   },
   $run(definition: SprogDefinition): Promise<any | void> {
-
-    // TODO: это же получается execute - значит надо выполнить его у data
-
     const sprogFn = sprogFuncs[definition.$exp]
     const params: any = omitObj(definition, '$exp')
     const thisScope = this as SuperScope
@@ -80,6 +93,27 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     if (!sprogFn) throw new Error(`Sprog doesn't have function ${definition.$exp}`)
 
     return sprogFn(thisScope)(params)
+  },
+  async $runAll(arrOrObjWithExpressions?: any | any[]): Promise<any | any[] | undefined> {
+    if (!arrOrObjWithExpressions) return
+
+    const thisScope = this as SuperScope
+    const result = (Array.isArray(arrOrObjWithExpressions)) ? [] : {}
+    // each plain object
+    await deepEachObjAsync(arrOrObjWithExpressions, async (obj: Record<any, any>, key: string | number, path: string) => {
+      // skip not expressions
+      if (!isSprogExpr(obj)) return
+
+      const res = await thisScope.$run(obj as SprogDefinition)
+
+      // TODO: что если $exp выдал другой expr???
+
+      deepSet(result, path, res)
+      // do not go deeper into expression definition
+      return DONT_GO_DEEPER
+    })
+    // return only executed values, not all which was in source
+    return result
   },
   async $resolve(defOrValue: any): Promise<any> {
     if (defOrValue && typeof defOrValue === 'object' && defOrValue[EXP_MARKER]) {

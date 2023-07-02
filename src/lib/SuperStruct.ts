@@ -1,9 +1,4 @@
-import {
-  deepEachObjAsync,
-  splitDeepPath,
-  joinDeepPath,
-  deepSet,
-} from 'squidlet-lib';
+import {deepEachObjAsync, deepSet} from 'squidlet-lib';
 import {
   SuperValueBase,
   SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
@@ -202,36 +197,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
     roSetter?: (name: string, value: any) => void
   ) {
 
-    // TODO: это же в массиве и в data (с учетом наложения)
+    // TODO: а почему только values - есть же definition
 
-    const valuesToSet: Record<any, any> = {}
-
-    await deepEachObjAsync(values, async (obj: Record<any, any>, key: string | number, path: string) => {
-
-      // TODO: вложенным может быть super data, array и тд???
-      //       хотя наверное не может
-
-      if (isSprogExpr(obj)) {
-        const res = await scope.$run(obj as SprogDefinition)
-
-        // TODO: получило $exp
-
-        console.log(666, res)
-
-        // if expression
-        if (typeof res !== 'undefined') deepSet(valuesToSet, path, res)
-
-        // TODO: не должно идти дальше в глубь!!!!!
-        //       но тогда вообще всё прерывается
-        return true
-      }
-      else {
-        // if it just simple value
-        //deepSet(valuesToSet, path, obj)
-      }
-    })
-
-    console.log(555, valuesToSet)
+    const valuesToSet = await scope.$runAll(values)
 
     for (const key of Object.keys(valuesToSet)) {
       if (roSetter) roSetter(key, valuesToSet[key])
