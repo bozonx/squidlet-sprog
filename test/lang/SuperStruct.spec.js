@@ -353,7 +353,7 @@ describe('SuperStruct', () => {
     assert.deepEqual(cloned, {p1: 5})
   })
 
-  it('execute expressions', async () => {
+  it.only('execute expressions', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {
@@ -379,6 +379,42 @@ describe('SuperStruct', () => {
 
     spy.should.have.been.calledTwice
     assert.equal(struct.getValue('p1'), 2)
+  })
+
+  it.only('execute deep expressions', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p: {
+          type: 'plainObject',
+          default: {
+            pp1: 1,
+            pp2: 1,
+          }
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.subscribe(spy)
+    struct.$super.init()
+
+    await struct.$super.execute(newScope({scopeVal: 2}), {
+      p: {
+        pp1: {
+          $exp: 'getValue',
+          path: 'scopeVal',
+        }
+      }
+    })
+
+    //spy.should.have.been.calledTwice
+    assert.deepEqual(struct.getValue('p'), {
+      pp1: 2,
+      pp2: 1,
+    })
   })
 
 

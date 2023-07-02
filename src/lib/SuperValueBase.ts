@@ -6,7 +6,8 @@ import {
   splitDeepPath,
   joinDeepPath,
   deepGetParent,
-  deepFindObj
+  deepFindObj,
+  deepMerge
 } from 'squidlet-lib';
 import {
   AllTypes,
@@ -25,6 +26,7 @@ import {
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {EXP_MARKER} from '../constants.js';
+import {SuperScope} from './scope.js';
 
 
 export interface SuperValuePublic extends SuperBasePublic {
@@ -360,6 +362,32 @@ export abstract class SuperValueBase<T = any | any[]>
 
     for (const key of Object.keys(values)) {
       this.setOwnValue(key, (values as any)[key])
+    }
+  }
+
+  // TODO: test for struct
+  // TODO: test for data - как работает с слоем
+  // TODO: test for array
+  /**
+   * Execute expressions which set in values or set simple value
+   * @param scope
+   * @param values - expressions of simple values
+   * @param roSetter - setter for ro elements
+   */
+  async execute(
+    scope: SuperScope,
+    values?: Record<any, any> | any[],
+    roSetter?: (name: string, value: any) => void
+  ) {
+    const valuesToSet = await scope.$runAll(values)
+
+    for (const key of Object.keys(valuesToSet)) {
+      // TODO: this.values - возьмет и из нижнего слоя в data, а надо брать только из своего
+      // TODO: для struct - запретить ключи не из definition
+      const fullValue = deepMerge(valuesToSet[key], this.values[key as keyof T])
+      // set simple value of while deep structure
+      if (roSetter) roSetter(key, fullValue)
+      else this.setOwnValue(key, fullValue)
     }
   }
 

@@ -81,7 +81,7 @@ describe('simpleVar', () => {
     }))
   })
 
-  it.only('newValue - simple value', async () => {
+  it('newValue - simple value', async () => {
     const scope = newScope()
     const def = {
       $exp: 'newValue',

@@ -1,4 +1,3 @@
-import {deepEachObjAsync, deepSet} from 'squidlet-lib';
 import {
   SuperValueBase,
   SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
@@ -17,8 +16,6 @@ import {
 } from './superValueHelpers.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {SuperScope} from './scope.js';
-import {isSprogExpr} from '../lang/helpers.js';
-import {SprogDefinition} from '../types/types.js';
 
 
 export interface SuperStructPublic extends SuperValuePublic {
@@ -184,29 +181,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
   /////// Struct specific
-
-  /**
-   * Execute expressions which set in values or set simple value
-   * @param scope
-   * @param values - expressions of simple values
-   * @param roSetter - setter for ro elements
-   */
-  async execute(
-    scope: SuperScope,
-    values?: Record<any, any>,
-    roSetter?: (name: string, value: any) => void
-  ) {
-
-    // TODO: а почему только values - есть же definition
-
-    const valuesToSet = await scope.$runAll(values)
-
-    for (const key of Object.keys(valuesToSet)) {
-      if (roSetter) roSetter(key, valuesToSet[key])
-      else this.setOwnValue(key, valuesToSet[key])
-    }
-  }
-
 
   /**
    * Set value of self readonly value and rise an event
