@@ -299,6 +299,60 @@ describe('SuperStruct', () => {
     assert.deepEqual(struct, {p1: 0})
   })
 
+  it.only(`not allowed to add extra values which are not in defintion`, async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        a: {
+          type: 'number',
+          default: 1,
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.$super.init()
+
+    assert.throws(() => struct.setValue('b', 2))
+  })
+
+  it.only(`not allowed to init with undefined`, async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        a: {
+          type: 'number',
+          default: 1,
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.$super.init({a: undefined})
+
+    assert.equal(struct.getValue('a'), 1)
+  })
+
+  it.only(`not allowed to set undefined`, async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        a: {
+          type: 'number',
+          default: 1,
+        },
+      },
+    }
+    const struct = await scope.$run(def)
+
+    struct.$super.init()
+
+    assert.throws(() => struct.setValue('a', undefined))
+  })
+
   it('little methods', async () => {
     const scope = newScope()
     const spy = sinon.spy()
