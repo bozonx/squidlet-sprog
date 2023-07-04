@@ -1,7 +1,19 @@
-import {removeExpressions, leaveOnlyExpressions} from "../../src/index.js";
+import {removeExpressions, leaveOnlyExpressions, isSprogLang} from "../../src/index.js";
 
 
 describe('helpers', () => {
+  it('isSprogLang', async () => {
+    assert.isTrue(isSprogLang({$exp: 'getValue'}))
+    assert.isFalse(isSprogLang({$exp: 'some'}))
+    assert.isFalse(isSprogLang({some: 1}))
+    assert.isFalse(isSprogLang({}))
+    assert.isFalse(isSprogLang([]))
+    assert.isFalse(isSprogLang(undefined))
+    assert.isFalse(isSprogLang(null))
+    assert.isFalse(isSprogLang(1))
+    assert.isFalse(isSprogLang('s'))
+  })
+
   it('removeExpressions', async () => {
     assert.deepEqual(
       removeExpressions({

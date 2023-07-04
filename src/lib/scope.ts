@@ -5,7 +5,7 @@ import {SprogDefinition} from '../types/types.js';
 import {SuperData} from './SuperData.js';
 import {stdLib} from '../stdLib.js';
 import {SUPER_VALUE_PROP} from './superValueHelpers.js';
-import {isSprogExpr} from '../lang/helpers.js';
+import {isSprogLang} from '../lang/helpers.js';
 
 
 export type SprogScopedFn = (p: any) => Promise<any | void>
@@ -102,7 +102,7 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     // each plain object
     await deepEachObjAsync(arrOrObjWithExpressions, async (obj: Record<any, any>, key: string | number, path: string) => {
       // skip not expressions
-      if (!isSprogExpr(obj)) return
+      if (!isSprogLang(obj)) return
 
       const res = await thisScope.$run(obj as SprogDefinition)
 

@@ -1,32 +1,36 @@
-import {deepEachObj, deepDelete, isPlainObject, DONT_GO_DEEPER} from 'squidlet-lib';
+import {
+  deepEachObj,
+  deepDelete,
+  DONT_GO_DEEPER,
+  deepSet,
+  deepClone
+} from 'squidlet-lib';
 import {EXP_MARKER} from '../constants.js';
-import {SUPER_EXP_TYPE, SuperExpType} from '../lib/SuperExp.js';
+import {sprogFuncs} from '../sprogFuncs.js';
 
 
-// TODO: test
+/**
+ * Check that value is {$exp: string}.
+ * value of $exp has to be one of Sprog lang functions
+ * @param someValue
+ */
 export function isSprogLang(someValue: any): boolean {
   if (!someValue || typeof someValue !== 'object') return false
+  else if (!someValue[EXP_MARKER]) return false
 
-  return Boolean(someValue[EXP_MARKER])
-}
-
-// TODO: test
-export function isSprogExpr(someValue: any): boolean {
-  if (!someValue || typeof someValue !== 'object' || !someValue[EXP_MARKER]) return false
-
-  return Boolean(SUPER_EXP_TYPE[someValue[EXP_MARKER] as SuperExpType])
+  return Boolean(sprogFuncs[someValue[EXP_MARKER] as keyof typeof sprogFuncs])
 }
 
 /**
  * Remove props which are have expressions
  */
 export function removeExpressions(values: Record<any, any>): Record<any, any> {
-  const res: Record<any, any> = { ...values }
+  const res: Record<any, any> = deepClone(values);
 
   deepEachObj(
     values,
     (el, key, path) => {
-      if (isSprogExpr(el)) deepDelete(res, path)
+      if (isSprogLang(el)) deepDelete(res, path)
     }
   )
 
@@ -37,20 +41,16 @@ export function removeExpressions(values: Record<any, any>): Record<any, any> {
  * Deeply remove props which are not expressions
  */
 export function leaveOnlyExpressions(values: Record<any, any>): Record<any, any> {
-  const res: Record<any, any> = { ...values }
+  const res: Record<any, any> = {}
 
   deepEachObj(
     values,
     (el, key, path) => {
-      if (isSprogExpr(el)) {
-        // if it is an expression - do not go deeper
-        return DONT_GO_DEEPER
-      }
-      if (Array.isArray(el) || isPlainObject(el)) {
-        return
-      }
-
-      deepDelete(res, path)
+      if (!isSprogLang(el)) return
+      // found sprog expression
+      deepSet(res, path, el)
+      // if it is an expression - do not go deeper
+      return DONT_GO_DEEPER
     }
   )
 

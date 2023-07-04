@@ -5,6 +5,5 @@ export interface SprogDefinitionBase {
 }
 
 export interface SprogDefinition extends SprogDefinitionBase {
-  // TODO: better to extend interfaces
   [index: string]: any
 }

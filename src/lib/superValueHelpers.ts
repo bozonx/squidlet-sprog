@@ -65,6 +65,7 @@ export function checkDefinition(definition?: SuperItemInitDefinition) {
   else if (typeof readonly !== 'undefined' && typeof readonly !== 'boolean') {
     throw new Error(`readonly has to be boolean`)
   }
+  // TODO: а прям нужен nullable ??? можно же несколько типов указать
   else if (defaultValue && !isCorrespondingType(defaultValue, type, nullable)) {
     throw new Error(
       `Default value ${defaultValue} doesn't meet type: ${type}`
@@ -87,6 +88,7 @@ export function checkArrayDefinition(definition?: Partial<SuperArrayDefinition>)
       throw new Error(`defaultArray has to be an array`)
     }
     else if (
+      // TODO: а прям нужен nullable ??? можно же несколько типов указать
       defaultArray.findIndex((el) => !isCorrespondingType(el, type, nullable)) >= 0
     ) {
       throw new Error(`wrong defaultArray`)
@@ -112,6 +114,7 @@ export function validateChildValue(
   else if (!Object.keys(All_TYPES).includes(definition.type)) {
     throw new Error(`Unknown type: ${definition.type}`)
   }
+  // TODO: а прям нужен nullable ??? можно же несколько типов указать
   else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
     throw new Error(
       `The value of ${childKeyOrIndex} has type ${typeof value}, `
