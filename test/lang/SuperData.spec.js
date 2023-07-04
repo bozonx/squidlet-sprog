@@ -766,7 +766,7 @@ describe('SuperData', () => {
     spy2.should.have.been.calledOnce
   })
 
-  it.only('execute expressions - deep array', async () => {
+  it('execute expressions - deep array', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {
@@ -797,7 +797,7 @@ describe('SuperData', () => {
     spy.should.have.been.calledTwice
   })
 
-  it.only('execute expressions - deep obj - no definition', async () => {
+  it('execute expressions - deep obj - no definition', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const data = await scope.$run({
@@ -820,7 +820,7 @@ describe('SuperData', () => {
     spy.should.have.been.calledTwice
   })
 
-  it.only('execute expressions - layers, the same key', async () => {
+  it('execute expressions - layers, the same key', async () => {
     const spyBottom = sinon.spy()
     const spyTop = sinon.spy()
     const dataBottom = new SuperData()
@@ -850,7 +850,7 @@ describe('SuperData', () => {
     spyTop.should.have.been.calledTwice
   })
 
-  it.only('execute expressions - layers, new key', async () => {
+  it('execute expressions - layers, new key', async () => {
     const spyBottom = sinon.spy()
     const spyTop = sinon.spy()
     const dataBottom = new SuperData()
@@ -882,7 +882,7 @@ describe('SuperData', () => {
     spyTop.should.have.been.calledTwice
   })
 
-  it.only(`execute expressions - layers, bottom has key which top doesn't have`, async () => {
+  it(`execute expressions - layers, bottom has key which top doesn't have`, async () => {
     const spyBottom = sinon.spy()
     const spyTop = sinon.spy()
     const dataBottom = new SuperData()
@@ -914,7 +914,7 @@ describe('SuperData', () => {
     spyTop.should.have.been.calledTwice
   })
 
-  it.only(`execute expressions - new top value`, async () => {
+  it(`execute expressions - new top value`, async () => {
     const spyBottom = sinon.spy()
     const spyTop = sinon.spy()
     const dataBottom = new SuperData()
@@ -946,7 +946,7 @@ describe('SuperData', () => {
     spyTop.should.have.been.calledTwice
   })
 
-  it.only(`execute expressions - deep layers`, async () => {
+  it(`execute expressions - deep layers`, async () => {
     const spyBottom = sinon.spy()
     const spyTop = sinon.spy()
     const dataBottom = new SuperData()

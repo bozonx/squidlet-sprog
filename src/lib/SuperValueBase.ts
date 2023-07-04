@@ -87,7 +87,7 @@ export abstract class SuperValueBase<T = any | any[]>
 {
   readonly isSuperValue = true
   // TODO: может сделать protected?
-  // current values
+  // current values. Keep in mind that there shouldn't be expressions
   readonly abstract values: T
   readonly events = new IndexedEventEmitter()
   protected links: SuperLinkItem[] = []

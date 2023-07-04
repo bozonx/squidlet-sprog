@@ -104,22 +104,10 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(definition)) {
       checkDefinition(definition[keyStr as keyof T])
 
-      const def = prepareDefinitionItem(
+      this.definition[keyStr as keyof T] = prepareDefinitionItem(
         definition[keyStr as keyof T],
         defaultRo
       )
-
-      if (!def.required && !def.nullable) {
-        // TODO: надо убедиться что стоит либо required либо nullable
-        //    чтобы нельзя было удалять потомка установив undefined.
-        //    ставить null норм
-        // TODO: или может автоматом ставить nullable ???
-        // throw new Error(
-        //   `SuperStruct definition of "${keyStr}" is not required and not nullable!`
-        // )
-      }
-
-      this.definition[keyStr as keyof T] = def
     }
   }
 
@@ -129,9 +117,6 @@ export class SuperStruct<T = Record<string, AllTypes>>
    * It returns setter for readonly params
    */
   init = (initialValues?: T): ((name: keyof T, newValue: AllTypes) => void) => {
-
-    // TODO: initialValues а если там указанны super значения, а в definition простые?
-
     if (this.inited) throw new Error(`The struct has been already initialized`)
 
     this.events.emit(SUPER_VALUE_EVENTS.initStart)
@@ -140,12 +125,17 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
 
-      // TODO: если expression вместо значения ?? сразу выполнить или просто пропустить
       this.values[keyName] = this.resolveChildValue(
         this.definition[keyName],
         keyStr,
         initialValues?.[keyName]
       )
+      // all the values has to be set at init time
+      if (typeof this.values[keyName] === 'undefined') {
+        throw new Error(
+          `SuperStruct.init(). Value ${keyStr} has to be set in default or in initial values`
+        )
+      }
     }
 
     return super.init()

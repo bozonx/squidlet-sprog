@@ -186,7 +186,7 @@ describe('SuperStruct', () => {
     spy.should.have.been.calledWith(struct.$super, undefined)
   })
 
-  it('required value', async () => {
+  it('required value - has to be set at init time', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {
@@ -205,6 +205,21 @@ describe('SuperStruct', () => {
     assert.deepEqual(struct, {p1: 5})
     spy.should.have.been.calledOnce
     spy.should.have.been.calledWith(struct.$super, undefined)
+  })
+
+  it('Custom type - all values actually are required - if not set at init time - then error', async () => {
+    const scope = newScope()
+    const def = {
+      $exp: 'newSuperStruct',
+      definition: {
+        p1: {
+          type: 'Custom',
+        }
+      },
+    }
+    const struct = await scope.$run(def)
+
+    assert.throws(() => struct.$super.init({}))
   })
 
   it('required', async () => {
@@ -389,7 +404,7 @@ describe('SuperStruct', () => {
       definition: {
         p1: {
           type: 'number',
-          default: 1
+          default: 1,
         },
       },
     }
@@ -419,7 +434,7 @@ describe('SuperStruct', () => {
           default: {
             pp1: 1,
             pp2: 1,
-          }
+          },
         },
       },
     }

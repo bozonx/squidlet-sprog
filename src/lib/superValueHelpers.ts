@@ -52,10 +52,11 @@ export function checkDefinition(definition?: SuperItemInitDefinition) {
     default: defaultValue,
   } = definition
 
-  if (type && !Object.keys(All_TYPES).includes(type)) {
-    throw new Error(`Wrong type : ${type}`)
-  }
-  else if (typeof required !== 'undefined' && typeof required !== 'boolean') {
+  // don't check type because it can be custom'
+  // if (type && !Object.keys(All_TYPES).includes(type)) {
+  //   throw new Error(`Wrong type : ${type}`)
+  // }
+  if (typeof required !== 'undefined' && typeof required !== 'boolean') {
     throw new Error(`required has to be boolean`)
   }
   else if (typeof nullable !== 'undefined' && typeof nullable !== 'boolean') {
