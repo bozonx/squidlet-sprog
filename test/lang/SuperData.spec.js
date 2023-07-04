@@ -888,7 +888,39 @@ describe('SuperData', () => {
     const dataBottom = new SuperData()
 
     dataBottom.subscribe(spyBottom)
-    dataBottom.init({a: 1})
+    dataBottom.init({b: 1})
+
+    const dataTop = new SuperData(
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.subscribe(spyTop)
+    dataTop.init({a: 1})
+
+    await dataTop.execute(newScope({scopeVal: 2}), {
+      a: {
+        $exp: 'getValue',
+        path: 'scopeVal',
+      }
+    })
+
+    assert.isUndefined(dataBottom.getValue('a'))
+    assert.equal(dataBottom.getValue('b'), 1)
+    assert.equal(dataTop.getValue('a'), 2)
+    assert.equal(dataTop.getValue('b'), 1)
+    spyBottom.should.have.been.calledOnce
+    spyTop.should.have.been.calledTwice
+  })
+
+  it.only(`execute expressions - new top value`, async () => {
+    const spyBottom = sinon.spy()
+    const spyTop = sinon.spy()
+    const dataBottom = new SuperData()
+
+    dataBottom.subscribe(spyBottom)
+    dataBottom.init({b: 1})
 
     const dataTop = new SuperData(
       undefined,
@@ -906,8 +938,42 @@ describe('SuperData', () => {
       }
     })
 
-    assert.equal(dataBottom.getValue('a'), 1)
+    assert.isUndefined(dataBottom.getValue('a'))
+    assert.equal(dataBottom.getValue('b'), 1)
     assert.equal(dataTop.getValue('a'), 2)
+    assert.equal(dataTop.getValue('b'), 1)
+    spyBottom.should.have.been.calledOnce
+    spyTop.should.have.been.calledTwice
+  })
+
+  it.only(`execute expressions - deep layers`, async () => {
+    const spyBottom = sinon.spy()
+    const spyTop = sinon.spy()
+    const dataBottom = new SuperData()
+
+    dataBottom.subscribe(spyBottom)
+    dataBottom.init({a: {aa: 1, bb: 1}})
+
+    const dataTop = new SuperData(
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.subscribe(spyTop)
+    dataTop.init()
+
+    await dataTop.execute(newScope({scopeVal: 2}), {
+      a: {
+        aa: {
+          $exp: 'getValue',
+          path: 'scopeVal',
+        }
+      }
+    })
+
+    assert.deepEqual(dataBottom.getValue('a'), {aa: 1, bb: 1})
+    assert.deepEqual(dataTop.getValue('a'), {aa: 2, bb: 1})
     spyBottom.should.have.been.calledOnce
     spyTop.should.have.been.calledTwice
   })

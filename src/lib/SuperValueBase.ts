@@ -365,7 +365,6 @@ export abstract class SuperValueBase<T = any | any[]>
     }
   }
 
-  // TODO: test for data - как работает с слоем
   /**
    * Execute expressions which set in values or set simple value
    * @param scope
@@ -380,7 +379,6 @@ export abstract class SuperValueBase<T = any | any[]>
     const valuesToSet = await scope.$runAll(values)
 
     for (const key of Object.keys(valuesToSet)) {
-      // TODO: this.values - возьмет и из нижнего слоя в data, а надо брать только из своего
       const fullValue = deepMerge(valuesToSet[key], this.values[key as keyof T])
       // set simple value of while deep structure
       if (roSetter) roSetter(key, fullValue)
