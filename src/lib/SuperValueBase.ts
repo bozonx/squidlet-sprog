@@ -366,7 +366,6 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   // TODO: test for data - как работает с слоем
-  // TODO: test for array
   /**
    * Execute expressions which set in values or set simple value
    * @param scope
@@ -379,10 +378,6 @@ export abstract class SuperValueBase<T = any | any[]>
     roSetter?: (name: string, value: any) => void
   ) {
     const valuesToSet = await scope.$runAll(values)
-
-
-    console.log(111, values, valuesToSet)
-
 
     for (const key of Object.keys(valuesToSet)) {
       // TODO: this.values - возьмет и из нижнего слоя в data, а надо брать только из своего

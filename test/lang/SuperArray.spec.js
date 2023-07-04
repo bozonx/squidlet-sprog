@@ -340,14 +340,13 @@ describe('SuperArray', () => {
 
   })
 
-  it.only('execute expressions', async () => {
+  it('execute expressions', async () => {
     const scope = newScope()
     const spy = sinon.spy()
     const def = {
       $exp: 'newSuperArray',
       definition: {
         type: 'number',
-        nullable: true
       },
     }
     const arr = await scope.$run(def)
@@ -363,6 +362,60 @@ describe('SuperArray', () => {
     ])
 
     assert.equal(arr.getValue('[0]'), 2)
+    spy.should.have.been.calledTwice
+  })
+
+  it('execute deep obj expressions', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'object',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init()
+
+    await arr.$super.execute(newScope({scopeVal: 2}), [
+      {
+        a: {
+          $exp: 'getValue',
+          path: 'scopeVal',
+        }
+      }
+    ])
+
+    assert.deepEqual(arr.getValue('[0]'), {a: 2})
+    spy.should.have.been.calledTwice
+  })
+
+  it('execute deep arr expressions', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'array',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spy)
+    arr.$super.init()
+
+    await arr.$super.execute(newScope({scopeVal: 2}), [
+      [
+        {
+          $exp: 'getValue',
+          path: 'scopeVal',
+        }
+      ]
+    ])
+
+    assert.deepEqual(arr.getValue('[0]'), [2])
     spy.should.have.been.calledTwice
   })
 
