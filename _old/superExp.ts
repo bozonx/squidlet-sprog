@@ -1,5 +1,5 @@
-import {SprogFn, SuperScope} from '../lib/scope.js';
-import {execSuperExp, SuperExpParams} from '../lib/SuperExp.js';
+import {SprogFn, SuperScope} from '../src/lib/scope';
+import {execSuperExp, SuperExpParams} from '../../../../../../mnt/disk2/workspace/squidlet-sprog/_old/SuperExp';
 
 
 export const superExp: SprogFn = (scope: SuperScope) => {

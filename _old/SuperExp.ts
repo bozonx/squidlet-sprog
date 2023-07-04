@@ -1,6 +1,6 @@
-import {SuperScope} from './scope.js';
-import {isEqual} from '../lang/booleanLogic.js';
-import {getValue} from '../lang/deepValue.js';
+import {SuperScope} from '../src/lib/scope';
+import {isEqual} from '../src/lang/booleanLogic';
+import {getValue} from '../src/lang/deepValue';
 
 
 export const SUPER_EXP_TYPE = {
