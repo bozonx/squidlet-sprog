@@ -766,6 +766,152 @@ describe('SuperData', () => {
     spy2.should.have.been.calledOnce
   })
 
+  it.only('execute expressions - deep array', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const def = {
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'array',
+        },
+      },
+    }
+    const data = await scope.$run(def)
+
+    data.subscribe(spy)
+    data.$super.init()
+
+    await data.$super.execute(newScope({scopeVal: 2}), {
+      p1: [
+        [
+          {
+            $exp: 'getValue',
+            path: 'scopeVal',
+          }
+        ]
+      ]
+    })
+
+    assert.deepEqual(data.getValue('p1'), [[2]])
+    spy.should.have.been.calledTwice
+  })
+
+  it.only('execute expressions - deep obj - no definition', async () => {
+    const scope = newScope()
+    const spy = sinon.spy()
+    const data = await scope.$run({
+      $exp: 'newSuperData'
+    })
+
+    data.subscribe(spy)
+    data.$super.init()
+
+    await data.$super.execute(newScope({scopeVal: {a: 2}}), {
+      p1: [
+        {
+          $exp: 'getValue',
+          path: 'scopeVal',
+        }
+      ]
+    })
+
+    assert.deepEqual(data.getValue('p1'), [{a: 2}])
+    spy.should.have.been.calledTwice
+  })
+
+  it.only('execute expressions - layers, the same key', async () => {
+    const spyBottom = sinon.spy()
+    const spyTop = sinon.spy()
+    const dataBottom = new SuperData()
+
+    dataBottom.subscribe(spyBottom)
+    dataBottom.init({a: 1})
+
+    const dataTop = new SuperData(
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.subscribe(spyTop)
+    dataTop.init()
+
+    await dataTop.execute(newScope({scopeVal: 2}), {
+      a: {
+        $exp: 'getValue',
+        path: 'scopeVal',
+      }
+    })
+
+    assert.equal(dataBottom.getValue('a'), 1)
+    assert.equal(dataTop.getValue('a'), 2)
+    spyBottom.should.have.been.calledOnce
+    spyTop.should.have.been.calledTwice
+  })
+
+  it.only('execute expressions - layers, new key', async () => {
+    const spyBottom = sinon.spy()
+    const spyTop = sinon.spy()
+    const dataBottom = new SuperData()
+
+    dataBottom.subscribe(spyBottom)
+    dataBottom.init({a: 1})
+
+    const dataTop = new SuperData(
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.subscribe(spyTop)
+    dataTop.init()
+
+    await dataTop.execute(newScope({scopeVal: 2}), {
+      b: {
+        $exp: 'getValue',
+        path: 'scopeVal',
+      }
+    })
+
+    assert.equal(dataBottom.getValue('a'), 1)
+    assert.isUndefined(dataBottom.getValue('b'))
+    assert.equal(dataTop.getValue('a'), 1)
+    assert.equal(dataTop.getValue('b'), 2)
+    spyBottom.should.have.been.calledOnce
+    spyTop.should.have.been.calledTwice
+  })
+
+  it.only(`execute expressions - layers, bottom has key which top doesn't have`, async () => {
+    const spyBottom = sinon.spy()
+    const spyTop = sinon.spy()
+    const dataBottom = new SuperData()
+
+    dataBottom.subscribe(spyBottom)
+    dataBottom.init({a: 1})
+
+    const dataTop = new SuperData(
+      undefined,
+      undefined,
+      dataBottom
+    )
+
+    dataTop.subscribe(spyTop)
+    dataTop.init()
+
+    await dataTop.execute(newScope({scopeVal: 2}), {
+      a: {
+        $exp: 'getValue',
+        path: 'scopeVal',
+      }
+    })
+
+    assert.equal(dataBottom.getValue('a'), 1)
+    assert.equal(dataTop.getValue('a'), 2)
+    spyBottom.should.have.been.calledOnce
+    spyTop.should.have.been.calledTwice
+  })
+
   // TODO: потомок - super func
   // TODO: потомок - simple func
   // TODO: потомок - jsExp
