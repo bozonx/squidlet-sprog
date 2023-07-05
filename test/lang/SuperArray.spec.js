@@ -417,6 +417,102 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
+  it('move(3,1)', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyMoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1,2,3]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.init()
+
+    assert.isTrue(arr.move(3, 1))
+
+    assert.deepEqual(arr.$super.values, [0,3,2,1])
+
+    spyChange.should.have.been.calledTwice
+    spyMoved.should.have.been.calledOnceWith(arr.$super, undefined, [3,1], [3,1])
+  })
+
+  it('move() - too big key to move', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyMoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1,2,3]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.init()
+
+    assert.isFalse(arr.move(4, 1))
+
+    assert.deepEqual(arr.$super.values, [0,1,2,3])
+
+    spyChange.should.have.been.calledOnce
+    spyMoved.should.have.not.been.called
+  })
+
+  it('move() - too low newPosition to move', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyMoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1,2,3]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.init()
+
+    assert.isFalse(arr.move(4, -1))
+
+    assert.deepEqual(arr.$super.values, [0,1,2,3])
+
+    spyChange.should.have.been.calledOnce
+    spyMoved.should.have.not.been.called
+  })
+
+  it('move(1,1) - the same keys', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyMoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.init()
+
+    assert.isFalse(arr.move(1, 1))
+
+    assert.deepEqual(arr.$super.values, [0,1])
+
+    spyChange.should.have.been.calledOnce
+    spyMoved.should.have.not.been.called
+  })
+
   // Mutable array standard methods
 
   it('push', async () => {
@@ -707,7 +803,7 @@ describe('SuperArray', () => {
     spyRemoved.should.have.been.calledOnceWith(arr.$super, undefined, [1,2], [1,2])
   })
 
-  it.only('splice(1,3) - bigger than length', async () => {
+  it('splice(1,3) - bigger than length', async () => {
     const scope = newScope()
     const spyChange = sinon.spy()
     const spyRemoved = sinon.spy()
@@ -755,14 +851,36 @@ describe('SuperArray', () => {
     spyRemoved.should.have.not.been.called
   })
 
-  // TODO: test move
-  // TODO: test reverse
+  it('reverse()', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyMoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.init()
+
+    arr.reverse()
+
+    assert.deepEqual(arr.$super.values, [1,0])
+
+    spyChange.should.have.been.callCount(4)
+    spyMoved.should.have.been.calledOnceWith(arr.$super, undefined, [1,0], [0,1])
+  })
+
   // TODO: test sort
   // TODO: test onArrayChange()
 
   // TODO: children - simple objects and array - check deepness and changes of them
-  // TODO: обычная ф-я ???
-  // TODO: инстанс класса ???
+  // TODO: потомок обычная ф-я ???
+  // TODO: потомок инстанс класса ???
 
   // TODO: link
   // TODO: unlink

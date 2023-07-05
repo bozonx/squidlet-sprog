@@ -393,17 +393,26 @@ export class SuperArray<T = any>
   move = (keyToMove: number, newPosition: number): boolean => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    if (keyToMove < 0 || keyToMove > this.values.length - 1) return false
+    else if (newPosition < 0 || newPosition > this.values.length - 1) return false
+    else if (keyToMove === newPosition) return false
+
     const valueToMove = this.values[keyToMove]
     const oldValue = this.values[newPosition]
 
     this.values[newPosition] = valueToMove
     this.values[keyToMove] = oldValue
 
-    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe, [oldValue, valueToMove], [keyToMove, newPosition])
+    this.events.emit(
+      SUPER_ARRAY_EVENTS.moved,
+      this, this.pathToMe,
+      [valueToMove, oldValue],
+      [keyToMove, newPosition]
+    )
     // emit event for whole array
     this.emitMyEvent()
 
-    return false
+    return true
   }
 
   /**
@@ -486,12 +495,6 @@ export class SuperArray<T = any>
     const addedKeys: number[] = arrayKeys(items)
     const res = this.values.unshift(...items)
 
-    // const arr = (new Array(items.length)).fill(true)
-    //
-    // // TODO: test
-    // // rise events for all the new children
-    // arr.forEach((el: true, index: number) => this.emitChildChangeEvent(index))
-
     // TODO: наверное надо инициализировать super value и проверить значения
 
     this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items, addedKeys)
@@ -549,9 +552,9 @@ export class SuperArray<T = any>
     const removedItems = this.values.splice(start, deleteCount, ...items)
 
     if (removedItems.length) {
+      this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
       // emit event for whole array
       this.emitMyEvent()
-      this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
     }
 
     // TODO: нужно овязять super элемент и дестроить его
@@ -563,10 +566,11 @@ export class SuperArray<T = any>
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     const res = this.values.reverse()
+    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe, res, arrayKeys(res))
     // emit event for whole array
     this.emitMyEvent()
-    // TODO: получается что все значения и все ключи переместились
-    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe)
+
+    // TODO: нахрена ???
     // emit children change event for every child
     for (const key of this.values.keys()) {
       this.emitChildChangeEvent(key)
