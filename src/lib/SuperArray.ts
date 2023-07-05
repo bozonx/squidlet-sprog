@@ -14,10 +14,6 @@ import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP} from './superValue
 import {SuperScope} from './scope.js';
 
 
-// TODO: может сделать отдельные события на удаление, перемщение и добавления элемента
-// TODO: поидее чтобы устанавливать значения в ro массив нужно ещё push, pop и тд методы
-
-
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
   // 'default' means default value of each item of array will be this value
   // default array value. It overrides default
