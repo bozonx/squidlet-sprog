@@ -335,9 +335,7 @@ describe('SuperArray', () => {
     assert.isFalse(arr.$super.hasKey('[1]'))
 
     arr.$super.setValue('[2]', 2)
-    // TODO: WTF???
     assert.deepEqual(arr.$super.allKeys, [0, undefined, 2])
-
   })
 
   it('execute expressions', async () => {

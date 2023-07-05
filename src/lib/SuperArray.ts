@@ -1,4 +1,4 @@
-import {arrayKeys, omitObj} from 'squidlet-lib';
+import {arrayKeys, omitObj, lastItem} from 'squidlet-lib';
 import {
   SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
   SUPER_VALUE_EVENTS,
@@ -45,6 +45,13 @@ export type ProxyfiedArray<T = any> = SuperArrayPublic
   & {$super: SuperArray}
   & Array<T>
 
+// specific array events.
+// any of these events will be in SUPER_VALUE_EVENTS.change
+export enum SUPER_ARRAY_EVENTS {
+  added = 100,
+  removed,
+  moved,
+}
 
 const ARR_PUBLIC_MEMBERS = [
   ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
@@ -210,6 +217,10 @@ export class SuperArray<T = any>
     return super.getProxy()
   }
 
+  /**
+   * It converts SuperArray definition to SuperItemDefinition
+   * @param index
+   */
   getDefinition(index: number): SuperItemDefinition {
     return {
       type: this.definition.type,
@@ -241,15 +252,6 @@ export class SuperArray<T = any>
   }
 
   ///// Array specific methods
-
-  /**
-   * Listen only to add, remove or reorder array changes
-   */
-  onArrayChange(handler: () => void): number {
-    return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any, path?: string) => {
-      if (el === this && path === this.myPath) handler()
-    })
-  }
 
   /**
    * Clear item in array by index but not remove index
@@ -324,12 +326,23 @@ export class SuperArray<T = any>
     this.emitChildChangeEvent(index)
   }
 
+  /**
+   * Listen only to add, remove or reorder array changes
+   */
+  onArrayChange(handler: () => void): number {
+    return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any, path?: string) => {
+      if (el === this && path === this.myPath) handler()
+    })
+  }
+
 
   ////// Standard methods
-  // Methods which are mutate an array: push, pop, shift, unshift, fill, splice, reverse, sort
+  // Methods which are mutate an array:
+  // push, pop, shift, unshift, fill, splice, reverse, sort
 
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
+
     const newLength = this.values.push(...items)
 
     for (const item of items) {
@@ -339,20 +352,25 @@ export class SuperArray<T = any>
 
     }
 
-    // emit event for whole array
+    // emit change event for whole array.
+    // This means any change of array order - add, remove and move
     this.emitMyEvent()
+    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
 
     return newLength
   }
 
   pop = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
+
+    const removedEl = lastItem(this.values)
     //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
     //this.emitChildChangeEvent(lastIndex)
     // emit event for whole array
     this.emitMyEvent()
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -362,11 +380,13 @@ export class SuperArray<T = any>
   shift = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    const removedEl = this.values[0]
     const res = this.values.shift()
 
     //this.emitChildChangeEvent(0)
     // emit event for whole array
     this.emitMyEvent()
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -379,6 +399,7 @@ export class SuperArray<T = any>
     const res = this.values.unshift(...items)
     // emit event for whole array
     this.emitMyEvent()
+    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
 
     // const arr = (new Array(items.length)).fill(true)
     //
@@ -395,6 +416,8 @@ export class SuperArray<T = any>
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     this.values.fill(value, start, end)
+
+    // TODO: события поднимать только если имзенилась длина
     // emit event for whole array
     this.emitMyEvent()
 
@@ -406,9 +429,11 @@ export class SuperArray<T = any>
   splice = (start: number, deleteCount: number, ...items: T[]) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    const removedItems = this.values.splice(start, deleteCount)
     const res = this.values.splice(start, deleteCount, ...items)
     // emit event for whole array
     this.emitMyEvent()
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems)
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -421,6 +446,7 @@ export class SuperArray<T = any>
     const res = this.values.reverse()
     // emit event for whole array
     this.emitMyEvent()
+    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe)
 
     return res
   }
@@ -434,6 +460,14 @@ export class SuperArray<T = any>
 
     return this.proxyfiedInstance
   }
+
+  move = (keyToMove: number, newPosition: number): boolean => {
+
+    // TODO add
+
+    return false
+  }
+
 
   // TODO: not mutable methods just copy:
   //  - filter
