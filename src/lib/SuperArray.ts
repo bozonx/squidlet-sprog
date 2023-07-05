@@ -535,19 +535,28 @@ export class SuperArray<T = any>
     return this.proxyfiedInstance
   }
 
-  splice = (start: number, deleteCount: number, ...items: T[]) => {
+  splice = (start: number = 0, deleteCount: number = 0, ...items: T[]) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const removedItems = this.values.splice(start, deleteCount)
-    const removedKeys: number[] = fillWithNumberIncrement(start, deleteCount)
-    const res = this.values.splice(start, deleteCount, ...items)
-    // emit event for whole array
-    this.emitMyEvent()
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
+    // TODO: чо за items ???
+
+    const removedKeys: number[] = fillWithNumberIncrement(
+      start,
+      (start + deleteCount > this.values.length)
+        ? this.values.length - start
+        : deleteCount
+    )
+    const removedItems = this.values.splice(start, deleteCount, ...items)
+
+    if (removedItems.length) {
+      // emit event for whole array
+      this.emitMyEvent()
+      this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
+    }
 
     // TODO: нужно овязять super элемент и дестроить его
 
-    return res
+    return removedItems
   }
 
   reverse = () => {
