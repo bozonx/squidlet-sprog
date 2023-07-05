@@ -417,24 +417,25 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
-  it('array specific methods', async () => {
-
-    // TODO: array specific methods
-
-
+  it('push', async () => {
+    // TODO: test push
 
   })
 
-
-  // TODO: test onArrayChange()
   // TODO: test move
+  // TODO: test pop
+  // TODO: test shift
+  // TODO: test unshift
+  // TODO: test fill
+  // TODO: test splice
+  // TODO: test reverse
+  // TODO: test sort
+  // TODO: test onArrayChange()
 
   // TODO: children - simple objects and array - check deepness and changes of them
   // TODO: обычная ф-я ???
   // TODO: инстанс класса ???
 
-  // TODO: not mutable arr methods
-  // TODO: add ability to reorder array
   // TODO: link
   // TODO: unlink
 

@@ -10,8 +10,12 @@ import {
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
 import {AllTypes} from '../types/valueTypes.js';
-import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
+import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP} from './superValueHelpers.js';
 import {SuperScope} from './scope.js';
+
+
+// TODO: - values - перекрываем this.values
+// TODO: - copyWithin() - посути это перемещение, мутирует массив
 
 
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
@@ -28,7 +32,10 @@ export interface SuperArrayPublic extends SuperValuePublic {
   clearValue(value: any): void
   deleteIndex(index: number): void
   deleteValue(value: any): void
+  move(keyToMove: number, newPosition: number): boolean
+  onArrayChange(handler: () => void): number
 
+  // standard array mutable methods
   push(...items: any[]): number
   pop(): any | undefined
   shift(): any | undefined
@@ -38,7 +45,33 @@ export interface SuperArrayPublic extends SuperValuePublic {
   reverse(): any[]
   sort(): ProxyfiedArray
 
-  // TODO: а остальные не мутабл методы???
+  // standard array non mutable methods
+  concat: Array<any>['concat']
+  // copyWithin()
+  entries: Array<any>['entries']
+  every: Array<any>['every']
+  filter: Array<any>['filter']
+  find: Array<any>['find']
+  findIndex: Array<any>['findIndex']
+  findLast: Array<any>['findLast']
+  findLastIndex: Array<any>['findLastIndex']
+  flat: Array<any>['flat']
+  flatMap: Array<any>['flatMap']
+  forEach: Array<any>['forEach']
+  includes: Array<any>['includes']
+  indexOf: Array<any>['indexOf']
+  join: Array<any>['join']
+  keys: Array<any>['keys']
+  lastIndexOf: Array<any>['lastIndexOf']
+  map: Array<any>['map']
+  slice: Array<any>['slice']
+  toLocaleString: Array<any>['toLocaleString']
+  toString: Array<any>['toString']
+  // values()
+  valueOf: Array<any>['valueOf']
+  some: Array<any>['some']
+  reduce: Array<any>['reduce']
+  reduceRight: Array<any>['reduceRight']
 }
 
 export type ProxyfiedArray<T = any> = SuperArrayPublic
@@ -60,10 +93,14 @@ const ARR_PUBLIC_MEMBERS = [
   'isArray',
   'isReadOnly',
   'length',
-  'clearItem',
-  'deleteItem',
+  'clearIndex',
+  'clearValue',
+  'deleteIndex',
+  'deleteValue',
+  'move',
+  'onArrayChange',
 
-  /////// mutate array
+  // standard array mutable methods
   'push',
   'pop',
   'shift',
@@ -73,7 +110,33 @@ const ARR_PUBLIC_MEMBERS = [
   'reverse',
   'sort',
 
-  // TODO: а остальные не мутабл методы???
+  // standard array non mutable methods
+  'concat',
+  // copyWithin()
+  'entries',
+  'every',
+  'filter',
+  'find',
+  'findIndex',
+  'findLast',
+  'findLastIndex',
+  'flat',
+  'flatMap',
+  'forEach',
+  'includes',
+  'indexOf',
+  'join',
+  'keys',
+  'lastIndexOf',
+  'map',
+  'slice',
+  'toLocaleString',
+  'toString',
+  // values() should be here
+  'valueOf',
+  'some',
+  'reduce',
+  'reduceRight',
 ]
 
 
@@ -327,6 +390,22 @@ export class SuperArray<T = any>
     this.emitChildChangeEvent(index)
   }
 
+  move = (keyToMove: number, newPosition: number): boolean => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
+    const valueToMove = this.values[keyToMove]
+    const oldValue = this.values[newPosition]
+
+    this.values[newPosition] = valueToMove
+    this.values[keyToMove] = oldValue
+
+    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe, [oldValue, valueToMove], [keyToMove, newPosition])
+    // emit event for whole array
+    this.emitMyEvent()
+
+    return false
+  }
+
   /**
    * Listen only to add, remove or reorder array changes
    */
@@ -506,48 +585,38 @@ export class SuperArray<T = any>
     return this.proxyfiedInstance
   }
 
-  move = (keyToMove: number, newPosition: number): boolean => {
-    if (!this.isInitialized) throw new Error(`Init it first`)
+  /*
+   * Not mutate array methods: concat, copyWithin, entries, every, filter,
+   *   find, findIndex, findLast, findLastIndex, flat, flatMap, forEach,
+   *   includes, indexOf, join, keys, lastIndexOf, map, slice, toLocaleString,
+   *   toString, values, valueOf, some, reduce, reduceRight
+   */
 
-    const valueToMove = this.values[keyToMove]
-    const oldValue = this.values[newPosition]
+  concat = this.values.concat
+  entries = this.values.entries
+  every = this.values.every
+  filter = this.values.filter
+  find = this.values.find
+  findIndex = this.values.findIndex
+  findLast = this.values.findLast
+  findLastIndex = this.values.findLastIndex
+  flat = this.values.flat
+  flatMap = this.values.flatMap
+  forEach = this.values.forEach
+  includes = this.values.includes
+  indexOf = this.values.indexOf
+  join = this.values.join
+  keys = this.values.keys
+  lastIndexOf = this.values.lastIndexOf
+  map = this.values.map
+  slice = this.values.slice
+  toLocaleString = this.values.toLocaleString
+  toString = this.values.toString
+  reduce = this.values.reduce
+  reduceRight = this.values.reduceRight
+  some = this.values.some
+  valueOf = this.values.valueOf
 
-    this.values[newPosition] = valueToMove
-    this.values[keyToMove] = oldValue
-
-    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe, [oldValue, valueToMove], [keyToMove, newPosition])
-    // emit event for whole array
-    this.emitMyEvent()
-
-    return false
-  }
-
-
-  // TODO: not mutable methods just copy:
-  //  - filter
-  //  - find
-  //  - findIndex
-  //  - findLast
-  //  - findLastIndex
-  //  - forEach
-  //  - includes
-  //  - indexOf
-  //  - join
-  //  - map
-  //  - slice
-  //  - toLocaleString
-  //  - toString
-  //  - reduce
-  //  - reduceRight
-  //  ???? flat, flatMap, keys, values, some, valueOf
-  // not realize: concat, copyWithin, entries, every
-
-/*
- * Not mutate array methods: concat, copyWithin, entries, every, filter,
- *   find, findIndex, findLast, findLastIndex, flat, flatMap, forEach,
- *   includes, indexOf, join, keys, lastIndexOf, map, slice, toLocaleString,
- *   toString, values, valueOf, some, reduce, reduceRight
- */
 
   ///// PRIVATE
 
