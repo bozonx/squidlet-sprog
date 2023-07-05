@@ -345,6 +345,16 @@ export class SuperArray<T = any>
 
     // TODO: проверить значения на соответствие definition
 
+    const addedKeys: number[] = []
+
+    for (
+      let i = this.values.length;
+      i < this.values.length + items.length - 1;
+      i++
+    ) {
+      addedKeys.push(i)
+    }
+
     const newLength = this.values.push(...items)
 
     for (const item of items) {
@@ -354,7 +364,7 @@ export class SuperArray<T = any>
 
     }
 
-    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
+    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items, addedKeys)
     // emit change event for whole array.
     // This means any change of array order - add, remove and move
     this.emitMyEvent()
@@ -463,6 +473,10 @@ export class SuperArray<T = any>
     // emit event for whole array
     this.emitMyEvent()
     this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe)
+    // emit children change event for every child
+    for (const key of this.values.keys()) {
+      this.emitChildChangeEvent(key)
+    }
 
     return res
   }
@@ -471,6 +485,8 @@ export class SuperArray<T = any>
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     this.values.sort(compareFn)
+    // TODO: вычислить кто именно переместился
+    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe)
     // emit event for whole array
     this.emitMyEvent()
 
