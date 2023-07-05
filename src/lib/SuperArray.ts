@@ -423,19 +423,11 @@ export class SuperArray<T = any>
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const addedKeys: number[] = fillWithNumberIncrement(this.values.length, items.length -1)
+    const addedKeys: number[] = fillWithNumberIncrement(this.values.length, items.length)
 
     for (const key of items.keys()) {
       this.validateItem(addedKeys[key], items[key])
     }
-
-    // for (
-    //   let i = this.values.length;
-    //   i < this.values.length + items.length - 1;
-    //   i++
-    // ) {
-    //   addedKeys.push(i)
-    // }
 
     const newLength = this.values.push(...items)
 
@@ -443,7 +435,6 @@ export class SuperArray<T = any>
       // TODO: если передан super value
       //    надо подменить у него parent, path и слушать buble событий от него
       //    все его потомки должны обновить родительский path
-
     }
 
     this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items, addedKeys)

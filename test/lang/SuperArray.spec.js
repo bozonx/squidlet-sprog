@@ -1,4 +1,4 @@
-import {newScope, SuperArray} from "../../src/index.js";
+import {newScope, SUPER_ARRAY_EVENTS, SuperArray} from "../../src/index.js";
 
 
 describe('SuperArray', () => {
@@ -417,9 +417,31 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
-  it('push', async () => {
+  it.only('push', async () => {
     // TODO: test push
 
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyAdded = sinon.spy()
+    const def = {
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+      },
+    }
+    const arr = await scope.$run(def)
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.added, spyAdded)
+    arr.$super.init()
+
+    arr.push(5,6)
+
+    assert.deepEqual(arr.$super.values, [5,6])
+
+    spyChange.should.have.been.calledTwice
+    spyAdded.should.have.been.calledOnce
+    spyAdded.should.have.been.calledWith(arr.$super, undefined, [5,6], [0,1])
   })
 
   // TODO: test move

@@ -299,7 +299,7 @@ describe('SuperStruct', () => {
     assert.deepEqual(struct, {p1: 0})
   })
 
-  it.only(`not allowed to add extra values which are not in defintion`, async () => {
+  it(`not allowed to add extra values which are not in defintion`, async () => {
     const scope = newScope()
     const def = {
       $exp: 'newSuperStruct',
@@ -317,7 +317,7 @@ describe('SuperStruct', () => {
     assert.throws(() => struct.setValue('b', 2))
   })
 
-  it.only(`not allowed to init with undefined`, async () => {
+  it(`not allowed to init with undefined`, async () => {
     const scope = newScope()
     const def = {
       $exp: 'newSuperStruct',
@@ -335,7 +335,7 @@ describe('SuperStruct', () => {
     assert.equal(struct.getValue('a'), 1)
   })
 
-  it.only(`not allowed to set undefined`, async () => {
+  it(`not allowed to set undefined`, async () => {
     const scope = newScope()
     const def = {
       $exp: 'newSuperStruct',
