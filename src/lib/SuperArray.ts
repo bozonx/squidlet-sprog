@@ -408,6 +408,7 @@ export class SuperArray<T = any>
 
     // TODO: проверить значения на соответствие definition
 
+    const addedKeys: number[] = arrayKeys(items)
     const res = this.values.unshift(...items)
 
     // const arr = (new Array(items.length)).fill(true)
@@ -418,7 +419,7 @@ export class SuperArray<T = any>
 
     // TODO: наверное надо инициализировать super value и проверить значения
 
-    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
+    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items, addedKeys)
     // emit event for whole array
     this.emitMyEvent()
 
@@ -428,6 +429,7 @@ export class SuperArray<T = any>
   fill = (value: any, start?: number, end?: number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    const prevLength = this.values.length
     // TODO: проверить значения на соответствие definition
     // TODO: запретить super
 
@@ -435,8 +437,11 @@ export class SuperArray<T = any>
     // emit event for whole array
     if (typeof end === 'number' && end > this.values.length - 1) {
       const changedItems = this.values.slice(start, end)
+      const addedKeys: number[] = []
 
-      this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, changedItems)
+      for (let i = prevLength; i < end; i++) addedKeys.push(i)
+
+      this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, changedItems, addedKeys)
       // emit event for whole array
       this.emitMyEvent()
     }
