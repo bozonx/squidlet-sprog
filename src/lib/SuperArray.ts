@@ -343,6 +343,8 @@ export class SuperArray<T = any>
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    // TODO: проверить значения на соответствие definition
+
     const newLength = this.values.push(...items)
 
     for (const item of items) {
@@ -352,10 +354,10 @@ export class SuperArray<T = any>
 
     }
 
+    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
     // emit change event for whole array.
     // This means any change of array order - add, remove and move
     this.emitMyEvent()
-    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
 
     return newLength
   }
@@ -367,12 +369,11 @@ export class SuperArray<T = any>
     //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
-    //this.emitChildChangeEvent(lastIndex)
+    // TODO: нужно овязять super элемент и дестроить его
+
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
     // emit event for whole array
     this.emitMyEvent()
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
-
-    // TODO: нужно овязять super элемент и дестроить его
 
     return res
   }
@@ -383,12 +384,11 @@ export class SuperArray<T = any>
     const removedEl = this.values[0]
     const res = this.values.shift()
 
-    //this.emitChildChangeEvent(0)
+    // TODO: нужно овязять super элемент и дестроить его
+
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
     // emit event for whole array
     this.emitMyEvent()
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
-
-    // TODO: нужно овязять super элемент и дестроить его
 
     return res
   }
@@ -396,10 +396,9 @@ export class SuperArray<T = any>
   unshift = (...items: any[]) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    // TODO: проверить значения на соответствие definition
+
     const res = this.values.unshift(...items)
-    // emit event for whole array
-    this.emitMyEvent()
-    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
 
     // const arr = (new Array(items.length)).fill(true)
     //
@@ -409,19 +408,36 @@ export class SuperArray<T = any>
 
     // TODO: наверное надо инициализировать super value и проверить значения
 
+    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items)
+    // emit event for whole array
+    this.emitMyEvent()
+
     return res
   }
 
   fill = (value: any, start?: number, end?: number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    // TODO: проверить значения на соответствие definition
+    // TODO: запретить super
+
     this.values.fill(value, start, end)
-
-    // TODO: события поднимать только если имзенилась длина
     // emit event for whole array
-    this.emitMyEvent()
+    if (typeof end === 'number' && end > this.values.length - 1) {
+      const changedItems = this.values.slice(start, end)
 
-    // TODO: наверное надо проверить значения
+      this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, changedItems)
+      // emit event for whole array
+      this.emitMyEvent()
+    }
+    // emit events for all the changed children
+    for (
+      let i = start || 0;
+      i < ((typeof end === 'undefined') ? this.values.length : end);
+      i++
+    ) {
+      this.emitChildChangeEvent(i)
+    }
 
     return this.proxyfiedInstance
   }
