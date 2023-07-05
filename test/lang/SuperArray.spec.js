@@ -427,6 +427,7 @@ describe('SuperArray', () => {
 
 
   // TODO: test onArrayChange()
+  // TODO: test move
 
   // TODO: children - simple objects and array - check deepness and changes of them
   // TODO: обычная ф-я ???

@@ -344,6 +344,10 @@ export class SuperArray<T = any>
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    for (const item of items) {
+
+    }
+
     // TODO: проверить значения на соответствие definition
 
     const addedKeys: number[] = fillWithNumberIncrement(this.values.length, items.length -1)
@@ -503,8 +507,15 @@ export class SuperArray<T = any>
   move = (keyToMove: number, newPosition: number): boolean => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    const valueToMove = this.values[keyToMove]
+    const oldValue = this.values[newPosition]
 
-    // TODO add
+    this.values[newPosition] = valueToMove
+    this.values[keyToMove] = oldValue
+
+    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe, [oldValue, valueToMove], [keyToMove, newPosition])
+    // emit event for whole array
+    this.emitMyEvent()
 
     return false
   }
