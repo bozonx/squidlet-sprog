@@ -450,7 +450,6 @@ export class SuperArray<T = any>
 
     const prevLength = this.values.length
     const removedEl = lastItem(this.values)
-    //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
     // TODO: нужно овязять super элемент и дестроить его

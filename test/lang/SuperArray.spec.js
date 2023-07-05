@@ -417,19 +417,16 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
-  it.only('push', async () => {
-    // TODO: test push
-
+  it('push', async () => {
     const scope = newScope()
     const spyChange = sinon.spy()
     const spyAdded = sinon.spy()
-    const def = {
+    const arr = await scope.$run({
       $exp: 'newSuperArray',
       definition: {
         type: 'number',
       },
-    }
-    const arr = await scope.$run(def)
+    })
 
     arr.subscribe(spyChange)
     arr.$super.events.addListener(SUPER_ARRAY_EVENTS.added, spyAdded)
@@ -444,8 +441,48 @@ describe('SuperArray', () => {
     spyAdded.should.have.been.calledWith(arr.$super, undefined, [5,6], [0,1])
   })
 
+  it('push - not supported value', async () => {
+    const scope = newScope()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+      },
+    })
+
+    arr.$super.init()
+
+    assert.throws(() => arr.push('5'))
+  })
+
+  it.only('pop', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyRemoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [5,6]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.init()
+
+    assert.deepEqual(arr.$super.values, [5,6])
+
+    arr.pop()
+
+    assert.deepEqual(arr.$super.values, [5])
+
+    spyChange.should.have.been.calledTwice
+    spyRemoved.should.have.been.calledOnce
+    spyRemoved.should.have.been.calledWith(arr.$super, undefined, [6], [1])
+  })
+
   // TODO: test move
-  // TODO: test pop
   // TODO: test shift
   // TODO: test unshift
   // TODO: test fill
