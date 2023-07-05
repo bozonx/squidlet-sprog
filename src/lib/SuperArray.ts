@@ -10,7 +10,7 @@ import {
   SuperItemDefinition,
 } from '../types/SuperItemDefinition.js';
 import {AllTypes} from '../types/valueTypes.js';
-import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
 import {SuperScope} from './scope.js';
 
 
@@ -344,13 +344,11 @@ export class SuperArray<T = any>
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    for (const item of items) {
-
-    }
-
-    // TODO: проверить значения на соответствие definition
-
     const addedKeys: number[] = fillWithNumberIncrement(this.values.length, items.length -1)
+
+    for (const key of items.keys()) {
+      this.validateItem(addedKeys[key], items[key])
+    }
 
     // for (
     //   let i = this.values.length;
@@ -412,7 +410,9 @@ export class SuperArray<T = any>
   unshift = (...items: any[]) => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    // TODO: проверить значения на соответствие definition
+    for (const key of items.keys()) {
+      this.validateItem(items[key], items[key])
+    }
 
     const addedKeys: number[] = arrayKeys(items)
     const res = this.values.unshift(...items)
@@ -435,9 +435,11 @@ export class SuperArray<T = any>
   fill = (value: any, start?: number, end?: number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    this.validateItem(start || 0, value)
+
     const prevLength = this.values.length
-    // TODO: проверить значения на соответствие definition
-    // TODO: запретить super
+
+    // TODO: запретить super либо их подвязать к себе
 
     this.values.fill(value, start, end)
     // emit event for whole array
