@@ -501,33 +501,36 @@ export class SuperArray<T = any>
     return res
   }
 
+  /**
+   * End can't be greater than length
+   * the index of End will be not set, the last filled value will be end - 1
+   * @param value
+   * @param start
+   * @param end
+   */
   fill = (value: any, start?: number, end?: number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     this.validateItem(start || 0, value)
 
-    const prevLength = this.values.length
-
     // TODO: запретить super либо их подвязать к себе
 
     this.values.fill(value, start, end)
-    // emit event for whole array
-    if (typeof end === 'number' && end > this.values.length - 1) {
-      const changedItems = this.values.slice(start, end)
-      const addedKeys: number[] = fillWithNumberIncrement(prevLength, prevLength - end)
-
-      this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, changedItems, addedKeys)
-      // emit event for whole array
-      this.emitMyEvent()
-    }
     // emit events for all the changed children
     for (
       let i = start || 0;
-      i < ((typeof end === 'undefined') ? this.values.length : end);
+      i < (
+        (typeof end === 'undefined' || end > this.values.length - 1)
+          ? this.values.length
+          : end
+      );
       i++
     ) {
       this.emitChildChangeEvent(i)
     }
+
+    // emit event for whole array
+    this.emitMyEvent()
 
     return this.proxyfiedInstance
   }

@@ -551,9 +551,118 @@ describe('SuperArray', () => {
     assert.throws(() => arr.unshift('5'))
   })
 
+  it('fill - full', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.init()
+
+    arr.fill(5)
+
+    assert.deepEqual(arr.$super.values, [5,5])
+
+    spyChange.should.have.been.callCount(4)
+  })
+
+  it('fill - start', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1,2]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.init()
+
+    arr.fill(5, 1)
+
+    assert.deepEqual(arr.$super.values, [0,5,5])
+
+    spyChange.should.have.been.callCount(4)
+  })
+
+  it('fill - end less then length', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1,2,4]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.init()
+
+    arr.fill(5, 1, 3)
+
+    assert.deepEqual(arr.$super.values, [0,5,5,4])
+
+    spyChange.should.have.been.callCount(4)
+  })
+
+  it.only(`fill - end is bigger then length - it shouldn't work`, async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [0,1]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.init()
+
+    arr.fill(5, 1, 3)
+
+    assert.deepEqual(arr.$super.values, [0,5])
+
+    spyChange.should.have.been.calledThrice
+  })
+
+  it.only('splice', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyRemoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [5,6]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.init()
+
+    assert.deepEqual(arr.$super.values, [5,6])
+
+    arr.splice()
+
+    assert.deepEqual(arr.$super.values, [6])
+
+    spyChange.should.have.been.calledTwice
+    spyRemoved.should.have.been.calledOnce
+    spyRemoved.should.have.been.calledWith(arr.$super, undefined, [5], [0])
+  })
+
   // TODO: test move
-  // TODO: test fill
-  // TODO: test splice
   // TODO: test reverse
   // TODO: test sort
   // TODO: test onArrayChange()
