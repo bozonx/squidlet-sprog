@@ -417,6 +417,8 @@ describe('SuperArray', () => {
     spy.should.have.been.calledTwice
   })
 
+  // Mutable array standard methods
+
   it('push', async () => {
     const scope = newScope()
     const spyChange = sinon.spy()
@@ -425,6 +427,7 @@ describe('SuperArray', () => {
       $exp: 'newSuperArray',
       definition: {
         type: 'number',
+        defaultArray: [4]
       },
     })
 
@@ -434,11 +437,11 @@ describe('SuperArray', () => {
 
     arr.push(5,6)
 
-    assert.deepEqual(arr.$super.values, [5,6])
+    assert.deepEqual(arr.$super.values, [4, 5,6])
 
     spyChange.should.have.been.calledTwice
     spyAdded.should.have.been.calledOnce
-    spyAdded.should.have.been.calledWith(arr.$super, undefined, [5,6], [0,1])
+    spyAdded.should.have.been.calledWith(arr.$super, undefined, [5,6], [1,2])
   })
 
   it('push - not supported value', async () => {
@@ -455,7 +458,7 @@ describe('SuperArray', () => {
     assert.throws(() => arr.push('5'))
   })
 
-  it.only('pop', async () => {
+  it('pop', async () => {
     const scope = newScope()
     const spyChange = sinon.spy()
     const spyRemoved = sinon.spy()
@@ -482,9 +485,73 @@ describe('SuperArray', () => {
     spyRemoved.should.have.been.calledWith(arr.$super, undefined, [6], [1])
   })
 
+  it('shift', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyRemoved = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [5,6]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.init()
+
+    assert.deepEqual(arr.$super.values, [5,6])
+
+    arr.shift()
+
+    assert.deepEqual(arr.$super.values, [6])
+
+    spyChange.should.have.been.calledTwice
+    spyRemoved.should.have.been.calledOnce
+    spyRemoved.should.have.been.calledWith(arr.$super, undefined, [5], [0])
+  })
+
+  it('unshift', async () => {
+    const scope = newScope()
+    const spyChange = sinon.spy()
+    const spyAdded = sinon.spy()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+        defaultArray: [7]
+      },
+    })
+
+    arr.subscribe(spyChange)
+    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.added, spyAdded)
+    arr.$super.init()
+
+    arr.unshift(5,6)
+
+    assert.deepEqual(arr.$super.values, [5,6,7])
+
+    spyChange.should.have.been.calledTwice
+    spyAdded.should.have.been.calledOnce
+    spyAdded.should.have.been.calledWith(arr.$super, undefined, [5,6], [0,1])
+  })
+
+  it('unshift - not supported value', async () => {
+    const scope = newScope()
+    const arr = await scope.$run({
+      $exp: 'newSuperArray',
+      definition: {
+        type: 'number',
+      },
+    })
+
+    arr.$super.init()
+
+    assert.throws(() => arr.unshift('5'))
+  })
+
   // TODO: test move
-  // TODO: test shift
-  // TODO: test unshift
   // TODO: test fill
   // TODO: test splice
   // TODO: test reverse
