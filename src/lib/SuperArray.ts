@@ -1,4 +1,4 @@
-import {arrayKeys, omitObj, lastItem} from 'squidlet-lib';
+import {arrayKeys, omitObj, lastItem, fillWithNumberIncrement} from 'squidlet-lib';
 import {
   SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
   SUPER_VALUE_EVENTS,
@@ -47,6 +47,7 @@ export type ProxyfiedArray<T = any> = SuperArrayPublic
 
 // specific array events.
 // any of these events will be in SUPER_VALUE_EVENTS.change
+// handler of them will receive ([...changedItems], [...changedKeys])
 export enum SUPER_ARRAY_EVENTS {
   added = 100,
   removed,
@@ -345,15 +346,15 @@ export class SuperArray<T = any>
 
     // TODO: проверить значения на соответствие definition
 
-    const addedKeys: number[] = []
+    const addedKeys: number[] = fillWithNumberIncrement(this.values.length, items.length -1)
 
-    for (
-      let i = this.values.length;
-      i < this.values.length + items.length - 1;
-      i++
-    ) {
-      addedKeys.push(i)
-    }
+    // for (
+    //   let i = this.values.length;
+    //   i < this.values.length + items.length - 1;
+    //   i++
+    // ) {
+    //   addedKeys.push(i)
+    // }
 
     const newLength = this.values.push(...items)
 
@@ -375,13 +376,14 @@ export class SuperArray<T = any>
   pop = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    const prevLength = this.values.length
     const removedEl = lastItem(this.values)
     //const lastIndex = this.values.length - 1
     const res = this.values.pop()
 
     // TODO: нужно овязять super элемент и дестроить его
 
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl], [prevLength - 1])
     // emit event for whole array
     this.emitMyEvent()
 
@@ -396,7 +398,7 @@ export class SuperArray<T = any>
 
     // TODO: нужно овязять super элемент и дестроить его
 
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl])
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl], [0])
     // emit event for whole array
     this.emitMyEvent()
 
@@ -437,9 +439,7 @@ export class SuperArray<T = any>
     // emit event for whole array
     if (typeof end === 'number' && end > this.values.length - 1) {
       const changedItems = this.values.slice(start, end)
-      const addedKeys: number[] = []
-
-      for (let i = prevLength; i < end; i++) addedKeys.push(i)
+      const addedKeys: number[] = fillWithNumberIncrement(prevLength, prevLength - end)
 
       this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, changedItems, addedKeys)
       // emit event for whole array
@@ -461,10 +461,11 @@ export class SuperArray<T = any>
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     const removedItems = this.values.splice(start, deleteCount)
+    const removedKeys: number[] = fillWithNumberIncrement(start, deleteCount)
     const res = this.values.splice(start, deleteCount, ...items)
     // emit event for whole array
     this.emitMyEvent()
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems)
+    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -477,6 +478,7 @@ export class SuperArray<T = any>
     const res = this.values.reverse()
     // emit event for whole array
     this.emitMyEvent()
+    // TODO: получается что все значения и все ключи переместились
     this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe)
     // emit children change event for every child
     for (const key of this.values.keys()) {
@@ -499,6 +501,8 @@ export class SuperArray<T = any>
   }
 
   move = (keyToMove: number, newPosition: number): boolean => {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
 
     // TODO add
 
