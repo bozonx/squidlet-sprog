@@ -1,4 +1,5 @@
-import {newScope, SUPER_ARRAY_EVENTS, SuperArray} from "../../src/index.js";
+import {newScope, SuperArray} from "../../src/index.js";
+import {SUPER_VALUE_EVENTS} from "../../src/lib/SuperValueBase.js";
 
 
 describe('SuperArray', () => {
@@ -430,7 +431,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     assert.isTrue(arr.move(3, 1))
@@ -454,7 +455,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     assert.isFalse(arr.move(4, 1))
@@ -478,7 +479,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     assert.isFalse(arr.move(4, -1))
@@ -502,7 +503,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     assert.isFalse(arr.move(1, 1))
@@ -530,7 +531,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.added, spyAdded)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.added, spyAdded)
     arr.$super.init()
 
     arr.push(5,6)
@@ -572,7 +573,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
     assert.deepEqual(arr.$super.values, [5,6])
@@ -602,7 +603,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
     assert.deepEqual(arr.$super.values, [5,6])
@@ -632,7 +633,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.added, spyAdded)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.added, spyAdded)
     arr.$super.init()
 
     arr.unshift(5,6)
@@ -759,7 +760,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
     arr.splice(1)
@@ -785,7 +786,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
     arr.splice(1, 1)
@@ -810,7 +811,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
     arr.splice(1, 2)
@@ -834,7 +835,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
     arr.splice(1, 3)
@@ -858,7 +859,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.removed, spyRemoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
     arr.splice(2, 1)
@@ -884,7 +885,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     arr.reverse()
@@ -909,7 +910,7 @@ describe('SuperArray', () => {
     })
 
     arr.subscribe(spyChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     arr.sort()
@@ -940,7 +941,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     arr.sort()
@@ -972,7 +973,7 @@ describe('SuperArray', () => {
 
     arr.subscribe(spyChange)
     arr.$super.onArrayChange(spyArrChange)
-    arr.$super.events.addListener(SUPER_ARRAY_EVENTS.moved, spyMoved)
+    arr.$super.events.addListener(SUPER_VALUE_EVENTS.moved, spyMoved)
     arr.$super.init()
 
     arr.sort()

@@ -73,6 +73,13 @@ export enum SUPER_VALUE_EVENTS {
   newLink,
   unlink,
   changeParent,
+  // for array and data only, not for struct
+  // specific array events.
+  // any of these events will be in SUPER_VALUE_EVENTS.change
+  // handler of them will receive ([...changedItems], [...changedKeys])
+  added,
+  removed,
+  moved,
 }
 
 

@@ -288,6 +288,12 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
 
     this.emitChildChangeEvent(key)
 
+
+    // TODO: - добавить событие added в setOwnValue
+    // TODO: - в setOwnValue создавать заного объект
+    // TODO: - тоже везде где добавляется параметр
+
+
     return true
   }
 
@@ -466,8 +472,11 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   addToBeginning(key: string, value: any) {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    // TODO: а слои???
+
     this.ownValues = {[key]: value, ...this.ownValues}
 
+    this.events.emit(SUPER_VALUE_EVENTS.added, this, this.pathToMe, [value], [key])
     // emit change event for whole array.
     // This means any change of array order - add, remove and move
     this.emitMyEvent()
@@ -487,8 +496,12 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     return sym
   }
 
-  move(keyToMove: number, newPosition: number): boolean {
+  moveByPosition(posToMove: number, newPosition: number): boolean {
     if (!this.isInitialized) throw new Error(`Init it first`)
+
+    // TODO: а слои???
+
+    const keys = Object.keys(this.ownValues)
 
     // TODO: add
 

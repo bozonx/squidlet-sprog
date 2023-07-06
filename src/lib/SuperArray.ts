@@ -14,10 +14,6 @@ import {checkArrayDefinition, isSuperValue, SUPER_VALUE_PROP} from './superValue
 import {SuperScope} from './scope.js';
 
 
-// TODO: - values - перекрываем this.values
-// TODO: - copyWithin() - посути это перемещение, мутирует массив
-
-
 export interface SuperArrayDefinition extends Omit<SuperItemDefinition, 'required'> {
   // 'default' means default value of each item of array will be this value
   // default array value. It overrides default
@@ -77,15 +73,6 @@ export interface SuperArrayPublic extends SuperValuePublic {
 export type ProxyfiedArray<T = any> = SuperArrayPublic
   & {$super: SuperArray}
   & Array<T>
-
-// specific array events.
-// any of these events will be in SUPER_VALUE_EVENTS.change
-// handler of them will receive ([...changedItems], [...changedKeys])
-export enum SUPER_ARRAY_EVENTS {
-  added = 100,
-  removed,
-  moved,
-}
 
 const ARR_PUBLIC_MEMBERS = [
   ...SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
@@ -409,7 +396,7 @@ export class SuperArray<T = any>
     this.values[keyToMove] = oldValue
 
     this.events.emit(
-      SUPER_ARRAY_EVENTS.moved,
+      SUPER_VALUE_EVENTS.moved,
       this, this.pathToMe,
       [valueToMove, oldValue],
       [keyToMove, newPosition]
@@ -452,7 +439,7 @@ export class SuperArray<T = any>
       //    все его потомки должны обновить родительский path
     }
 
-    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items, addedKeys)
+    this.events.emit(SUPER_VALUE_EVENTS.added, this, this.pathToMe, items, addedKeys)
     // emit change event for whole array.
     // This means any change of array order - add, remove and move
     this.emitMyEvent()
@@ -469,7 +456,7 @@ export class SuperArray<T = any>
 
     // TODO: нужно овязять super элемент и дестроить его
 
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl], [prevLength - 1])
+    this.events.emit(SUPER_VALUE_EVENTS.removed, this, this.pathToMe, [removedEl], [prevLength - 1])
     // emit event for whole array
     this.emitMyEvent()
 
@@ -484,7 +471,7 @@ export class SuperArray<T = any>
 
     // TODO: нужно овязять super элемент и дестроить его
 
-    this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, [removedEl], [0])
+    this.events.emit(SUPER_VALUE_EVENTS.removed, this, this.pathToMe, [removedEl], [0])
     // emit event for whole array
     this.emitMyEvent()
 
@@ -503,7 +490,7 @@ export class SuperArray<T = any>
 
     // TODO: наверное надо инициализировать super value и проверить значения
 
-    this.events.emit(SUPER_ARRAY_EVENTS.added, this, this.pathToMe, items, addedKeys)
+    this.events.emit(SUPER_VALUE_EVENTS.added, this, this.pathToMe, items, addedKeys)
     // emit event for whole array
     this.emitMyEvent()
 
@@ -555,7 +542,7 @@ export class SuperArray<T = any>
     const removedItems = this.values.splice(start, deleteCount, ...items)
 
     if (removedItems.length) {
-      this.events.emit(SUPER_ARRAY_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
+      this.events.emit(SUPER_VALUE_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
       // emit event for whole array
       this.emitMyEvent()
     }
@@ -569,7 +556,7 @@ export class SuperArray<T = any>
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     const res = this.values.reverse()
-    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe, res, arrayKeys(res))
+    this.events.emit(SUPER_VALUE_EVENTS.moved, this, this.pathToMe, res, arrayKeys(res))
     // emit event for whole array
     this.emitMyEvent()
 
@@ -595,7 +582,7 @@ export class SuperArray<T = any>
 
     if (changedValues.length) {
       this.events.emit(
-        SUPER_ARRAY_EVENTS.moved,
+        SUPER_VALUE_EVENTS.moved,
         this,
         this.pathToMe,
         changedValues,
