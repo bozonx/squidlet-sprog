@@ -134,7 +134,10 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   readonly isData = true
   // values only of this layer. Do not use it, use setValue, getValue instead.
   // The type doesn't matter because it is for inner use only
-  readonly ownValues: Record<any, any> = {}
+  // Do not replace the object outside!!!
+  // The object can be relaced on change - do not rely on the object will accept changes
+  // isntead of it listen to change event and cathc the freshiest changed
+  ownValues: Record<any, any> = {}
   // proxy which allows to manipulate with all layers. Do not use it at all.
   // it only for getValue and setValue and other inner methods.
   readonly values: T
@@ -462,7 +465,12 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    */
   addToBeginning(key: string, value: any) {
     if (!this.isInitialized) throw new Error(`Init it first`)
-    // TODO: add
+
+    this.ownValues = {[key]: value, ...this.ownValues}
+
+    // emit change event for whole array.
+    // This means any change of array order - add, remove and move
+    this.emitMyEvent()
   }
 
   /**
