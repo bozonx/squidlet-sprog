@@ -376,7 +376,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   clone = (): T => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return deepClone(this.makeOrderedObject())
+    return deepClone(this.makeFullOrderedObject())
   }
 
   /**
@@ -395,7 +395,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
 
   /////// Data specific methods
 
-  // TODO: test
   validateItem(key: string, value?: AllTypes, ignoreRo?: boolean) {
     const definition = (this.definition[key])
       ? (this.definition[key])
@@ -487,31 +486,12 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     this.emitChildChangeEvent(key)
   }
 
-
   /**
-   * Set value of self readonly value and rise an event
+   * Add to the beginning of keys array
+   * @param key
+   * @param value
    */
-  protected myRoSetter = (name: keyof T, newValue: AllTypes) => {
-    this.setOwnValue(name as any, newValue, true)
-  }
-
-
-  private makeOrderedObject(): Record<string, any> {
-    const res: Record<string, any> = {}
-
-    for (const key of this.allKeys) res[key] = this.values[key]
-
-    return res
-  }
-
-
-  ////////// Array-like mutable methods
-
-  pop() {
-    // TODO: add
-  }
-
-  shift() {
+  addToBeginning(key: string, value: any) {
     // TODO: add
   }
 
@@ -527,12 +507,26 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     return sym
   }
 
-  /**
-   * Create values and make symbols for them
-   * @param value
-   * @param count
-   */
-  fill(value: any, count: number) {
+  move(keyToMove: number, newPosition: number): boolean {
+
+    // TODO: add
+
+    return true
+  }
+
+  eachMap() {
+    // TODO: add - вернуть объект
+  }
+
+  ////////// Array-like mutable methods
+  // to use push() - just use setOwnValue()
+  // to use splice() - use forget
+
+  pop() {
+    // TODO: add
+  }
+
+  shift() {
     // TODO: add
   }
 
@@ -578,6 +572,14 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     // TODO: add
   }
 
+  join() {
+    // TODO: add
+  }
+
+  lastIndexOf() {
+    // TODO: add
+  }
+
   map() {
     // TODO: add
   }
@@ -595,6 +597,24 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   }
 
 
-  // TODO: concat ну или както объединить объекты
+  /**
+   * Set value of self readonly value and rise an event
+   */
+  protected myRoSetter = (name: keyof T, newValue: AllTypes) => {
+    this.setOwnValue(name as any, newValue, true)
+  }
+
+
+  /**
+   * Make full ordered object including keys from bottom layers
+   * @private
+   */
+  private makeFullOrderedObject(): Record<string, any> {
+    const res: Record<string, any> = {}
+
+    for (const key of this.allKeys) res[key] = this.values[key]
+
+    return res
+  }
 
 }

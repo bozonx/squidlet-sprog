@@ -491,7 +491,7 @@ export class SuperArray<T = any>
     return res
   }
 
-  unshift = (...items: any[]) => {
+  unshift = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     for (const key of items.keys()) {

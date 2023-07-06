@@ -1011,6 +1011,8 @@ describe.only('SuperData', () => {
   // })
 
 
+  // TODO: getDefinition()
+  // TODO: validateItem()
   // TODO: можно сортировать ключи
   // TODO: test batchSet
   // TODO: add ability to delete array value
