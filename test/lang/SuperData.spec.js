@@ -495,7 +495,6 @@ describe.only('SuperData', () => {
   // TODO: потомок - simple func
   // TODO: потомок - custom type
 
-  // TODO: toDefaultValue()
   // TODO: test toDefaultValue when child is super data
   // TODO: validateItem()
   // TODO: test removeChildListeners()

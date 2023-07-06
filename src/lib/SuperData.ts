@@ -322,44 +322,13 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
 
 
   /**
-   * Set default value or null if the key doesn't have a default value
+   * Set default value or null if the key doesn't have a default value.
+   * It will call walues of bottom layer which doesn't exist on this layer
    * @param key
    */
   toDefaultValue(key: string) {
-    // it will take own definition or from bottom layer or own default one
-    const definition = this.getDefinition(key)
-
-    if (!this.isInitialized) throw new Error(`Init it first`)
-    else if (!definition) {
-      throw new Error(`Data doesn't have definition for key "${key}"`)
-    }
-
-    if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
-      let defaultValue = definition.default
-      // some simple type
-      if (typeof defaultValue === 'undefined') {
-        // if no default value then make it from type
-        defaultValue = resolveInitialSimpleValue(
-          definition.type as keyof typeof SIMPLE_TYPES,
-          definition.nullable,
-        )
-      }
-      // set default value to simple child
-      this.setOwnValue(key, defaultValue)
-    }
-    else {
-      // some super types and other types
-
-
-      // TODO: во много похоже на SuperValueBase
-
-
-      // TODO: а должна быть поддержка нижнего слоя ???
-      // TODO: может toDefaults() должен учитывать нижний слой ??
-
-      if (isSuperValue(this.ownValues[key])) this.ownValues[key].toDefaults()
-      // if doesn't have toDefaults() then do nothing
-    }
+    // it includes bottom layer's extra keys
+    super.toDefaultValue(key)
   }
 
   getProxy(): T & ProxyfiedData<T> {

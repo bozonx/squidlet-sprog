@@ -333,12 +333,17 @@ export abstract class SuperValueBase<T = any | any[]>
 
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (!definition) {
-      throw new Error(`Struct doesn't have definition for key ${key}`)
+      throw new Error(`Super value doesn't have definition for key "${key}"`)
     }
 
-    if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
+    // some super types - call toDefaults() on it
+    if (isSuperValue(this.values[key as keyof T])) {
+      (this.values[key as keyof T] as SuperValueBase).toDefaults()
+    }
+    else {
+      // all other types including custom ones
       let defaultValue = definition.default
-      // some simple type
+
       if (typeof defaultValue === 'undefined') {
         // if no default value then make it from type
         defaultValue = resolveInitialSimpleValue(
@@ -348,12 +353,6 @@ export abstract class SuperValueBase<T = any | any[]>
       }
       // set default value to simple child
       this.setOwnValue(key, defaultValue)
-    }
-    else {
-      // some super types and other types
-      if (isSuperValue(this.values[key as keyof T])) {
-        (this.values[key as keyof T] as SuperValueBase).toDefaults()
-      }
       // if doesn't have toDefaults() then do nothing
     }
   }
