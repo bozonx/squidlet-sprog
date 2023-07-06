@@ -416,7 +416,8 @@ export class SuperArray<T = any>
   }
 
   /**
-   * Listen only to add, remove or reorder array changes
+   * Listen only to add, remove or reorder array changes.
+   * It listens to only this array not children bubbles
    */
   onArrayChange(handler: () => void): number {
     return this.events.addListener(SUPER_VALUE_EVENTS.change, (el: any, path?: string) => {
@@ -532,9 +533,6 @@ export class SuperArray<T = any>
       this.emitChildChangeEvent(i)
     }
 
-    // emit event for whole array
-    this.emitMyEvent()
-
     return this.proxyfiedInstance
   }
 
@@ -590,15 +588,17 @@ export class SuperArray<T = any>
       }
     }
 
-    this.events.emit(
-      SUPER_ARRAY_EVENTS.moved,
-      this,
-      this.pathToMe,
-      changedValues,
-      changedKeys,
-    )
-    // emit event for whole array
-    this.emitMyEvent()
+    if (changedValues.length) {
+      this.events.emit(
+        SUPER_ARRAY_EVENTS.moved,
+        this,
+        this.pathToMe,
+        changedValues,
+        changedKeys,
+      )
+      // emit event for whole array
+      this.emitMyEvent()
+    }
 
     return this.proxyfiedInstance
   }
