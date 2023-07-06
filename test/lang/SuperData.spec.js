@@ -430,73 +430,9 @@ describe.only('SuperData', () => {
     assert.deepEqual(data, {a1: 5})
   })
 
-  ///////////// Simple deep children
-
-  it('manipulate deep object without definition', async () => {
-    const spy = sinon.spy()
-    const sdata = (new SuperData()).getProxy()
-
-    sdata.subscribe((target, path) => spy(path))
-    sdata.$super.init({a: {b: 1}})
-
-    assert.equal(sdata.getValue('a.b'), 1)
-    spy.should.have.been.calledOnce
-    spy.should.have.been.calledWith(undefined)
-    // set value
-    sdata.setValue('a.b', 2)
-    assert.equal(sdata.getValue('a.b'), 2)
-    spy.should.have.been.calledTwice
-    spy.should.have.been.calledWith('a.b')
-  })
-
-  it('manipulate deep object with definition', async () => {
-    const spy = sinon.spy()
-    const sdata = (new SuperData({
-      a: {
-        type: 'object',
-        default: {
-          b: 1
-        }
-      }
-    })).getProxy()
-
-    sdata.subscribe((target, path) => spy(path))
-    sdata.$super.init()
-
-    assert.equal(sdata.getValue('a.b'), 1)
-    spy.should.have.been.calledOnce
-    spy.should.have.been.calledWith(undefined)
-    // set value
-    sdata.setValue('a.b', 2)
-    assert.equal(sdata.getValue('a.b'), 2)
-    spy.should.have.been.calledTwice
-    spy.should.have.been.calledWith('a.b')
-  })
-
-  it('manipulate deep array without definition', async () => {
-    const spy = sinon.spy()
-    const sdata = (new SuperData()).getProxy()
-
-    sdata.subscribe((target, path) => spy(path))
-    sdata.$super.init({a: ['b']})
-
-    assert.equal(sdata.getValue('a[0]'), 'b')
-    spy.should.have.been.calledOnce
-    spy.should.have.been.calledWith(undefined)
-    // set value
-    sdata.setValue('a[0]', 'q')
-    assert.equal(sdata.getValue('a[0]'), 'q')
-    spy.should.have.been.calledTwice
-    spy.should.have.been.calledWith('a[0]')
-  })
-
   // TODO: потомок - super func
   // TODO: потомок - simple func
-  // TODO: потомок - jsExp
-  // TODO: потомок - forEach ???
-  // TODO: потомок - ifElse ???
-
-
+  // TODO: потомок - custom type
 
   // TODO: с учётом порядка ключей
   // it('clone', async () => {

@@ -1,9 +1,8 @@
-import {newScope, SuperData} from "../../src/index.js";
+import {SuperData} from "../../src/index.js";
 import {SUPER_VALUE_EVENTS} from "../../src/lib/SuperValueBase.js";
 
 
 describe('SuperData super children', () => {
-
   it('children is SuperData', async () => {
     const spy1 = sinon.spy()
     const spy2 = sinon.spy()
