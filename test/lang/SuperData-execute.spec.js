@@ -2,7 +2,7 @@ import {newScope, SuperData} from "../../src/index.js";
 import {SUPER_VALUE_EVENTS} from "../../src/lib/SuperValueBase.js";
 
 
-describe('SuperData.execute', () => {
+describe('SuperData execute', () => {
   it('execute expressions - deep array', async () => {
     const scope = newScope()
     const spy = sinon.spy()

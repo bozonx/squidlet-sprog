@@ -2,7 +2,7 @@ import {newScope, SuperData} from "../../src/index.js";
 import {SUPER_VALUE_EVENTS} from "../../src/lib/SuperValueBase.js";
 
 
-describe('SuperData', () => {
+describe('SuperData layers', () => {
   it('layers', async () => {
     const dataBottom = new SuperData()
 
