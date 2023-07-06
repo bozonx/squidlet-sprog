@@ -25,8 +25,12 @@ import {
   isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition, isSuperKind
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
-import {EXP_MARKER} from '../constants.js';
 import {SuperScope} from './scope.js';
+
+
+// TODO: потомок - super func
+// TODO: потомок - simple func
+// TODO: потомок - custom type
 
 
 export interface SuperValuePublic extends SuperBasePublic {
@@ -87,6 +91,7 @@ export abstract class SuperValueBase<T = any | any[]>
 {
   readonly isSuperValue = true
   // TODO: может сделать protected?
+  // TODO: переименовать в allValues
   // current values. Keep in mind that there shouldn't be expressions
   readonly abstract values: T
   readonly events = new IndexedEventEmitter()
@@ -338,7 +343,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
     // some super types - call toDefaults() on it
     if (isSuperValue(this.values[key as keyof T])) {
-      (this.values[key as keyof T] as SuperValueBase).toDefaults()
+      (this.values[key as keyof T] as {$super: SuperValueBase}).$super.toDefaults()
     }
     else {
       // all other types including custom ones
@@ -357,6 +362,7 @@ export abstract class SuperValueBase<T = any | any[]>
     }
   }
 
+  // TODO: test batchSet
   batchSet(values?: T) {
     if (!values) return
 
@@ -500,6 +506,7 @@ export abstract class SuperValueBase<T = any | any[]>
     validateChildValue(definition, key, value)
   }
 
+  // TODO: test
   /**
    * Remove all the listeners of child
    * @param childKeyOrIndex - it can be a stringified number like '0'

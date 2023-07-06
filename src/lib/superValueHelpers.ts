@@ -5,9 +5,10 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {
   All_TYPES,
-  AllTypes, ProxifiedSuperValue,
+  AllTypes,
   SIMPLE_TYPES,
-  SimpleType, SUPER_VALUES,
+  SimpleType,
+  SUPER_VALUES,
 } from '../types/valueTypes.js';
 import {isCorrespondingType} from './isCorrespondingType.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';

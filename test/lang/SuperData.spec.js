@@ -292,6 +292,34 @@ describe.only('SuperData', () => {
     assert.deepEqual(data, {p1: 0})
   })
 
+  it(`toDefaultValue - child is Super Data`, async () => {
+    const scope = newScope()
+    const child = (new SuperData({
+      ca: {
+        type: 'number',
+        default: 1,
+      }
+    })).getProxy()
+    const data = await scope.$run({
+      $exp: 'newSuperData',
+      definition: {
+        a: {
+          type: 'SuperData',
+        },
+      },
+    })
+
+    child.$super.init({ca: 2})
+    data.$super.init({a: child})
+
+    assert.deepEqual(child, {ca: 2})
+    assert.deepEqual(data, {a: child})
+
+    data.$super.toDefaultValue('a')
+
+    assert.deepEqual(child, {ca: 1})
+  })
+
   it('little methods', async () => {
     const scope = newScope()
     const spy = sinon.spy()
@@ -489,15 +517,5 @@ describe.only('SuperData', () => {
       required: false,
     })
   })
-
-
-  // TODO: потомок - super func
-  // TODO: потомок - simple func
-  // TODO: потомок - custom type
-
-  // TODO: test toDefaultValue when child is super data
-  // TODO: validateItem()
-  // TODO: test removeChildListeners()
-  // TODO: test batchSet
 
 })
