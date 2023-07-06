@@ -338,7 +338,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
     if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
       let defaultValue = definition.default
-
+      // some simple type
       if (typeof defaultValue === 'undefined') {
         // if no default value then make it from type
         defaultValue = resolveInitialSimpleValue(
@@ -350,6 +350,7 @@ export abstract class SuperValueBase<T = any | any[]>
       this.setOwnValue(key, defaultValue)
     }
     else {
+      // some super types and other types
       if (isSuperValue(this.values[key as keyof T])) {
         (this.values[key as keyof T] as SuperValueBase).toDefaults()
       }

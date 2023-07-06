@@ -326,11 +326,8 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    * @param key
    */
   toDefaultValue(key: string) {
-    const definition = (this.definition[key])
-      ? (this.definition[key])
-      : this.defaultDefinition
-
-    // TODO: во много похоже на SuperValueBase
+    // it will take own definition or from bottom layer or own default one
+    const definition = this.getDefinition(key)
 
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (!definition) {
@@ -339,7 +336,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
 
     if (Object.keys(SIMPLE_TYPES).includes(definition.type)) {
       let defaultValue = definition.default
-
       // some simple type
       if (typeof defaultValue === 'undefined') {
         // if no default value then make it from type
@@ -353,6 +349,10 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     }
     else {
       // some super types and other types
+
+
+      // TODO: во много похоже на SuperValueBase
+
 
       // TODO: а должна быть поддержка нижнего слоя ???
       // TODO: может toDefaults() должен учитывать нижний слой ??
