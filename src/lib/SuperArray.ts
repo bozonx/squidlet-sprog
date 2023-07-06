@@ -570,21 +570,33 @@ export class SuperArray<T = any>
     // emit event for whole array
     this.emitMyEvent()
 
-    // TODO: нахрена ???
-    // emit children change event for every child
-    for (const key of this.values.keys()) {
-      this.emitChildChangeEvent(key)
-    }
-
     return res
   }
 
   sort = (compareFn?: (a: T, b: T) => number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
+    const prevArr = [...this.values]
+
     this.values.sort(compareFn)
-    // TODO: вычислить кто именно переместился
-    this.events.emit(SUPER_ARRAY_EVENTS.moved, this, this.pathToMe)
+
+    const changedValues: any[] = []
+    const changedKeys: any[] = []
+
+    for (const key of this.values.keys()) {
+      if (this.values[key] !== prevArr[key]) {
+        changedValues.push(this.values[key])
+        changedKeys.push(key)
+      }
+    }
+
+    this.events.emit(
+      SUPER_ARRAY_EVENTS.moved,
+      this,
+      this.pathToMe,
+      changedValues,
+      changedKeys,
+    )
     // emit event for whole array
     this.emitMyEvent()
 
