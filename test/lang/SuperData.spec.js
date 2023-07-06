@@ -1,5 +1,4 @@
 import {newScope, SuperData} from "../../src/index.js";
-import {SUPER_VALUE_EVENTS} from "../../src/lib/SuperValueBase.js";
 
 
 describe.only('SuperData', () => {
@@ -430,52 +429,76 @@ describe.only('SuperData', () => {
     assert.deepEqual(data, {a1: 5})
   })
 
+  it('clone', async () => {
+    const scope = newScope()
+    const data = await scope.$run({
+      $exp: 'newSuperData',
+      definition: {
+        p1: {
+          type: 'number',
+          default: 5
+        },
+      },
+    })
+
+    data.$super.init()
+
+    const cloned = data.$super.clone()
+
+    data.setValue('p1', 6)
+
+    assert.deepEqual(cloned, {p1: 5})
+  })
+
+  it('getDefinition - get from bottom layer even top has default definition', async () => {
+    const dataBottom = new SuperData({
+      a: {
+        type: 'number',
+        default: 5,
+      },
+    })
+
+    dataBottom.init({a: 1})
+
+    const dataTop = new SuperData(
+      {
+        $DEFAULT: {
+          type: 'number'
+        },
+      },
+      undefined,
+      dataBottom
+    )
+
+    dataTop.init({a: 2})
+
+    assert.deepEqual(dataTop.getDefinition('a'), {
+      type: 'number',
+      default: 5,
+      nullable: false,
+      readonly: false,
+      required: false,
+    })
+
+    dataBottom.forget('a')
+
+    assert.deepEqual(dataTop.getDefinition('a'), {
+      type: 'number',
+      nullable: false,
+      readonly: false,
+      required: false,
+    })
+  })
+
+
   // TODO: потомок - super func
   // TODO: потомок - simple func
   // TODO: потомок - custom type
 
-  // TODO: с учётом порядка ключей
-  // it('clone', async () => {
-  //   const scope = newScope()
-  //   const spy = sinon.spy()
-  //   const def = {
-  //     $exp: 'newSuperData',
-  //     definition: {
-  //       p1: {
-  //         type: 'number',
-  //         default: 5
-  //       },
-  //     },
-  //   }
-  //   const data = await scope.$run(def)
-  //
-  //   data.$super.init()
-  //
-  //   const cloned = data.$super.clone()
-  //
-  //   data.setValue('p1', 6)
-  //
-  //   assert.deepEqual(cloned, {p1: 5})
-  // })
-
-
-  // TODO: getDefinition()
-  // TODO: validateItem()
-  // TODO: можно сортировать ключи
-  // TODO: test batchSet
-  // TODO: add ability to delete array value
-  // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
-  // TODO: makeChildPath не верно отработает если дадут число
-  // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
-  // TODO: test removeChildListeners()
-  // TODO: test all the events
+  // TODO: toDefaultValue()
   // TODO: test toDefaultValue when child is super data
+  // TODO: validateItem()
+  // TODO: test removeChildListeners()
   // TODO: test batchSet
-  // TODO: test array like
-  // TODO: test init array like values
-  // TODO: если отсоединить потомка от другого родителя то у него может
-  //       нарушиться целостность, так как он может быть обязательным в struct
-  //       или быть required
-  //       можно сделать явную проверку и поднять ошибку
 
 })

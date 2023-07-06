@@ -373,17 +373,27 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   }
 
   /**
-   * Get own definition or own default definition or bottom definition
+   * Get own definition or bottom definition or own default definition
    * @param key
+   * @param noDefault
    */
-  getDefinition(key: string): SuperItemDefinition | undefined {
+  getDefinition(key: string, noDefault: boolean = false): SuperItemDefinition | undefined {
+    // first try to get own definition
     if (this.definition[key]) {
-      return this.definition[key] || this.defaultDefinition
+      return this.definition[key]
     }
-    else if (this.bottomLayer) {
-      // TODO: если есть default definition то до сюда не дойдёт
-      return this.bottomLayer.getDefinition(key)
+
+    const bottomDef = this.bottomLayer?.getDefinition(key, true)
+
+    // else try to get definition from bottom layer
+    if (bottomDef) {
+      return bottomDef
     }
+    // else return own default definition
+    else if (!noDefault) {
+      return this.defaultDefinition
+    }
+    // else undefined
   }
 
   /////// Data specific methods
