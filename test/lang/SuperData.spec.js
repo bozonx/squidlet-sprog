@@ -2,7 +2,7 @@ import {newScope, SuperData} from "../../src/index.js";
 import {SUPER_VALUE_EVENTS} from "../../src/lib/SuperValueBase.js";
 
 
-describe('SuperData', () => {
+describe.only('SuperData', () => {
   it('proxy', async () => {
 
     // TODO: review
@@ -1010,6 +1010,12 @@ describe('SuperData', () => {
   //   assert.deepEqual(cloned, {p1: 5})
   // })
 
+
+  // TODO: можно сортировать ключи
+  // TODO: test batchSet
+  // TODO: add ability to delete array value
+  // TODO: проверить getValue, setValue будут ли они работать если ключ это число???
+  // TODO: makeChildPath не верно отработает если дадут число
   // TODO: если есть full ro у родителя то должен установить ro у детей а те у своих детей
   // TODO: test removeChildListeners()
   // TODO: test all the events

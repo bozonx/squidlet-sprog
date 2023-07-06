@@ -8,7 +8,8 @@ import {
   joinDeepPath,
 } from 'squidlet-lib';
 import {
-  SUPER_VALUE_PROXY_PUBLIC_MEMBERS, SUPER_VALUE_EVENTS,
+  SUPER_VALUE_PROXY_PUBLIC_MEMBERS,
+  SUPER_VALUE_EVENTS,
   SuperValueBase,
   SuperValuePublic,
 } from './SuperValueBase.js';
@@ -27,16 +28,6 @@ import {
 import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {ProxyfiedSuperBase} from './SuperBase.js';
-
-
-// TODO: проверить getValue, setValue будут ли они работать если ключ это число???
-// TODO: makeChildPath не верно отработает если дадут число
-// TODO: можно сортировать ключи
-// TODO: reverse
-// TODO: добавить методы array - filter, find, map и итд
-// TODO: add ability to delete array value
-// TODO: test batchSet
-// TODO: можно добавить метод create() он создаст значение с символом и вернёт символ
 
 
 export interface SuperDataPublic extends SuperValuePublic {
@@ -142,9 +133,9 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   implements SuperDataPublic
 {
   readonly isData = true
-  // values only of this layer. Do not use it, use setValue, getValue instead
-  // TODO: why not T ???
-  readonly ownValues: Record<string, any> = {}
+  // values only of this layer. Do not use it, use setValue, getValue instead.
+  // The type doesn't matter because it is for inner use only
+  readonly ownValues: Record<any, any> = {}
   // proxy which allows to manipulate with all layers. Do not use it at all.
   // it only for getValue and setValue and other inner methods.
   readonly values: T
@@ -275,7 +266,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   }
 
   $$setPath(myNewPath: string) {
-    this.myPath = myNewPath
+    super.$$setPath(myNewPath)
 
     if (this.bottomLayer) this.bottomLayer.$$setPath(myNewPath)
   }

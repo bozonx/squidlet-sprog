@@ -580,6 +580,7 @@ export abstract class SuperValueBase<T = any | any[]>
     return true
   }
 
+  // TODO: review
   /**
    * Resolve onw child value according the definition and init it.
    * It is called in init(), setOwnValue() and define()

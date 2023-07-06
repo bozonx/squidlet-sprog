@@ -155,6 +155,14 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
 
+  getOwnValue(key: string): AllTypes {
+    return super.getOwnValue(key)
+  }
+
+  setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false): boolean {
+    return super.setOwnValue(key, value, ignoreRo)
+  }
+
   getProxy(): T & ProxyfiedStruct<T> {
     return super.getProxy()
   }

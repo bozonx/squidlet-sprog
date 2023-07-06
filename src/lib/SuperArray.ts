@@ -273,7 +273,12 @@ export class SuperArray<T = any>
     }
   }
 
-  setOwnValue(keyStr: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
+
+  getOwnValue(key: number): AllTypes {
+    return super.getOwnValue(key)
+  }
+
+  setOwnValue(keyStr: number, value: AllTypes, ignoreRo: boolean = false): boolean {
     return super.setOwnValue(Number(keyStr), value, ignoreRo)
   }
 
