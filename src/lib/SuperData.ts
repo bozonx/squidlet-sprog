@@ -1,6 +1,5 @@
 import {
   deepClone,
-  spliceItem,
   omitObj,
   concatUniqStrArrays,
   deduplicate,
@@ -483,6 +482,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    * @param value
    */
   addToBeginning(key: string, value: any) {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
@@ -491,6 +491,8 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    * @param value
    */
   create(value: AllTypes): symbol {
+    if (!this.isInitialized) throw new Error(`Init it first`)
+
     const sym = Symbol()
 
     // TODO: add
@@ -499,6 +501,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   }
 
   move(keyToMove: number, newPosition: number): boolean {
+    if (!this.isInitialized) throw new Error(`Init it first`)
 
     // TODO: add
 
@@ -506,6 +509,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   }
 
   eachMap() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add - вернуть объект
   }
 
@@ -514,76 +518,94 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   // to use splice() - use forget
 
   pop() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   shift() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   reverse() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   sort(compareFn?: (a: T, b: T) => number) {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   //////// Not mutable methods
 
   filter() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   find() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   findIndex() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   findLast() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   findLastIndex() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   forEach() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   includes() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   indexOf() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   join() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   lastIndexOf() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   map() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   slice() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   reduce() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
   reduceRight() {
+    if (!this.isInitialized) throw new Error(`Init it first`)
     // TODO: add
   }
 
