@@ -142,7 +142,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   readonly defaultRo: boolean
   readonly bottomLayer?: SuperData
   protected proxyFn = proxifyData
-  private readonly ownOrderedKeys: string[] = []
   // put definition via special method, not straight
   private readonly definition: Record<string, SuperItemDefinition> = {} as any
 
@@ -164,7 +163,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    * Keys only of me, not bottom layer and not children's
    */
   get ownKeys(): string[] {
-    return [...this.ownOrderedKeys]
+    return Object.keys(this.ownValues)
   }
 
   get ownValuesStrict(): T {
@@ -196,7 +195,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       if (definition[keyStr] === null) continue
 
       checkDefinition(definition[keyStr])
-      this.ownOrderedKeys.push(keyStr)
 
       this.definition[keyStr] = prepareDefinitionItem(definition[keyStr], defaultRo)
     }
@@ -222,8 +220,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       const def = this.definition[key] || this.defaultDefinition
 
       if (!def) throw new Error(`Can't resolve definition of key "${key}"`)
-      // add key
-      if (!this.ownOrderedKeys.includes(key)) this.ownOrderedKeys.push(key)
       // set value
       this.ownValues[key] = this.resolveChildValue(def, key, initialValues?.[key])
     }
@@ -287,8 +283,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
 
     this.ownValues[key] = this.resolveChildValue(definition!, key, value)
-
-    if (!this.ownOrderedKeys.includes(key)) this.ownOrderedKeys.push(key)
 
     this.emitChildChangeEvent(key)
 
@@ -408,7 +402,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
    * Set a new definition for a specific key. You can't replace or change it.
    */
   define(key: string, definition?: SuperItemInitDefinition, initialValue?: any) {
-    if (this.ownOrderedKeys.includes(key)) {
+    if (this.ownKeys.includes(key)) {
       throw new Error(`Can't redefine a new item. You have to call forget("${key}") first`)
     }
 
@@ -429,7 +423,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
 
     if (!finalDef) throw new Error(`Can't resolve definition`)
 
-    if (!this.ownOrderedKeys.includes(key)) this.ownOrderedKeys.push(key)
     // resolve default or initial value as value
     const defaultValue = this.resolveChildValue(finalDef, key, initialValue)
 
@@ -472,8 +465,6 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     delete this.definition[key]
     // remove own value
     delete this.ownValues[key]
-    // remove key
-    spliceItem(this.ownOrderedKeys, key)
 
     if (this.bottomLayer) {
       const bottomLayer = this.bottomLayer
