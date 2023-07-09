@@ -67,14 +67,14 @@ export enum SUPER_VALUE_EVENTS {
   initStart,
   inited,
   destroy,
+  // any change including array events - added, removed, moved
   change,
   // changes (define or forget) of definitions after initialization
   definition,
   newLink,
   unlink,
   changeParent,
-  // for array and data only, not for struct
-  // specific array events.
+  // specific array events. for array and data only, not for struct
   // any of these events will be in SUPER_VALUE_EVENTS.change
   // handler of them will receive ([...changedItems], [...changedKeys])
   added,

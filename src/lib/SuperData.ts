@@ -24,8 +24,7 @@ import {
   SUPER_VALUE_PROP,
   validateChildValue
 } from './superValueHelpers.js';
-import {AllTypes, SIMPLE_TYPES} from '../types/valueTypes.js';
-import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
+import {AllTypes} from '../types/valueTypes.js';
 import {ProxyfiedSuperBase} from './SuperBase.js';
 
 
@@ -473,6 +472,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     if (!this.isInitialized) throw new Error(`Init it first`)
 
     // TODO: а слои???
+    // TODO: может добавить тип типа - SuperChangeHandler
 
     this.ownValues = {[key]: value, ...this.ownValues}
 
