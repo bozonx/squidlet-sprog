@@ -1,7 +1,7 @@
 import {newScope, SuperData} from "../../src/index.js";
 
 
-describe.only('SuperData', () => {
+describe('SuperData', () => {
   it('proxy', async () => {
     const scope = newScope()
     const def = {

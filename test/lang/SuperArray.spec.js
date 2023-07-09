@@ -436,7 +436,7 @@ describe('SuperArray', () => {
 
     assert.isTrue(arr.move(3, 1))
 
-    assert.deepEqual(arr.$super.values, [0,3,2,1])
+    assert.deepEqual(arr.$super.allValues, [0,3,2,1])
 
     spyChange.should.have.been.calledTwice
     spyMoved.should.have.been.calledOnceWith(arr.$super, undefined, [3,1], [3,1])
@@ -460,7 +460,7 @@ describe('SuperArray', () => {
 
     assert.isFalse(arr.move(4, 1))
 
-    assert.deepEqual(arr.$super.values, [0,1,2,3])
+    assert.deepEqual(arr.$super.allValues, [0,1,2,3])
 
     spyChange.should.have.been.calledOnce
     spyMoved.should.have.not.been.called
@@ -484,7 +484,7 @@ describe('SuperArray', () => {
 
     assert.isFalse(arr.move(4, -1))
 
-    assert.deepEqual(arr.$super.values, [0,1,2,3])
+    assert.deepEqual(arr.$super.allValues, [0,1,2,3])
 
     spyChange.should.have.been.calledOnce
     spyMoved.should.have.not.been.called
@@ -508,7 +508,7 @@ describe('SuperArray', () => {
 
     assert.isFalse(arr.move(1, 1))
 
-    assert.deepEqual(arr.$super.values, [0,1])
+    assert.deepEqual(arr.$super.allValues, [0,1])
 
     spyChange.should.have.been.calledOnce
     spyMoved.should.have.not.been.called
@@ -536,7 +536,7 @@ describe('SuperArray', () => {
 
     arr.push(5,6)
 
-    assert.deepEqual(arr.$super.values, [4, 5,6])
+    assert.deepEqual(arr.$super.allValues, [4, 5,6])
 
     spyChange.should.have.been.calledTwice
     spyArrChange.should.have.been.calledTwice
@@ -576,11 +576,11 @@ describe('SuperArray', () => {
     arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
-    assert.deepEqual(arr.$super.values, [5,6])
+    assert.deepEqual(arr.$super.allValues, [5,6])
 
     arr.pop()
 
-    assert.deepEqual(arr.$super.values, [5])
+    assert.deepEqual(arr.$super.allValues, [5])
 
     spyChange.should.have.been.calledTwice
     arr.$super.onArrayChange(spyArrChange)
@@ -606,11 +606,11 @@ describe('SuperArray', () => {
     arr.$super.events.addListener(SUPER_VALUE_EVENTS.removed, spyRemoved)
     arr.$super.init()
 
-    assert.deepEqual(arr.$super.values, [5,6])
+    assert.deepEqual(arr.$super.allValues, [5,6])
 
     arr.shift()
 
-    assert.deepEqual(arr.$super.values, [6])
+    assert.deepEqual(arr.$super.allValues, [6])
 
     spyChange.should.have.been.calledTwice
     spyArrChange.should.have.been.calledTwice
@@ -638,7 +638,7 @@ describe('SuperArray', () => {
 
     arr.unshift(5,6)
 
-    assert.deepEqual(arr.$super.values, [5,6,7])
+    assert.deepEqual(arr.$super.allValues, [5,6,7])
 
     spyChange.should.have.been.calledTwice
     spyArrChange.should.have.been.calledTwice
@@ -678,7 +678,7 @@ describe('SuperArray', () => {
 
     arr.fill(5)
 
-    assert.deepEqual(arr.$super.values, [5,5])
+    assert.deepEqual(arr.$super.allValues, [5,5])
 
     spyChange.should.have.been.calledThrice
     spyArrChange.should.have.been.calledOnce
@@ -700,7 +700,7 @@ describe('SuperArray', () => {
 
     arr.fill(5, 1)
 
-    assert.deepEqual(arr.$super.values, [0,5,5])
+    assert.deepEqual(arr.$super.allValues, [0,5,5])
 
     spyChange.should.have.been.calledThrice
   })
@@ -721,7 +721,7 @@ describe('SuperArray', () => {
 
     arr.fill(5, 1, 3)
 
-    assert.deepEqual(arr.$super.values, [0,5,5,4])
+    assert.deepEqual(arr.$super.allValues, [0,5,5,4])
 
     spyChange.should.have.been.calledThrice
   })
@@ -742,7 +742,7 @@ describe('SuperArray', () => {
 
     arr.fill(5, 1, 3)
 
-    assert.deepEqual(arr.$super.values, [0,5])
+    assert.deepEqual(arr.$super.allValues, [0,5])
 
     spyChange.should.have.been.calledTwice
   })
@@ -765,7 +765,7 @@ describe('SuperArray', () => {
 
     arr.splice(1)
 
-    assert.deepEqual(arr.$super.values, [0,1,2])
+    assert.deepEqual(arr.$super.allValues, [0,1,2])
 
     spyChange.should.have.been.calledOnce
     spyRemoved.should.have.not.been
@@ -791,7 +791,7 @@ describe('SuperArray', () => {
 
     arr.splice(1, 1)
 
-    assert.deepEqual(arr.$super.values, [0,2])
+    assert.deepEqual(arr.$super.allValues, [0,2])
 
     spyChange.should.have.been.calledTwice
     spyArrChange.should.have.been.calledTwice
@@ -816,7 +816,7 @@ describe('SuperArray', () => {
 
     arr.splice(1, 2)
 
-    assert.deepEqual(arr.$super.values, [0,3])
+    assert.deepEqual(arr.$super.allValues, [0,3])
 
     spyChange.should.have.been.calledTwice
     spyRemoved.should.have.been.calledOnceWith(arr.$super, undefined, [1,2], [1,2])
@@ -840,7 +840,7 @@ describe('SuperArray', () => {
 
     arr.splice(1, 3)
 
-    assert.deepEqual(arr.$super.values, [0])
+    assert.deepEqual(arr.$super.allValues, [0])
 
     spyChange.should.have.been.calledTwice
     spyRemoved.should.have.been.calledOnceWith(arr.$super, undefined, [1], [1])
@@ -864,7 +864,7 @@ describe('SuperArray', () => {
 
     arr.splice(2, 1)
 
-    assert.deepEqual(arr.$super.values, [0,1])
+    assert.deepEqual(arr.$super.allValues, [0,1])
 
     spyChange.should.have.been.calledOnce
     spyRemoved.should.have.not.been.called
@@ -890,7 +890,7 @@ describe('SuperArray', () => {
 
     arr.reverse()
 
-    assert.deepEqual(arr.$super.values, [1,0])
+    assert.deepEqual(arr.$super.allValues, [1,0])
 
     spyChange.should.have.been.calledTwice
     spyArrChange.should.have.been.calledTwice
@@ -915,7 +915,7 @@ describe('SuperArray', () => {
 
     arr.sort()
 
-    assert.deepEqual(arr.$super.values, ['a', 'b', 'c', 'd'])
+    assert.deepEqual(arr.$super.allValues, ['a', 'b', 'c', 'd'])
 
     spyChange.should.have.been.calledTwice
     spyMoved.should.have.been.calledOnceWith(
@@ -946,7 +946,7 @@ describe('SuperArray', () => {
 
     arr.sort()
 
-    assert.deepEqual(arr.$super.values, ['a', 'b', 'c', 'd'])
+    assert.deepEqual(arr.$super.allValues, ['a', 'b', 'c', 'd'])
 
     spyChange.should.have.been.calledTwice
     spyArrChange.should.have.been.calledTwice
@@ -978,7 +978,7 @@ describe('SuperArray', () => {
 
     arr.sort()
 
-    assert.deepEqual(arr.$super.values, ['a', 'b'])
+    assert.deepEqual(arr.$super.allValues, ['a', 'b'])
 
     spyChange.should.have.been.calledOnce
     spyArrChange.should.have.been.calledOnce

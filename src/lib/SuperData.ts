@@ -52,7 +52,7 @@ export function proxifyData(data: SuperData): ProxyfiedData {
       // public super data prop
       else if (DATA_PUBLIC_MEMBERS.includes(prop)) return (data as any)[prop]
       // else prop or object itself or bottom layer
-      return data.values[prop]
+      return data.allValues[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -139,9 +139,9 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   ownValues: Record<any, any> = {}
   // proxy which allows to manipulate with all layers. Do not use it at all.
   // it only for getValue and setValue and other inner methods.
-  readonly values: T
   readonly defaultRo: boolean
   readonly bottomLayer?: SuperData
+  protected _values: T
   protected proxyFn = proxifyData
   // put definition via special method, not straight
   private readonly definition: Record<string, SuperItemDefinition> = {} as any
@@ -189,7 +189,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     this.bottomLayer = bottomLayer
     // save it to use later to define a new props
     this.defaultRo = defaultRo
-    this.values = proxifyLayeredValue(this.ownValues, bottomLayer)
+    this._values = proxifyLayeredValue(this.ownValues, bottomLayer)
     // setup definitions
     for (const keyStr of Object.keys(definition)) {
       // skip reset of default definition
@@ -625,7 +625,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
   private makeFullOrderedObject(): Record<string, any> {
     const res: Record<string, any> = {}
 
-    for (const key of this.allKeys) res[key] = this.values[key]
+    for (const key of this.allKeys) res[key] = this._values[key]
 
     return res
   }

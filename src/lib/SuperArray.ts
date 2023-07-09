@@ -63,7 +63,7 @@ export interface SuperArrayPublic extends SuperValuePublic {
   slice: Array<any>['slice']
   toLocaleString: Array<any>['toLocaleString']
   toString: Array<any>['toString']
-  // values()
+  values: Array<any>['values']
   valueOf: Array<any>['valueOf']
   some: Array<any>['some']
   reduce: Array<any>['reduce']
@@ -119,7 +119,7 @@ const ARR_PUBLIC_MEMBERS = [
   'slice',
   'toLocaleString',
   'toString',
-  // values() should be here
+  'values',
   'valueOf',
   'some',
   'reduce',
@@ -144,13 +144,13 @@ export function proxifyArray(arr: SuperArray): ProxyfiedArray {
         return (arr as any)[prop]
       }
       // symbol or index or prop of Array() class
-      return arr.values[prop as any]
+      return arr.allValues[prop as any]
     },
 
     has(target: any, prop: string): boolean {
       if (prop === SUPER_VALUE_PROP || ARR_PUBLIC_MEMBERS.includes(prop)) return true
 
-      return typeof arr.values[prop as any] !== 'undefined'
+      return typeof arr.allValues[prop as any] !== 'undefined'
     },
 
     set(target: any[], prop, value) {
@@ -173,7 +173,7 @@ export function proxifyArray(arr: SuperArray): ProxyfiedArray {
 
   }
 
-  return new Proxy(arr.values, handler) as ProxyfiedArray
+  return new Proxy(arr.allValues, handler) as ProxyfiedArray
 }
 
 
@@ -182,7 +182,7 @@ export class SuperArray<T = any>
   implements SuperArrayPublic
 {
   readonly isArray = true
-  readonly values: T[] = []
+  protected _values: T[] = []
   protected proxyFn = proxifyArray
   // definition for all the items of array
   private readonly definition: SuperArrayDefinition
@@ -192,11 +192,11 @@ export class SuperArray<T = any>
   }
 
   get length(): number {
-    return this.values.length
+    return this.allValues.length
   }
 
   get allKeys(): number[] {
-    return arrayKeys(this.values)
+    return arrayKeys(this.allValues)
   }
 
 
@@ -232,7 +232,7 @@ export class SuperArray<T = any>
     const maxLength: number = Math.max(initArrLength, defaultArrLength)
     // Any way set length to remove odd items. Actually init is allowed to run only once
     // so there should aren't any initialized super values in the rest of array
-    this.values.length = maxLength
+    this._values.length = maxLength
 
     for (const itemIndex of (new Array(maxLength)).keys()) {
       // if index is in range of initalArr then get its item
@@ -242,7 +242,7 @@ export class SuperArray<T = any>
         : this.definition.defaultArray?.[itemIndex]
       const childDefinition = this.getDefinition(itemIndex)
 
-      this.values[itemIndex] = this.resolveChildValue(childDefinition, itemIndex, value)
+      this._values[itemIndex] = this.resolveChildValue(childDefinition, itemIndex, value)
     }
 
     return super.init()
@@ -251,7 +251,7 @@ export class SuperArray<T = any>
   destroy = () => {
     super.destroy()
 
-    const values: any[] = this.values
+    const values: any[] = this.allValues
 
     for (const indexStr of values) {
       if (isSuperValue(values[indexStr])) {
@@ -321,7 +321,7 @@ export class SuperArray<T = any>
       throw new Error(`Can't delete item from readonly array`)
     }
 
-    delete this.values[index]
+    delete this._values[index]
 
     this.emitChildChangeEvent(index)
   }
@@ -338,11 +338,11 @@ export class SuperArray<T = any>
       throw new Error(`Can't delete item from readonly array`)
     }
 
-    const index = this.values.indexOf(value)
+    const index = this.allValues.indexOf(value)
 
     if (index < 0) return
 
-    delete this.values[index]
+    delete this._values[index]
 
     this.emitChildChangeEvent(index)
   }
@@ -358,7 +358,7 @@ export class SuperArray<T = any>
       throw new Error(`Can't delete item from readonly array`)
     }
 
-    this.values.splice(index, 1)
+    this._values.splice(index, 1)
     this.emitChildChangeEvent(index)
   }
 
@@ -373,11 +373,11 @@ export class SuperArray<T = any>
       throw new Error(`Can't delete item from readonly array`)
     }
 
-    const index = this.values.indexOf(value)
+    const index = this.allValues.indexOf(value)
 
     if (index < 0) return
 
-    this.values.splice(index, 1)
+    this._values.splice(index, 1)
 
     this.emitChildChangeEvent(index)
   }
@@ -385,15 +385,15 @@ export class SuperArray<T = any>
   move = (keyToMove: number, newPosition: number): boolean => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    if (keyToMove < 0 || keyToMove > this.values.length - 1) return false
-    else if (newPosition < 0 || newPosition > this.values.length - 1) return false
+    if (keyToMove < 0 || keyToMove > this.allValues.length - 1) return false
+    else if (newPosition < 0 || newPosition > this.allValues.length - 1) return false
     else if (keyToMove === newPosition) return false
 
-    const valueToMove = this.values[keyToMove]
-    const oldValue = this.values[newPosition]
+    const valueToMove = this.allValues[keyToMove]
+    const oldValue = this.allValues[newPosition]
 
-    this.values[newPosition] = valueToMove
-    this.values[keyToMove] = oldValue
+    this._values[newPosition] = valueToMove
+    this._values[keyToMove] = oldValue
 
     this.events.emit(
       SUPER_VALUE_EVENTS.moved,
@@ -425,13 +425,13 @@ export class SuperArray<T = any>
   push = (...items: any[]): number => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const addedKeys: number[] = fillWithNumberIncrement(this.values.length, items.length)
+    const addedKeys: number[] = fillWithNumberIncrement(this.allValues.length, items.length)
 
     for (const key of items.keys()) {
       this.validateItem(addedKeys[key], items[key])
     }
 
-    const newLength = this.values.push(...items)
+    const newLength = this._values.push(...items)
 
     for (const item of items) {
       // TODO: если передан super value
@@ -450,9 +450,9 @@ export class SuperArray<T = any>
   pop = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const prevLength = this.values.length
-    const removedEl = lastItem(this.values)
-    const res = this.values.pop()
+    const prevLength = this.allValues.length
+    const removedEl = lastItem(this.allValues)
+    const res = this._values.pop()
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -466,8 +466,8 @@ export class SuperArray<T = any>
   shift = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const removedEl = this.values[0]
-    const res = this.values.shift()
+    const removedEl = this.allValues[0]
+    const res = this._values.shift()
 
     // TODO: нужно овязять super элемент и дестроить его
 
@@ -486,7 +486,7 @@ export class SuperArray<T = any>
     }
 
     const addedKeys: number[] = arrayKeys(items)
-    const res = this.values.unshift(...items)
+    const res = this._values.unshift(...items)
 
     // TODO: наверное надо инициализировать super value и проверить значения
 
@@ -511,13 +511,13 @@ export class SuperArray<T = any>
 
     // TODO: запретить super либо их подвязать к себе
 
-    this.values.fill(value, start, end)
+    this._values.fill(value, start, end)
     // emit events for all the changed children
     for (
       let i = start || 0;
       i < (
-        (typeof end === 'undefined' || end > this.values.length - 1)
-          ? this.values.length
+        (typeof end === 'undefined' || end > this.allValues.length - 1)
+          ? this.allValues.length
           : end
       );
       i++
@@ -535,11 +535,11 @@ export class SuperArray<T = any>
 
     const removedKeys: number[] = fillWithNumberIncrement(
       start,
-      (start + deleteCount > this.values.length)
-        ? this.values.length - start
+      (start + deleteCount > this.allValues.length)
+        ? this.allValues.length - start
         : deleteCount
     )
-    const removedItems = this.values.splice(start, deleteCount, ...items)
+    const removedItems = this._values.splice(start, deleteCount, ...items)
 
     if (removedItems.length) {
       this.events.emit(SUPER_VALUE_EVENTS.removed, this, this.pathToMe, removedItems, removedKeys)
@@ -555,7 +555,7 @@ export class SuperArray<T = any>
   reverse = () => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const res = this.values.reverse()
+    const res = this._values.reverse()
     this.events.emit(SUPER_VALUE_EVENTS.moved, this, this.pathToMe, res, arrayKeys(res))
     // emit event for whole array
     this.emitMyEvent()
@@ -566,16 +566,16 @@ export class SuperArray<T = any>
   sort = (compareFn?: (a: T, b: T) => number): ProxyfiedArray => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    const prevArr = [...this.values]
+    const prevArr = [...this.allValues]
 
-    this.values.sort(compareFn)
+    this._values.sort(compareFn)
 
     const changedValues: any[] = []
     const changedKeys: any[] = []
 
-    for (const key of this.values.keys()) {
-      if (this.values[key] !== prevArr[key]) {
-        changedValues.push(this.values[key])
+    for (const key of this.allValues.keys()) {
+      if (this.allValues[key] !== prevArr[key]) {
+        changedValues.push(this.allValues[key])
         changedKeys.push(key)
       }
     }
@@ -602,30 +602,31 @@ export class SuperArray<T = any>
    *   toString, values, valueOf, some, reduce, reduceRight
    */
 
-  concat = this.values.concat
-  entries = this.values.entries
-  every = this.values.every
-  filter = this.values.filter
-  find = this.values.find
-  findIndex = this.values.findIndex
-  findLast = this.values.findLast
-  findLastIndex = this.values.findLastIndex
-  flat = this.values.flat
-  flatMap = this.values.flatMap
-  forEach = this.values.forEach
-  includes = this.values.includes
-  indexOf = this.values.indexOf
-  join = this.values.join
-  keys = this.values.keys
-  lastIndexOf = this.values.lastIndexOf
-  map = this.values.map
-  slice = this.values.slice
-  toLocaleString = this.values.toLocaleString
-  toString = this.values.toString
-  reduce = this.values.reduce
-  reduceRight = this.values.reduceRight
-  some = this.values.some
-  valueOf = this.values.valueOf
+  concat = this.allValues.concat
+  entries = this.allValues.entries
+  every = this.allValues.every
+  filter = this.allValues.filter
+  find = this.allValues.find
+  findIndex = this.allValues.findIndex
+  findLast = this.allValues.findLast
+  findLastIndex = this.allValues.findLastIndex
+  flat = this.allValues.flat
+  flatMap = this.allValues.flatMap
+  forEach = this.allValues.forEach
+  includes = this.allValues.includes
+  indexOf = this.allValues.indexOf
+  join = this.allValues.join
+  keys = this.allValues.keys
+  lastIndexOf = this.allValues.lastIndexOf
+  map = this.allValues.map
+  slice = this.allValues.slice
+  toLocaleString = this.allValues.toLocaleString
+  toString = this.allValues.toString
+  reduce = this.allValues.reduce
+  reduceRight = this.allValues.reduceRight
+  some = this.allValues.some
+  valueOf = this.allValues.valueOf
+  values = this.allValues.values
 
 
   ///// PRIVATE

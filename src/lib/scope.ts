@@ -144,7 +144,7 @@ export function proxyScope(data: SuperData): SuperScope {
         return scopeFunctions[prop].bind(proxyfied)
       }
       // else var of scope
-      return data.values[prop]
+      return data.allValues[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -172,7 +172,7 @@ export function proxyScope(data: SuperData): SuperScope {
     },
   }
 
-  const proxyfied = new Proxy(data.values, handler) as SuperScope
+  const proxyfied = new Proxy(data.allValues, handler) as SuperScope
 
   return proxyfied
 }
@@ -247,7 +247,7 @@ export function newScope<T = any>(initialVars: T = {} as T, previousScope?: Supe
 //       //return Object.keys(data.values).includes(prop)
 //
 //       if (Object.keys(data.values).includes(prop)) return true
-//       else if (previousScope && previousScope.$super.values.includes(prop)) return true
+//       else if (previousScope && previousScope.$super.allValues.includes(prop)) return true
 //
 //       return false
 //     },
@@ -275,7 +275,7 @@ export function newScope<T = any>(initialVars: T = {} as T, previousScope?: Supe
 //
 //     ownKeys(): ArrayLike<string | symbol> {
 //       return [
-//         ...Object.keys(previousScope?.$super.values || []),
+//         ...Object.keys(previousScope?.$super.allValues || []),
 //         ...Object.keys(data.values),
 //       ]
 //     },

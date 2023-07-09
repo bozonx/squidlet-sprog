@@ -48,7 +48,7 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
       // public super struct prop
       else if (STRUCT_PUBLIC_MEMBERS.includes(prop)) return (struct as any)[prop]
       // else prop or object itself
-      return struct.values[prop]
+      return struct.allValues[prop]
     },
 
     has(target: any, prop: string): boolean {
@@ -70,7 +70,7 @@ export function proxifyStruct(struct: SuperStruct): ProxyfiedStruct {
     },
   }
 
-  return new Proxy(struct.values, handler) as ProxyfiedStruct
+  return new Proxy(struct.allValues, handler) as ProxyfiedStruct
 }
 
 
@@ -85,13 +85,13 @@ export class SuperStruct<T = Record<string, AllTypes>>
 {
   readonly isStruct = true
   // current values
-  readonly values = {} as T
+  protected _values = {} as T
   protected proxyFn = proxifyStruct
   // It assumes that you will not change it after initialization
   private readonly definition: Record<keyof T, SuperItemDefinition> = {} as any
 
   get allKeys(): string[] {
-    return Object.keys(this.values as any)
+    return Object.keys(this.allValues as any)
   }
 
 
@@ -125,13 +125,13 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const keyStr of Object.keys(this.definition)) {
       const keyName = keyStr as keyof T
 
-      this.values[keyName] = this.resolveChildValue(
+      this._values[keyName] = this.resolveChildValue(
         this.definition[keyName],
         keyStr,
         initialValues?.[keyName]
       )
       // all the values has to be set at init time
-      if (typeof this.values[keyName] === 'undefined') {
+      if (typeof this._values[keyName] === 'undefined') {
         throw new Error(
           `SuperStruct.init(). Value ${keyStr} has to be set in default or in initial values`
         )
@@ -147,9 +147,9 @@ export class SuperStruct<T = Record<string, AllTypes>>
     for (const key of this.allKeys) {
       const keyName = key as keyof T
 
-      if (isSuperValue(this.values[keyName])) {
+      if (isSuperValue(this.allValues[keyName])) {
         // it will destroy itself and its children
-        ((this.values[keyName] as any)[SUPER_VALUE_PROP] as SuperValueBase).destroy()
+        ((this.allValues[keyName] as any)[SUPER_VALUE_PROP] as SuperValueBase).destroy()
       }
     }
   }

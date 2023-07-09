@@ -97,11 +97,9 @@ export abstract class SuperValueBase<T = any | any[]>
   implements SuperValuePublic
 {
   readonly isSuperValue = true
-  // TODO: может сделать protected?
-  // TODO: переименовать в allValues
-  // current values. Keep in mind that there shouldn't be expressions
-  readonly abstract values: T
   readonly events = new IndexedEventEmitter()
+  // current values. Keep in mind that there shouldn't be expressions
+  protected abstract _values: T
   protected links: SuperLinkItem[] = []
   // like {childKeyOrIndex: {eventNum: handlerIndex}}
   private childEventHandlers: Record<string, Record<string, number>> = {}
@@ -110,11 +108,15 @@ export abstract class SuperValueBase<T = any | any[]>
     return this.events.isDestroyed
   }
 
+  get allValues(): T {
+    return this._values
+  }
+
   /**
    * It strictly gets own values, without layers
    */
   get ownValuesStrict(): T {
-    return this.values
+    return this._values
   }
 
   /**
@@ -194,7 +196,7 @@ export abstract class SuperValueBase<T = any | any[]>
     // change path of all the super children including bottom layer
     // it doesn't need to set parent because their parent hasn't changed
     for (const childId of this.allKeys) {
-      const child = this.values[childId as keyof T] as ProxyfiedSuperBase
+      const child = this.allValues[childId as keyof T] as ProxyfiedSuperBase
 
       if (isSuperKind(child)) {
         child[SUPER_VALUE_PROP].$$setPath(this.makeChildPath(childId))
@@ -247,7 +249,7 @@ export abstract class SuperValueBase<T = any | any[]>
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    return deepHas(this.values as any, pathTo)
+    return deepHas(this.allValues as any, pathTo)
   }
 
   /**
@@ -257,7 +259,7 @@ export abstract class SuperValueBase<T = any | any[]>
   getOwnValue(key: number | string): AllTypes {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return this.values[key as keyof T] as any
+    return this.allValues[key as keyof T] as any
   }
 
   /**
@@ -274,7 +276,7 @@ export abstract class SuperValueBase<T = any | any[]>
     // TODO: если это глубокий простой объект или массив то тоже будет проверка?
     checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo)
     // value will be validated inside resolveChildValue
-    this.values[key as keyof T] = this.resolveChildValue(def!, key, value)
+    this._values[key as keyof T] = this.resolveChildValue(def!, key, value)
 
     this.emitChildChangeEvent(key)
 
@@ -293,7 +295,7 @@ export abstract class SuperValueBase<T = any | any[]>
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
 
-    return deepGet(this.values as any, pathTo, defaultValue)
+    return deepGet(this.allValues as any, pathTo, defaultValue)
   }
 
   /**
@@ -349,8 +351,8 @@ export abstract class SuperValueBase<T = any | any[]>
     }
 
     // some super types - call toDefaults() on it
-    if (isSuperValue(this.values[key as keyof T])) {
-      (this.values[key as keyof T] as {$super: SuperValueBase}).$super.toDefaults()
+    if (isSuperValue(this.allValues[key as keyof T])) {
+      (this.allValues[key as keyof T] as {$super: SuperValueBase}).$super.toDefaults()
     }
     else {
       // all other types including custom ones
@@ -392,7 +394,7 @@ export abstract class SuperValueBase<T = any | any[]>
     const valuesToSet = await scope.$runAll(values)
 
     for (const key of Object.keys(valuesToSet)) {
-      const fullValue = deepMerge(valuesToSet[key], this.values[key as keyof T])
+      const fullValue = deepMerge(valuesToSet[key], this.allValues[key as keyof T])
       // set simple value of while deep structure
       if (roSetter) roSetter(key, fullValue)
       else this.setOwnValue(key, fullValue)
@@ -499,7 +501,7 @@ export abstract class SuperValueBase<T = any | any[]>
   clone = (): T => {
     if (!this.isInitialized) throw new Error(`Init it first`)
 
-    return deepClone(this.values)
+    return deepClone(this.allValues)
   }
 
   makeChildPath(childKeyOrIndex: string | number): string {
@@ -520,7 +522,7 @@ export abstract class SuperValueBase<T = any | any[]>
    * @private
    */
   removeChildListeners(childKeyOrIndex: string | number) {
-    const child: ProxifiedSuperValue = (this.values as any)[childKeyOrIndex]
+    const child: ProxifiedSuperValue = (this.allValues as any)[childKeyOrIndex]
 
     if (!child || !isSuperValue(child) || !this.childEventHandlers[childKeyOrIndex]) return
 
@@ -540,7 +542,7 @@ export abstract class SuperValueBase<T = any | any[]>
    */
   hasSuperValueDeepChildren(): boolean {
     // TODO: в массиве если не type: any то все definition одинаковые, нет смысла прохоидстья по всем
-    const result = deepFindObj(this.values as any | any[], (obj: Record<any, any>) => {
+    const result = deepFindObj(this.allValues as any | any[], (obj: Record<any, any>) => {
       if (obj[SUPER_VALUE_PROP]) return true
     })
 
@@ -578,7 +580,7 @@ export abstract class SuperValueBase<T = any | any[]>
    */
   protected setDeepChild(pathTo: string, newValue: AllTypes): boolean {
     // TODO: нужен ли тут strict ???
-    const [deepParent, lastPathPart] = deepGetParent(this.values as any, pathTo)
+    const [deepParent, lastPathPart] = deepGetParent(this.allValues as any, pathTo)
 
     if (typeof lastPathPart === 'undefined') {
       throw new Error(`Can't find deep child`)
@@ -703,7 +705,7 @@ export abstract class SuperValueBase<T = any | any[]>
     this.unlinkByChildKey(childKeyOrIndex)
     this.removeChildListeners(childKeyOrIndex)
 
-    // TODO: его надо удалить из this.values тоже
+    // TODO: его надо удалить из this.allValues тоже
     //       но тогда останется его definition
     //       и что делать если в definition должен быть потомок если required???
     //       создать заного потомка???
