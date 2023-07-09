@@ -513,19 +513,22 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
     // TODO: add - вернуть объект
   }
 
+  // TODO: add assign
+
   ////////// Array-like mutable methods
   // to use push() - just use setOwnValue()
   // to use splice() - use forget
 
-  pop() {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-    // TODO: add
-  }
 
-  shift() {
-    if (!this.isInitialized) throw new Error(`Init it first`)
-    // TODO: add
-  }
+  // pop() {
+  //   if (!this.isInitialized) throw new Error(`Init it first`)
+  //   // TODO: add
+  // }
+  //
+  // shift() {
+  //   if (!this.isInitialized) throw new Error(`Init it first`)
+  //   // TODO: add
+  // }
 
   reverse() {
     if (!this.isInitialized) throw new Error(`Init it first`)
