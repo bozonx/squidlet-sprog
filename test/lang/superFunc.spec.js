@@ -3,9 +3,7 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 
 
 // TODO: test return inside forEach and ifElse
-// TODO: test redefine
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
-// TODO: если в prop не указан default значит он required
 
 
 describe('superFunc', () => {
@@ -110,6 +108,110 @@ describe('superFunc', () => {
     const returned = await func()
 
     assert.equal(returned, 4)
+  })
+
+  it('rename', async () => {
+    const scope = newScope()
+    const func = await scope.$run({
+      $exp: 'newSuperFunc',
+      params: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+      lines: [
+        {
+          $exp: 'superReturn',
+          value: {
+            $exp: 'getValue',
+            path: 'params.p2',
+          },
+        }
+      ],
+      redefine: {
+        p1: {rename: 'p2'}
+      }
+    })
+
+    // call via proxy
+    const returned = await func()
+
+    assert.equal(returned, 5)
+  })
+
+  it('redefine default value', async () => {
+    const scope = newScope()
+    const func = await scope.$run({
+      $exp: 'newSuperFunc',
+      params: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+      lines: [
+        {
+          $exp: 'superReturn',
+          value: {
+            $exp: 'getValue',
+            path: 'params.p1',
+          },
+        }
+      ],
+      redefine: {
+        p1: {default: 4}
+      }
+    })
+
+    // call via proxy
+    const returned = await func()
+
+    assert.equal(returned, 4)
+  })
+
+  it('not valid value', async () => {
+    const scope = newScope()
+    const func = await scope.$run({
+      $exp: 'newSuperFunc',
+      params: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+    })
+
+    await assert.isPromiseRejected(func({p1: 's'}))
+  })
+
+  it('not valid applied value', async () => {
+    const scope = newScope()
+    const func = await scope.$run({
+      $exp: 'newSuperFunc',
+      params: {
+        p1: {
+          type: 'number',
+          default: 5
+        }
+      },
+    })
+
+    assert.throws(() => func.applyValues({p1: 's'}))
+  })
+
+  it('if no default then it is required', async () => {
+    const scope = newScope()
+    const func = await scope.$run({
+      $exp: 'newSuperFunc',
+      params: {
+        p1: {
+          type: 'number',
+        }
+      },
+    })
+
+    await assert.isPromiseRejected(func())
   })
 
 })
