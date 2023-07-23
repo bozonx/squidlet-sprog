@@ -107,7 +107,8 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
       paramsDefinitions as any,
       redefine
     )
-    const paramsStruct: ProxyfiedStruct = (new SuperStruct(paramsDefinitions, true)).getProxy()
+    const paramsStruct: ProxyfiedStruct = (new SuperStruct(redefinedParams, true))
+      .getProxy()
 
     this.paramsSetter = paramsStruct.$super.init()
 
@@ -140,6 +141,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
       ...values,
     }
 
+    // TODO: не правильно, лучше создавать новый scope
     for (const key of Object.keys(finalValues)) {
       this.paramsSetter(key, finalValues[key])
     }

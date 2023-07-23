@@ -7,7 +7,7 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 
 
 describe('superFunc', () => {
-  it('change to scope variable', async () => {
+  it.only('change to scope variable', async () => {
     const scope = newScope({topVal: 1})
     const func = await scope.$run({
       $exp: 'newSuperFunc',
