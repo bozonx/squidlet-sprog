@@ -1,7 +1,12 @@
 import {isEmptyObject, omitObj} from 'squidlet-lib'
 import {SuperScope} from './scope.js'
 import {SprogDefinition} from '../types/types.js';
-import {RedefineDefinition, SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
+import {
+  DEFAULT_INIT_SUPER_DEFINITION,
+  RedefineDefinition,
+  SuperItemDefinition,
+  SuperItemInitDefinition
+} from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
 import {AllTypes} from '../types/valueTypes.js';
@@ -10,9 +15,6 @@ import {SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
 
 
 export const SUPER_RETURN = 'superReturn'
-
-
-// TODO: может добавить событие вызова ф-и или лучше middleware???
 
 
 export interface SuperFuncDefinition {
@@ -24,17 +26,18 @@ export interface SuperFuncDefinition {
   redefine?: Record<string, RedefineDefinition>
 }
 
-export function redefineParams(
-  paramsDefinitions: Record<string, SuperItemDefinition>,
-  redefine?: Record<string, RedefineDefinition>
+export function prepareParams(
+  paramsDefinitions: Record<string, SuperItemInitDefinition>,
+  redefine: Record<string, RedefineDefinition> = {}
 ): Record<string, SuperItemDefinition> {
-  if (!redefine || isEmptyObject(redefine)) return paramsDefinitions
-
   const result: Record<string, SuperItemDefinition> = {}
 
   for (const key of Object.keys(paramsDefinitions)) {
     if (!redefine[key]) {
-      result[key] = paramsDefinitions[key]
+      result[key] = {
+        ...DEFAULT_INIT_SUPER_DEFINITION,
+        ...paramsDefinitions[key],
+      }
 
       continue
     }
@@ -42,6 +45,7 @@ export function redefineParams(
     const keyName = redefine[key].rename || key
 
     result[keyName] = {
+      ...DEFAULT_INIT_SUPER_DEFINITION,
       ...paramsDefinitions[key],
       ...omitObj(redefine[key], 'rename')
     }
@@ -80,7 +84,7 @@ export function proxifySuperFunc(obj: any): (() => any) {
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   readonly isSuperFunc: boolean = true
   readonly lines: SprogDefinition[]
-  readonly paramsDefinitions: Record<keyof T, SuperItemInitDefinition>
+  readonly paramsDefinitions: Record<keyof T, SuperItemDefinition>
   appliedValues: Record<string, any> = {}
   protected proxyFn: (instance: any) => any = proxifySuperFunc
   private readonly scope: SuperScope
@@ -95,7 +99,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     super()
 
     this.scope = scope
-    this.paramsDefinitions = redefineParams(paramsDefinitions as any, redefine) as any
+    this.paramsDefinitions = prepareParams(paramsDefinitions, redefine) as Record<keyof T, SuperItemDefinition>
     this.lines = lines
   }
 
@@ -105,18 +109,34 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
    * It replaces previously applied values
    */
   applyValues = (values: Record<string, any>) => {
-    // TODO: валидировать
+    for (const key of Object.keys(values)) {
+      const def: SuperItemDefinition | undefined = this.paramsDefinitions[key as keyof T]
 
-    // for (const key of Object.keys(values)) {
-    //   const def: SuperItemInitDefinition | undefined = this.paramsDefinitions[key as keyof T]
-    //
-    //   if (!def) continue
-    //
-    //   validateChildValue(def, key, values[key])
-    // }
+      if (!def) continue
+
+      validateChildValue(def, key, values[key])
+    }
 
     this.appliedValues = values
   }
+
+
+// /**
+//  * Make clone of function include applied props
+//  * but with the same scope
+//  */
+// clone(newScope?: SuperScope, values?: Record<string, any>) {
+//   const newSuperFunc = new SuperFunc(
+//     newScope || this.scope,
+//     this.props,
+//     this.lines
+//   )
+//
+//   if (values) newSuperFunc.applyValues(values)
+//
+//   return proxifySuperFunc(newSuperFunc)
+// }
+
 
   exec = async (values?: Record<string, any>): Promise<any> => {
     const finalValues = {
@@ -148,47 +168,4 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     }
   }
 
-
-  // private validateParams(values?: Record<string, any>) {
-  //   if (!values) return
-  //
-  //   for (const key of Object.keys(values)) {
-  //     if (!this.)
-  //
-  //     validateChildValue(values[key])
-  //     //this.params.$super.validateItem(key, values[key], true)
-  //   }
-  // }
-
 }
-
-
-
-// /**
-//  * Apply values of function's props to exec function later.
-//  * It merges new values with previously applied values
-//  */
-// mergeValues(values: Record<string, any>) {
-//   this.validateProps(values)
-//
-//   // TODO: а если будет передано super value ???
-//   //       тогда получается возмется только значение а не сам инстанс
-//
-//   this.appliedValues = mergeDeepObjects(values, this.appliedValues)
-// }
-
-// /**
-//  * Make clone of function include applied props
-//  * but with the same scope
-//  */
-// clone(newScope?: SuperScope, values?: Record<string, any>) {
-//   const newSuperFunc = new SuperFunc(
-//     newScope || this.scope,
-//     this.props,
-//     this.lines
-//   )
-//
-//   if (values) newSuperFunc.applyValues(values)
-//
-//   return proxifySuperFunc(newSuperFunc)
-// }
