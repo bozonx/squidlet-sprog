@@ -6,14 +6,15 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 // TODO: test redefine
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
 // TODO: если в prop не указан default значит он required
+// TODO: установить undefined
 
 
 describe('superFunc', () => {
-  it.only('change to scope variable', async () => {
+  it.only('change scope variable', async () => {
     const scope = newScope({topVal: 1})
     const func = await scope.$run({
       $exp: 'newSuperFunc',
-      props: {
+      params: {
         p1: {
           type: 'number',
           default: 5
@@ -42,7 +43,7 @@ describe('superFunc', () => {
     const scope = newScope()
     const func = await scope.$run({
       $exp: 'newSuperFunc',
-      props: {
+      params: {
         p1: {
           type: 'number'
         }
@@ -69,7 +70,7 @@ describe('superFunc', () => {
     const scope = newScope()
     const func = await scope.$run({
       $exp: 'newSuperFunc',
-      props: {
+      params: {
         p1: {
           type: 'number'
         }

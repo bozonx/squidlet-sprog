@@ -89,8 +89,8 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
   constructor(
     scope: SuperScope,
-    paramsDefinitions: Record<keyof T, SuperItemInitDefinition>,
-    lines: SprogDefinition[],
+    paramsDefinitions: Record<keyof T, SuperItemInitDefinition> = {} as any,
+    lines: SprogDefinition[] = [],
     redefine?: Record<string, RedefineDefinition>
   ) {
     super()
