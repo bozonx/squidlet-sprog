@@ -9,9 +9,10 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
-import {AllTypes} from '../types/valueTypes.js';
+import {All_TYPES, AllTypes} from '../types/valueTypes.js';
 import {EXP_MARKER} from '../constants.js';
 import {SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
+import {isCorrespondingType} from './isCorrespondingType.js';
 
 
 export const SUPER_RETURN = 'superReturn'
@@ -20,6 +21,7 @@ export const SUPER_RETURN = 'superReturn'
 export interface SuperFuncDefinition {
   // params of function object like
   params: Record<string, SuperItemDefinition>
+  returnType: keyof typeof All_TYPES | keyof typeof All_TYPES[]
   // lines of sprog expressions
   lines: SprogDefinition[]
   // change some params properties or rename them
@@ -86,8 +88,9 @@ export function proxifySuperFunc(obj: any): (() => any) {
 
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   readonly isSuperFunc: boolean = true
-  readonly lines: SprogDefinition[]
   readonly paramsDefinitions: Record<keyof T, SuperItemDefinition>
+  readonly returnType: keyof typeof All_TYPES | keyof typeof All_TYPES[]
+  readonly lines: SprogDefinition[]
   appliedValues: Record<string, any> = {}
   protected proxyFn: (instance: any) => any = proxifySuperFunc
   private readonly scope: SuperScope
@@ -96,6 +99,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   constructor(
     scope: SuperScope,
     paramsDefinitions: Record<keyof T, SuperItemInitDefinition> = {} as any,
+    returnType: keyof typeof All_TYPES | keyof typeof All_TYPES[],
     lines: SprogDefinition[] = [],
     redefine?: Record<string, RedefineDefinition>
   ) {
@@ -103,6 +107,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
     this.scope = scope
     this.paramsDefinitions = prepareParams(paramsDefinitions, redefine) as Record<keyof T, SuperItemDefinition>
+    this.returnType = returnType
     this.lines = lines
   }
 
@@ -122,24 +127,6 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
 
     this.appliedValues = values
   }
-
-
-// /**
-//  * Make clone of function include applied props
-//  * but with the same scope
-//  */
-// clone(newScope?: SuperScope, values?: Record<string, any>) {
-//   const newSuperFunc = new SuperFunc(
-//     newScope || this.scope,
-//     this.props,
-//     this.lines
-//   )
-//
-//   if (values) newSuperFunc.applyValues(values)
-//
-//   return proxifySuperFunc(newSuperFunc)
-// }
-
 
   exec = async (values?: Record<string, any>): Promise<any> => {
     const finalValues = {
@@ -164,11 +151,37 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     // execute lines
     for (const line of this.lines) {
       if (line[EXP_MARKER] === SUPER_RETURN) {
-        return scope.$run(line)
+        const result = await scope.$run(line)
+
+        if (this.returnType && !isCorrespondingType(result, this.returnType)) {
+          throw new Error(
+            `Returned value "${JSON.stringify(result)}" does not meet type "${JSON.stringify(this.returnType)}"`
+          )
+        }
+
+        return result
       }
 
       await scope.$run(line)
     }
   }
+
+
+// /**
+//  * Make clone of function include applied props
+//  * but with the same scope
+//  */
+// clone(newScope?: SuperScope, values?: Record<string, any>) {
+//   const newSuperFunc = new SuperFunc(
+//     newScope || this.scope,
+//     this.props,
+//     this.lines
+//   )
+//
+//   if (values) newSuperFunc.applyValues(values)
+//
+//   return proxifySuperFunc(newSuperFunc)
+// }
+
 
 }

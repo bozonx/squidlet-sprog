@@ -38,7 +38,7 @@ export const newSuperFunc: SprogFn = (scope: SuperScope) => {
     const params = await scope.$resolve(p.params)
     const redefine = await scope.$resolve(p.redefine)
 
-    return (new SuperFunc(scope, params, p.lines, redefine)).getProxy()
+    return (new SuperFunc(scope, params, p.returnType, p.lines, redefine)).getProxy()
   }
 }
 

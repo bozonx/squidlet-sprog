@@ -2,10 +2,6 @@ import {newScope} from "../../src/index.js";
 import {newSuperFunc} from "../../src/lang/superFunc.js";
 
 
-// TODO: test return inside forEach and ifElse
-// TODO: тип возвращаемого значения
-
-
 describe('superFunc', () => {
   it('change scope variable', async () => {
     const scope = newScope({topVal: 1})
@@ -209,6 +205,22 @@ describe('superFunc', () => {
           type: 'number',
         }
       },
+    })
+
+    await assert.isPromiseRejected(func())
+  })
+
+  it(`return type doesn't match the returnType`, async () => {
+    const scope = newScope()
+    const func = await scope.$run({
+      $exp: 'newSuperFunc',
+      returnType: 'string',
+      lines: [
+        {
+          $exp: 'superReturn',
+          value: 5,
+        }
+      ],
     })
 
     await assert.isPromiseRejected(func())
