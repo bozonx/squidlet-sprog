@@ -296,7 +296,9 @@ export abstract class SuperValueBase<T = any | any[]>
     // TODO: remove defaultValue
 
     if (!this.isInitialized) throw new Error(`Init it first`)
-    else if (typeof pathTo !== 'string') throw new Error(`path has to be a string`)
+    else if (typeof pathTo !== 'string' && typeof pathTo !== "symbol") {
+      throw new Error(`path has to be a string or symbol`)
+    }
 
     return deepGet(this.allValues as any, pathTo, defaultValue)
   }

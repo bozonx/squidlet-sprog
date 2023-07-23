@@ -1,5 +1,11 @@
 import {omitObj} from "squidlet-lib";
 import {newScope} from "../../src/index.js";
+import {stdLib} from "../../src/stdLib.js";
+
+
+// TODO: test что нельзя удалять переменные из scope
+// TODO: test deep with overwrite
+// TODO: test $runAll
 
 
 describe('scope', () => {
@@ -80,6 +86,33 @@ describe('scope', () => {
     // actually it is possible to delete via scope.$super.forget()
   })
 
-  // TODO: test deep with overwrite
+  it.only('get whole scope', async () => {
+    const scopeBottom = newScope({a: 0, b: 0})
+    const scopeTop = newScope({}, scopeBottom)
+
+    await scopeTop.$run({
+      $exp: 'newVar',
+      name: 'a',
+      value: 1
+    })
+
+    assert.deepEqual(scopeBottom, {a: 0, b: 0, std: stdLib})
+    assert.equal(scopeTop.b, 0)
+    assert.deepEqual(scopeTop, {a: 1, b: 0, std: stdLib})
+  })
+
+  it('clone', async () => {
+    const scopeBottom = newScope({a: 0, b: 0})
+    const scopeTop = newScope({}, scopeBottom)
+
+    await scopeTop.$run({
+      $exp: 'newVar',
+      name: 'a',
+      value: 1
+    })
+
+    assert.deepEqual(scopeBottom.$cloneSelf(), {a: 0, b: 0, std: stdLib})
+    assert.deepEqual(scopeTop.$cloneSelf(), {a: 1, b: 0, std: stdLib})
+  })
 
 })

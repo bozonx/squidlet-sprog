@@ -72,8 +72,6 @@ export const SCOPE_FUNCTIONS = [
 
 
 const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
-
-  // TODO: не работает если есть вложенный scope
   $cloneSelf(): Record<string, any> {
     return this.$super.clone()
   },
@@ -163,8 +161,6 @@ export function proxyScope(data: SuperData): SuperScope {
 
     deleteProperty(target: any, prop: string): boolean {
       throw new Error(`It is forbidden to delete variables from scope`)
-      //data.forget(prop)
-      //return true
     },
 
     ownKeys(): ArrayLike<string | symbol> {
@@ -185,9 +181,6 @@ export function proxyScope(data: SuperData): SuperScope {
  * @param previousScope
  */
 export function newScope<T = any>(initialVars: T = {} as T, previousScope?: SuperScope): T & SuperScope {
-
-  // TODO: test что нельзя удалять переменные из scope
-
   const data = new SuperData(
     {
       std: {
