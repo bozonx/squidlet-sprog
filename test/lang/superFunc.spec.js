@@ -3,7 +3,7 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 
 
 // TODO: test return inside forEach and ifElse
-// TODO: если в prop есть супер значение то им должно быть проставлено readonly
+// TODO: тип возвращаемого значения
 
 
 describe('superFunc', () => {

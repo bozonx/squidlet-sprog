@@ -1,4 +1,4 @@
-import {isEmptyObject, omitObj} from 'squidlet-lib'
+import {omitObj} from 'squidlet-lib'
 import {SuperScope} from './scope.js'
 import {SprogDefinition} from '../types/types.js';
 import {
@@ -33,21 +33,24 @@ export function prepareParams(
   const result: Record<string, SuperItemDefinition> = {}
 
   for (const key of Object.keys(paramsDefinitions)) {
-    if (!redefine[key]) {
+    const keyName = redefine[key]?.rename || key
+
+    if (redefine[key]) {
+      result[keyName] = {
+        ...DEFAULT_INIT_SUPER_DEFINITION,
+        ...paramsDefinitions[key],
+        ...omitObj(redefine[key], 'rename')
+      }
+    }
+    else {
       result[key] = {
         ...DEFAULT_INIT_SUPER_DEFINITION,
         ...paramsDefinitions[key],
       }
-
-      continue
     }
 
-    const keyName = redefine[key].rename || key
-
-    result[keyName] = {
-      ...DEFAULT_INIT_SUPER_DEFINITION,
-      ...paramsDefinitions[key],
-      ...omitObj(redefine[key], 'rename')
+    if (typeof result[keyName].default === 'undefined') {
+      result[keyName].required = true
     }
   }
 
