@@ -10,10 +10,10 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {
-  checkDefinition,
+  checkDefinition, checkValueBeforeSet,
   isSuperValue,
   prepareDefinitionItem,
-  SUPER_VALUE_PROP,
+  SUPER_VALUE_PROP, validateChildValue,
 } from './superValueHelpers.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {SuperScope} from './scope.js';
@@ -155,11 +155,25 @@ export class SuperStruct<T = Record<string, AllTypes>>
   }
 
 
+  validateItem(key: string, value?: AllTypes, ignoreRo?: boolean) {
+    // obviously check it otherwise it will be set to default
+    if (typeof value === 'undefined') {
+      throw new Error(`It isn't possible to set undefined to data child`)
+    }
+
+    super.validateItem(key, value, ignoreRo)
+  }
+
   getOwnValue(key: string): AllTypes {
     return super.getOwnValue(key)
   }
 
   setOwnValue(key: string, value: AllTypes, ignoreRo: boolean = false): boolean {
+    // obviously check it otherwise it will be set to default
+    if (typeof value === 'undefined') {
+      throw new Error(`It isn't possible to set undefined to data child`)
+    }
+
     return super.setOwnValue(key, value, ignoreRo)
   }
 

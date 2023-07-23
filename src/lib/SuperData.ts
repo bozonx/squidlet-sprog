@@ -19,7 +19,8 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {
   checkDefinition,
-  checkValueBeforeSet, isSuperValue,
+  checkValueBeforeSet,
+  isSuperValue,
   prepareDefinitionItem,
   SUPER_VALUE_PROP,
   validateChildValue

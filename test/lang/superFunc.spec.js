@@ -39,7 +39,27 @@ describe('superFunc', () => {
     assert.equal(scope['topVal'], 5)
   })
 
-  it('set prop and get in on return', async () => {
+  it('set undefined to scope variable', async () => {
+    const scope = newScope({topVal: 1})
+    const func = await scope.$run({
+      $exp: 'newSuperFunc',
+      lines: [
+        {
+          $exp: 'setValue',
+          path: 'topVal',
+          value: undefined,
+        }
+      ]
+    })
+
+    assert.equal(func.$super.constructor.name, 'SuperFunc')
+
+    await func.exec()
+
+    assert.isUndefined(scope['topVal'])
+  })
+
+  it('set param and get in on return', async () => {
     const scope = newScope()
     const func = await scope.$run({
       $exp: 'newSuperFunc',

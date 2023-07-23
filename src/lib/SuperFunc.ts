@@ -1,5 +1,5 @@
 import {isEmptyObject, omitObj} from 'squidlet-lib'
-import {newScope, SuperScope} from './scope.js'
+import {SuperScope} from './scope.js'
 import {SprogDefinition} from '../types/types.js';
 import {RedefineDefinition, SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
 import {SuperBase} from './SuperBase.js';
@@ -12,7 +12,6 @@ import {SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
 export const SUPER_RETURN = 'superReturn'
 
 
-// TODO: можно по каждому prop добавить combined в scope как алиас
 // TODO: может добавить событие вызова ф-и или лучше middleware???
 
 
@@ -106,7 +105,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
    * It replaces previously applied values
    */
   applyValues = (values: Record<string, any>) => {
-    // TODO: а оно надо вообще?
+    // TODO: валидировать
 
     // for (const key of Object.keys(values)) {
     //   const def: SuperItemInitDefinition | undefined = this.paramsDefinitions[key as keyof T]

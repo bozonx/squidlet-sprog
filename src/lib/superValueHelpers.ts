@@ -131,10 +131,6 @@ export function checkValueBeforeSet(
 ) {
   if (!isInitialized) throw new Error(`Init it first`)
   else if (!definition) throw new Error(`Doesn't have definition for key ${key}`)
-  // obviously check it otherwise it will be set to default
-  else if (typeof value === 'undefined') {
-    throw new Error(`It isn't possible to set undefined to data child`)
-  }
   else if (!ignoreRo && definition.readonly) {
     throw new Error(`Can't set readonly value of name ${key}`)
   }

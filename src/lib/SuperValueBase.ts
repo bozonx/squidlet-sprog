@@ -22,7 +22,10 @@ import {
   resolveNotSuperChild,
   SUPER_VALUE_PROP,
   validateChildValue,
-  isSuperValue, checkValueBeforeSet, makeNewSuperValueByDefinition, isSuperKind
+  isSuperValue,
+  checkValueBeforeSet,
+  makeNewSuperValueByDefinition,
+  isSuperKind
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {SuperScope} from './scope.js';

@@ -361,9 +361,10 @@ describe('SuperData', () => {
     // set wrong value
     assert.throws(() => data.$super.setOwnValue('p2', 5))
     assert.throws(() => data.$super.setValue('p2', true))
-    assert.throws(() => data.$super.setValue('p2'))
+    // set undefined
+    assert.doesNotThrow(() => data.$super.setValue('p2'))
 
-    spy.should.have.been.calledThrice
+    spy.should.have.been.callCount(4)
   })
 
   ///////// Smart definition work
