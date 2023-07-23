@@ -4,6 +4,8 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 
 // TODO: test return inside forEach and ifElse
 // TODO: test redefine
+// TODO: если в prop есть супер значение то им должно быть проставлено readonly
+// TODO: если в prop не указан default значит он required
 
 
 describe('superFunc', () => {

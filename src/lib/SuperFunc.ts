@@ -6,16 +6,14 @@ import {SuperBase} from './SuperBase.js';
 import {ProxyfiedStruct, SuperStruct} from './SuperStruct.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {EXP_MARKER} from '../constants.js';
-import {SUPER_VALUE_PROP} from './superValueHelpers.js';
+import {SUPER_VALUE_PROP, validateChildValue} from './superValueHelpers.js';
 
 
 export const SUPER_RETURN = 'superReturn'
 
 
 // TODO: можно по каждому prop добавить combined в scope как алиас
-// TODO: если в prop есть супер значение то им должно быть проставлено readonly
 // TODO: может добавить событие вызова ф-и или лучше middleware???
-// TODO: если в prop не указан default значит он required
 
 
 export interface SuperFuncDefinition {
@@ -83,14 +81,10 @@ export function proxifySuperFunc(obj: any): (() => any) {
 export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   readonly isSuperFunc: boolean = true
   readonly lines: SprogDefinition[]
+  readonly paramsDefinitions: Record<keyof T, SuperItemInitDefinition>
   appliedValues: Record<string, any> = {}
   protected proxyFn: (instance: any) => any = proxifySuperFunc
-  private readonly paramsSetter
   private readonly scope: SuperScope
-
-  get params(): ProxyfiedStruct {
-    return this.scope['params']
-  }
 
 
   constructor(
@@ -101,24 +95,8 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   ) {
     super()
 
-    this.scope = newScope(undefined, scope)
-
-    const redefinedParams = redefineParams(
-      paramsDefinitions as any,
-      redefine
-    )
-    const paramsStruct: ProxyfiedStruct = (new SuperStruct(redefinedParams, true))
-      .getProxy()
-
-    this.paramsSetter = paramsStruct.$super.init()
-
-    // set params to scope
-    this.scope.$super.define(
-      'params',
-      { type: 'SuperStruct', readonly: true },
-      paramsStruct
-    )
-
+    this.scope = scope
+    this.paramsDefinitions = redefineParams(paramsDefinitions as any, redefine) as any
     this.lines = lines
   }
 
@@ -128,41 +106,60 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
    * It replaces previously applied values
    */
   applyValues = (values: Record<string, any>) => {
-    this.validateParams(values)
+    // TODO: а оно надо вообще?
+
+    // for (const key of Object.keys(values)) {
+    //   const def: SuperItemInitDefinition | undefined = this.paramsDefinitions[key as keyof T]
+    //
+    //   if (!def) continue
+    //
+    //   validateChildValue(def, key, values[key])
+    // }
 
     this.appliedValues = values
   }
 
   exec = async (values?: Record<string, any>): Promise<any> => {
-    this.validateParams(values)
-
     const finalValues = {
       ...this.appliedValues,
       ...values,
     }
+    const paramsStruct: ProxyfiedStruct = (new SuperStruct(
+      this.paramsDefinitions,
+      true
+    )).getProxy()
+    // it will validate values
+    paramsStruct.$super.init(finalValues)
+    // inherit scope for execution context
+    const scope = this.scope.$inherit({})
+    // set readonly params to scope
+    scope.$super.define(
+      'params',
+      { type: 'SuperStruct', readonly: true },
+      paramsStruct
+    )
 
-    // TODO: не правильно, лучше создавать новый scope
-    for (const key of Object.keys(finalValues)) {
-      this.paramsSetter(key, finalValues[key])
-    }
-
+    // execute lines
     for (const line of this.lines) {
       if (line[EXP_MARKER] === SUPER_RETURN) {
-        return this.scope.$run(line)
+        return scope.$run(line)
       }
 
-      await this.scope.$run(line)
+      await scope.$run(line)
     }
   }
 
 
-  private validateParams(values?: Record<string, any>) {
-    if (!values) return
-
-    for (const key of Object.keys(values)) {
-      this.params.$super.validateItem(key, values[key], true)
-    }
-  }
+  // private validateParams(values?: Record<string, any>) {
+  //   if (!values) return
+  //
+  //   for (const key of Object.keys(values)) {
+  //     if (!this.)
+  //
+  //     validateChildValue(values[key])
+  //     //this.params.$super.validateItem(key, values[key], true)
+  //   }
+  // }
 
 }
 
