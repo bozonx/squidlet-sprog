@@ -131,7 +131,7 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     // it will validate values
     paramsStruct.$super.init(finalValues)
     // inherit scope for execution context
-    const scope = this.scope.$inherit({})
+    const scope = this.scope.$inherit()
     // set readonly params to scope
     scope.$super.define(
       'params',

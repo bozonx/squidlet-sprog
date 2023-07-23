@@ -54,7 +54,7 @@ export interface SuperScope {
    * Make a new scope which is inherited by this scope
    * @param initialVars
    */
-  $inherit<T = any>(initialVars: T): T & SuperScope
+  $inherit<T = any>(initialVars?: T): T & SuperScope
 
   [index: string]: any
 }
@@ -125,7 +125,7 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
   $newScope<T = any>(initialVars: T, previousScope?: SuperScope): T & SuperScope {
     return newScope(initialVars, previousScope)
   },
-  $inherit<T = any>(initialVars: T): T & SuperScope {
+  $inherit<T = any>(initialVars?: T): T & SuperScope {
     const thisScope = this as SuperScope
 
     return newScope(initialVars, thisScope)

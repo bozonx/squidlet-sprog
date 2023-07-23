@@ -10,7 +10,7 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 
 
 describe('superFunc', () => {
-  it.only('change scope variable', async () => {
+  it('change scope variable', async () => {
     const scope = newScope({topVal: 1})
     const func = await scope.$run({
       $exp: 'newSuperFunc',
@@ -26,7 +26,7 @@ describe('superFunc', () => {
           path: 'topVal',
           value: {
             $exp: 'getValue',
-            path: 'props.p1',
+            path: 'params.p1',
           },
         }
       ]
@@ -53,7 +53,7 @@ describe('superFunc', () => {
           $exp: 'superReturn',
           value: {
             $exp: 'getValue',
-            path: 'props.p1',
+            path: 'params.p1',
           },
         }
       ]
@@ -80,7 +80,7 @@ describe('superFunc', () => {
           $exp: 'superReturn',
           value: {
             $exp: 'getValue',
-            path: 'props.p1',
+            path: 'params.p1',
           },
         }
       ]
