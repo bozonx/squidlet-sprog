@@ -3,6 +3,7 @@ import {newSuperFunc} from "../../src/lang/superFunc.js";
 
 
 // TODO: test return inside forEach and ifElse
+// TODO: test redefine
 
 
 describe('superFunc', () => {

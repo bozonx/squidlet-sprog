@@ -1,3 +1,4 @@
+import {isEmptyObject, omitObj} from 'squidlet-lib'
 import {newScope, SuperScope} from './scope.js'
 import {SprogDefinition} from '../types/types.js';
 import {RedefineDefinition, SuperItemDefinition, SuperItemInitDefinition} from '../types/SuperItemDefinition.js';
@@ -15,13 +16,41 @@ export const SUPER_RETURN = 'superReturn'
 // TODO: если в prop есть супер значение то им должно быть проставлено readonly
 // TODO: может добавить событие вызова ф-и или лучше middleware???
 // TODO: если в prop не указан default значит он required
-// TODO: make redefine
 
 
 export interface SuperFuncDefinition {
+  // params of function object like
   params: Record<string, SuperItemDefinition>
+  // lines of sprog expressions
   lines: SprogDefinition[]
+  // change some params properties or rename them
   redefine?: Record<string, RedefineDefinition>
+}
+
+export function redefineParams(
+  paramsDefinitions: Record<string, SuperItemDefinition>,
+  redefine?: Record<string, RedefineDefinition>
+): Record<string, SuperItemDefinition> {
+  if (!redefine || isEmptyObject(redefine)) return paramsDefinitions
+
+  const result: Record<string, SuperItemDefinition> = {}
+
+  for (const key of Object.keys(paramsDefinitions)) {
+    if (!redefine[key]) {
+      result[key] = paramsDefinitions[key]
+
+      continue
+    }
+
+    const keyName = redefine[key].rename || key
+
+    result[keyName] = {
+      ...paramsDefinitions[key],
+      ...omitObj(redefine[key], 'rename')
+    }
+  }
+
+  return result
 }
 
 
@@ -55,12 +84,9 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
   readonly isSuperFunc: boolean = true
   readonly lines: SprogDefinition[]
   appliedValues: Record<string, any> = {}
-
   protected proxyFn: (instance: any) => any = proxifySuperFunc
-
   private readonly paramsSetter
   private readonly scope: SuperScope
-
 
   get params(): ProxyfiedStruct {
     return this.scope['params']
@@ -76,6 +102,11 @@ export class SuperFunc<T = Record<string, AllTypes>> extends SuperBase {
     super()
 
     this.scope = newScope(undefined, scope)
+
+    const redefinedParams = redefineParams(
+      paramsDefinitions as any,
+      redefine
+    )
     const paramsStruct: ProxyfiedStruct = (new SuperStruct(paramsDefinitions, true)).getProxy()
 
     this.paramsSetter = paramsStruct.$super.init()
