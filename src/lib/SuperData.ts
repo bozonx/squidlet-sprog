@@ -121,6 +121,12 @@ export function proxifyLayeredValue(topOwnValues: Record<string, any>, bottomDat
         ...Object.keys(topOwnValues),
       ])
     },
+
+    getPrototypeOf(target): object | null {
+      if (target !== topOwnValues) return target.prototype
+
+      return bottomData?.allValues || null
+    }
   }
 
   return new Proxy(topOwnValues, handler)
