@@ -110,7 +110,46 @@ describe('scope', () => {
     assert.deepEqual(scopeTop, {a: 1, b: 0, std: stdLib})
   })
 
-  it.only('$runAll', async () => {
+  it('$calculate - simple value', async () => {
+    const scope = newScope()
+
+    assert.equal(await scope.$calculate(1), 1)
+    assert.equal(await scope.$calculate('a'), 'a')
+    assert.isUndefined(await scope.$calculate())
+    assert.isUndefined(await scope.$calculate('a', true))
+  })
+
+  it('$calculate - simple expr', async () => {
+    const scope = newScope({a: 1})
+
+    assert.equal(await scope.$calculate({
+      $exp: 'getValue',
+      path: 'a',
+    }), 1)
+    assert.equal(await scope.$calculate({
+      $exp: 'getValue',
+      path: 'a',
+    }, true), 1)
+  })
+
+  it.only('$calculate - deep simple expr', async () => {
+    const scope = newScope({
+      a: {
+        $exp: 'getValue',
+        path: 'b',
+      },
+      b: 1
+    })
+
+    assert.equal(await scope.$calculate({
+      $exp: 'getValue',
+      path: 'a',
+    }), 1)
+  })
+
+
+
+  it('$calculate', async () => {
     const scopeBottom = newScope({a: 0, b: 1})
     const scopeTop = newScope({}, scopeBottom)
 
@@ -127,5 +166,7 @@ describe('scope', () => {
     assert.deepEqual(scopeBottom, {a: 0, std: stdLib})
     assert.deepEqual(scopeTop, {a: 1, b: 1, std: stdLib})
   })
+
+  // TODO: test deep calculate
 
 })

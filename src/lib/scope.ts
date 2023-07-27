@@ -114,7 +114,7 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     const result = (Array.isArray(anyValue)) ? [] : {}
     // each plain object
     await deepEachObjAsync(anyValue, async (obj: Record<any, any>, key: string | number, path: string) => {
-      // skip not expressions
+      // not expressions
       if (!isSprogLang(obj)) {
         if (!onlyExecuted) deepSet(result, path, obj)
 
