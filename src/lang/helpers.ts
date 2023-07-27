@@ -16,7 +16,7 @@ import {sprogFuncs} from '../sprogFuncs.js';
  * @param someValue
  */
 export function isSprogLang(someValue: any): boolean {
-  if (!someValue || typeof someValue !== 'object') return false
+  if (!someValue || Array.isArray(someValue) || typeof someValue !== 'object') return false
   else if (!someValue[EXP_MARKER]) return false
 
   return Boolean(sprogFuncs[someValue[EXP_MARKER] as keyof typeof sprogFuncs])

@@ -18,6 +18,7 @@ import {newSuperStruct} from './lang/superStruct.js';
 import {newSuperArray} from './lang/superArray.js';
 import {simpleCall} from './lang/simpleFunc.js';
 import {newSuperData} from './lang/superData.js';
+import {lineExp} from './lang/lineExp.js';
 
 
 /*
@@ -35,6 +36,7 @@ export const sprogFuncs = {
   setValue,
   newVar,
   newValue,
+  lineExp,
   //deleteVar,
   ////// Boolean logic
   logicAnd,
