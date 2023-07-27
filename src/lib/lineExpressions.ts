@@ -5,7 +5,6 @@ import {SprogDefinition} from '../types/types.js';
 
 // TODO: add inline conditions
 // TODO: add block - ( ... )
-// TODO: test deep
 // TODO: см какие ещё есть операторы
 
 
@@ -40,10 +39,9 @@ export async function executeLineExpr(items: LineExprItem[], scope: SuperScope):
 
       evalStr += item
     }
-    else if (isSprogLang(item) || deepHasSprog(item)) {
+    else if (isSprogLang(item)) {
       // expression
       // TODO: могут быть не безопасны вызовы ф-й и jsExp
-      // TODO: поддержка deep
       let exprRes = await scope.$run(item)
 
       if (typeof exprRes === 'function') {
@@ -53,14 +51,15 @@ export async function executeLineExpr(items: LineExprItem[], scope: SuperScope):
         // TODO: если вернулась строка - то надо санитизировать её
       }
       else if (deepHasSprog(exprRes)) {
-        // TODO: выполнить
+        // if expr was returned then execute it
+        exprRes = await scope.$calculate(exprRes)
       }
       // for other type it is ok
 
       evalStr += exprRes
     }
     else {
-      throw new Error(`Unknown type of expression item "${item}"`)
+      throw new Error(`Unknown type of expression's item "${item}"`)
     }
   }
 
