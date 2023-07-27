@@ -105,10 +105,11 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
       return (onlyExecuted) ? undefined : anyValue
     }
     else if (isSprogLang(anyValue)) {
+      const res = await thisScope.$run(anyValue as SprogDefinition)
 
-      // TODO: что если $exp выдал другой expr???
-
-      return await thisScope.$run(anyValue as SprogDefinition)
+      if (!isSprogLang(res)) return res
+      // if it returns sprog then calculate it
+      return await thisScope.$calculate(res, onlyExecuted)
     }
 
     const result = (Array.isArray(anyValue)) ? [] : {}
