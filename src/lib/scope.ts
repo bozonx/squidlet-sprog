@@ -11,7 +11,7 @@ import {SprogDefinition} from '../types/types.js';
 import {SuperData} from './SuperData.js';
 import {stdLib} from '../stdLib.js';
 import {SUPER_VALUE_PROP} from './superValueHelpers.js';
-import {isSprogLang} from '../lang/helpers.js';
+import {deepHasSprog, isSprogLang} from '../lang/helpers.js';
 
 
 export type SprogScopedFn = (p: any) => Promise<any | void>
@@ -112,12 +112,14 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
     }
     else if (isSprogLang(anyValue)) {
       const res = await thisScope.$run(anyValue as SprogDefinition)
-
-      if (!isSprogLang(res)) return res
       // if it returns sprog then calculate it
-      return await thisScope.$calculate(res, onlyExecuted)
+      if (isSprogLang(res) || deepHasSprog(res)) {
+        return thisScope.$calculate(res, onlyExecuted)
+      }
+      // the result doesn't contain any expr inside
+      return res
     }
-
+    // in case of arrays and other objects
     const result = (onlyExecuted)
       ? (Array.isArray(anyValue)) ? [] : {}
       : deepClone(anyValue)
@@ -127,10 +129,14 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
       if (!isSprogLang(obj)) return
 
       const res = await thisScope.$run(obj as SprogDefinition)
-
-      // TODO: что если $exp выдал другой expr???
-
-      deepSet(result, path, res)
+      // if it returns sprog then calculate it
+      if (isSprogLang(res) || deepHasSprog(res)) {
+        deepSet(result, path, await thisScope.$calculate(res, onlyExecuted))
+      }
+      else {
+        // it returns a simple value - just set it
+        deepSet(result, path, res)
+      }
       // do not go deeper into expression definition
       return DONT_GO_DEEPER
     })

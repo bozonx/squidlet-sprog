@@ -112,7 +112,7 @@ describe('scope', () => {
 
   ///////// $calculate
 
-  it.only('$calculate - simple value', async () => {
+  it('$calculate - simple value', async () => {
     const scope = newScope()
 
     assert.equal(await scope.$calculate(1), 1)
@@ -121,7 +121,7 @@ describe('scope', () => {
     assert.isUndefined(await scope.$calculate('a', true))
   })
 
-  it.only('$calculate - simple expr', async () => {
+  it('$calculate - simple expr', async () => {
     const scope = newScope({a: 1})
 
     assert.equal(await scope.$calculate({
@@ -134,7 +134,7 @@ describe('scope', () => {
     }, true), 1)
   })
 
-  it.only('$calculate - deep simple expr', async () => {
+  it('$calculate - deep simple expr', async () => {
     const scope = newScope({
       a: {
         $exp: 'getValue',
@@ -149,7 +149,22 @@ describe('scope', () => {
     }), 1)
   })
 
-  it.only('$calculate - not deep object and arrays', async () => {
+  it('$calculate - deep simple expr in deep arr', async () => {
+    const scope = newScope({
+      a: [{
+        $exp: 'getValue',
+        path: 'b',
+      }],
+      b: 1
+    })
+
+    assert.deepEqual(await scope.$calculate({
+      $exp: 'getValue',
+      path: 'a',
+    }), [1])
+  })
+
+  it('$calculate - not deep object and arrays', async () => {
     const scope = newScope({b: 1})
 
     assert.deepEqual(await scope.$calculate({
@@ -169,7 +184,7 @@ describe('scope', () => {
     ]), [1,2])
   })
 
-  it.only('$calculate - onlyExecuted', async () => {
+  it('$calculate - onlyExecuted', async () => {
     const scope = newScope({b: 1})
 
     assert.deepEqual(await scope.$calculate({
@@ -189,22 +204,50 @@ describe('scope', () => {
     ], true), [1])
   })
 
-  it.only('$calculate - layered', async () => {
-    const scopeBottom = newScope({a: 0, b: 1})
+  it('$calculate - layered', async () => {
+    const scopeBottom = newScope({b: 1})
     const scopeTop = newScope({}, scopeBottom)
 
-    const res = await scopeTop.$calculate({
+    assert.deepEqual(await scopeTop.$calculate({
       a: {
         $exp: 'getValue',
         path: 'b',
       },
+    }), {a: 1})
+  })
+
+  it('$calculate - deep object and arrays', async () => {
+    const scope = newScope({b: 1})
+
+    assert.deepEqual(await scope.$calculate({
+      a: [
+        {
+          aaa: {
+            $exp: 'getValue',
+            path: 'b',
+          }
+        }
+      ],
+    }), {a: [{aaa: 1}]})
+  })
+
+  it('$calculate - deep object and arrays', async () => {
+    const scope = newScope({
+      b: {
+        '$exp': 'getValue',
+        path: 'c',
+      },
       c: 1
     })
 
-    assert.deepEqual(scopeBottom, {a: 0, std: stdLib})
-    assert.deepEqual(scopeTop, {a: 1, b: 1, std: stdLib})
+    assert.deepEqual(await scope.$calculate({
+      a: [
+        {
+          $exp: 'getValue',
+          path: 'b',
+        }
+      ],
+    }), {a: [1]})
   })
-
-  // TODO: test deep calculate
 
 })

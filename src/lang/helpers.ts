@@ -3,7 +3,8 @@ import {
   deepDelete,
   DONT_GO_DEEPER,
   deepSet,
-  deepClone
+  deepClone,
+  deepGetObjValue
 } from 'squidlet-lib';
 import {EXP_MARKER} from '../constants.js';
 import {sprogFuncs} from '../sprogFuncs.js';
@@ -19,6 +20,10 @@ export function isSprogLang(someValue: any): boolean {
   else if (!someValue[EXP_MARKER]) return false
 
   return Boolean(sprogFuncs[someValue[EXP_MARKER] as keyof typeof sprogFuncs])
+}
+
+export function deepHasSprog(someValue: any): boolean {
+  return Boolean(deepGetObjValue(someValue, EXP_MARKER))
 }
 
 /**
