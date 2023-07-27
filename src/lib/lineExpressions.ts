@@ -1,12 +1,6 @@
 import {SuperScope} from './scope.js';
-import {deepHasSprog, isSprogLang} from '../lang/helpers.js';
+import {isSprogLang} from '../lang/helpers.js';
 import {SprogDefinition} from '../types/types.js';
-
-
-// TODO: add inline conditions
-// TODO: add block - ( ... )
-// TODO: см какие ещё есть операторы
-// TODO: как узнать что 2 переменные это один и тот же массив и объект?
 
 
 export type LineExprItem = string | SprogDefinition
@@ -29,6 +23,12 @@ export const EXPR_SIGNS: Record<string, string> = {
 }
 
 
+/**
+ * Execute inline expression.
+ * It supports only simple values. Functions, arrays and objects aren't supported.
+ * @param items
+ * @param scope
+ */
 export async function executeLineExpr(items: LineExprItem[], scope: SuperScope): Promise<any> {
   const evalItems: string[] = []
 
@@ -53,9 +53,9 @@ export async function executeLineExpr(items: LineExprItem[], scope: SuperScope):
       else if (typeof exprRes === 'object') {
         throw new Error(`It isn't allowed to return an object in lineExp item`)
       }
-      else if (deepHasSprog(exprRes)) {
+      else if (isSprogLang(exprRes)) {
         // if expr was returned then execute it
-        exprRes = await scope.$calculate(exprRes)
+        exprRes = await scope.$run(exprRes)
       }
       else if (typeof exprRes === 'string') {
         // TODO: если вернулась строка - то надо санитизировать её
@@ -71,8 +71,6 @@ export async function executeLineExpr(items: LineExprItem[], scope: SuperScope):
   }
 
   const evalStr = evalItems.join(' ')
-
-  console.log(1111, evalStr)
 
   return eval(evalStr)
 }
