@@ -31,12 +31,15 @@ export interface SuperScope {
   $run(definition: SprogDefinition): Promise<any | void>
 
   /**
-   * Execute all the expressions in the given plain object or array
-   * and return object or array ONLY with values of executed expressions.
-   * It you need to have a full array or object you can make deepMerge()
-   * @param values
+   * Calculate of given values in this scope.
+   * To not be confused please use only expressions which returns values and don't set any value
+   * @param values - any value of expression or object with values and expressions or
+   *                 array of values and expressions
+   * @param onlyExecuted - if true then it will return only executed values, and skip
+   *                       all other values
+   * @returns - the value or object or array with given values and results of expressions
    */
-  $runAll(values?: any | any[]): Promise<any | any[] | undefined>
+  $calculate(values?: any | any[], onlyExecuted?: boolean): Promise<any | any[] | undefined>
 
   /**
    * If is is an expression then run it.
@@ -64,7 +67,7 @@ export const SCOPE_FUNCTIONS = [
   '$cloneSelf',
   '$getScopedFn',
   '$run',
-  '$runAll',
+  '$calculate',
   '$resolve',
   '$newScope',
   '$inherit',
@@ -92,15 +95,31 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
 
     return sprogFn(thisScope)(params)
   },
-  async $runAll(arrOrObjWithExpressions?: any | any[]): Promise<any | any[] | undefined> {
-    if (!arrOrObjWithExpressions) return
-
+  async $calculate(
+    anyValue?: any | any[],
+    onlyExecuted: boolean = false
+  ): Promise<any | any[] | undefined> {
     const thisScope = this as SuperScope
-    const result = (Array.isArray(arrOrObjWithExpressions)) ? [] : {}
+    // skip any simple values
+    if (!Array.isArray(anyValue) && typeof anyValue !== 'object') {
+      return (onlyExecuted) ? undefined : anyValue
+    }
+    else if (isSprogLang(anyValue)) {
+
+      // TODO: что если $exp выдал другой expr???
+
+      return await thisScope.$run(anyValue as SprogDefinition)
+    }
+
+    const result = (Array.isArray(anyValue)) ? [] : {}
     // each plain object
-    await deepEachObjAsync(arrOrObjWithExpressions, async (obj: Record<any, any>, key: string | number, path: string) => {
+    await deepEachObjAsync(anyValue, async (obj: Record<any, any>, key: string | number, path: string) => {
       // skip not expressions
-      if (!isSprogLang(obj)) return
+      if (!isSprogLang(obj)) {
+        if (!onlyExecuted) deepSet(result, path, obj)
+
+        return
+      }
 
       const res = await thisScope.$run(obj as SprogDefinition)
 

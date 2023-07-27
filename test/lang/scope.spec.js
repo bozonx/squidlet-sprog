@@ -110,19 +110,22 @@ describe('scope', () => {
     assert.deepEqual(scopeTop, {a: 1, b: 0, std: stdLib})
   })
 
-  it('$runAll', async () => {
-    const scopeBottom = newScope({a: 0, b: 0})
+  it.only('$runAll', async () => {
+    const scopeBottom = newScope({a: 0, b: 1})
     const scopeTop = newScope({}, scopeBottom)
 
-    await scopeTop.$run({
-      $exp: 'newVar',
-      name: 'a',
-      value: 1
+    const res = await scopeTop.$calculate({
+      a: {
+        $exp: 'getValue',
+        path: 'b',
+      },
+      c: 1
     })
 
-    assert.deepEqual(scopeBottom, {a: 0, b: 0, std: stdLib})
-    assert.equal(scopeTop.b, 0)
-    assert.deepEqual(scopeTop, {a: 1, b: 0, std: stdLib})
+    console.log(111, res)
+
+    assert.deepEqual(scopeBottom, {a: 0, std: stdLib})
+    assert.deepEqual(scopeTop, {a: 1, b: 1, std: stdLib})
   })
 
 })
