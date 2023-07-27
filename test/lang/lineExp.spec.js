@@ -35,15 +35,26 @@ describe('lineExp', () => {
     }), 6)
   })
 
-  it.only('return an array', async () => {
+  it.only('return an array = array', async () => {
     const scope = newScope()
 
-    assert.deepEqual(await scope.$run({
+    await assert.isPromiseRejected(scope.$run({
       $exp: 'lineExp',
       items: [
         {$exp: 'newValue', value: [{$exp: 'newValue', value: 2}]},
       ]
-    }), [2])
+    }))
+  })
+
+  it.only('return an object = array', async () => {
+    const scope = newScope()
+
+    await assert.isPromiseRejected(scope.$run({
+      $exp: 'lineExp',
+      items: [
+        {$exp: 'newValue', value: {a: {$exp: 'newValue', value: 2}}},
+      ]
+    }), {a: 2})
   })
 
 })
