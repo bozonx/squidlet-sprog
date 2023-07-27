@@ -1,5 +1,6 @@
 import {SuperScope} from './scope.js';
 import {deepHasSprog, isSprogLang} from '../lang/helpers.js';
+import {SprogDefinition} from '../types/types.js';
 
 
 // TODO: add inline conditions
@@ -7,6 +8,8 @@ import {deepHasSprog, isSprogLang} from '../lang/helpers.js';
 // TODO: test deep
 // TODO: см какие ещё есть операторы
 
+
+export type LineExprItem = string | SprogDefinition
 
 export const EXPR_SIGNS: Record<string, string> = {
   '+': '+',
@@ -26,7 +29,7 @@ export const EXPR_SIGNS: Record<string, string> = {
 }
 
 
-export async function executeLineExpr(items: any[], scope: SuperScope): Promise<any> {
+export async function executeLineExpr(items: LineExprItem[], scope: SuperScope): Promise<any> {
   let evalStr = ''
 
   for (const item of items) {
