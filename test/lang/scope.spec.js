@@ -149,9 +149,47 @@ describe('scope', () => {
     }), 1)
   })
 
+  it.only('$calculate - not deep object and arrays', async () => {
+    const scope = newScope({b: 1})
 
+    assert.deepEqual(await scope.$calculate({
+      a: {
+        $exp: 'getValue',
+        path: 'b',
+      },
+      c: 2
+    }), {a: 1, c: 2})
 
-  it('$calculate', async () => {
+    assert.deepEqual(await scope.$calculate([
+      {
+        $exp: 'getValue',
+        path: 'b',
+      },
+      2
+    ]), [1,2])
+  })
+
+  it.only('$calculate - onlyExecuted', async () => {
+    const scope = newScope({b: 1})
+
+    assert.deepEqual(await scope.$calculate({
+      a: {
+        $exp: 'getValue',
+        path: 'b',
+      },
+      c: 2
+    }, true), {a: 1})
+
+    assert.deepEqual(await scope.$calculate([
+      {
+        $exp: 'getValue',
+        path: 'b',
+      },
+      2
+    ], true), [1])
+  })
+
+  it.only('$calculate - layered', async () => {
     const scopeBottom = newScope({a: 0, b: 1})
     const scopeTop = newScope({}, scopeBottom)
 
@@ -162,8 +200,6 @@ describe('scope', () => {
       },
       c: 1
     })
-
-    console.log(111, res)
 
     assert.deepEqual(scopeBottom, {a: 0, std: stdLib})
     assert.deepEqual(scopeTop, {a: 1, b: 1, std: stdLib})

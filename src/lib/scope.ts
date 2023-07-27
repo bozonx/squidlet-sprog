@@ -1,4 +1,10 @@
-import {omitObj, deepEachObjAsync, deepSet, DONT_GO_DEEPER} from 'squidlet-lib';
+import {
+  omitObj,
+  deepEachObjAsync,
+  deepSet,
+  deepClone,
+  DONT_GO_DEEPER
+} from 'squidlet-lib';
 import {sprogFuncs} from '../sprogFuncs.js';
 import {EXP_MARKER} from '../constants.js';
 import {SprogDefinition} from '../types/types.js';
@@ -112,15 +118,13 @@ const scopeFunctions: Record<string, any> & Omit<SuperScope, '$super'> = {
       return await thisScope.$calculate(res, onlyExecuted)
     }
 
-    const result = (Array.isArray(anyValue)) ? [] : {}
+    const result = (onlyExecuted)
+      ? (Array.isArray(anyValue)) ? [] : {}
+      : deepClone(anyValue)
     // each plain object
     await deepEachObjAsync(anyValue, async (obj: Record<any, any>, key: string | number, path: string) => {
       // not expressions
-      if (!isSprogLang(obj)) {
-        if (!onlyExecuted) deepSet(result, path, obj)
-
-        return
-      }
+      if (!isSprogLang(obj)) return
 
       const res = await thisScope.$run(obj as SprogDefinition)
 
