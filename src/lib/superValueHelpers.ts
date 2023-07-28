@@ -122,11 +122,10 @@ export function validateChildValue(
   // else it is ok
 }
 
-export function checkValueBeforeSet(
+export function checkBeforeSetValue(
   isInitialized: boolean,
   definition: SuperItemDefinition | undefined,
   key: string | number,
-  value?: AllTypes,
   ignoreRo?: boolean
 ) {
   if (!isInitialized) throw new Error(`Init it first`)

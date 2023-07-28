@@ -19,7 +19,7 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {
   checkDefinition,
-  checkValueBeforeSet,
+  checkBeforeSetValue,
   isSuperValue,
   prepareDefinitionItem,
   SUPER_VALUE_PROP,
@@ -288,7 +288,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       ? (this.definition[key])
       : this.defaultDefinition
 
-    checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
+    checkBeforeSetValue(this.isInitialized, definition, key, value, ignoreRo)
 
     this.ownValues[key] = this.resolveChildValue(definition!, key, value)
 
@@ -387,7 +387,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       ? (this.definition[key])
       : this.defaultDefinition
 
-    checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
+    checkBeforeSetValue(this.isInitialized, definition, key, value, ignoreRo)
     validateChildValue(definition, key, value)
   }
 

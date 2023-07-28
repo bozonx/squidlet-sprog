@@ -10,7 +10,7 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {
-  checkDefinition, checkValueBeforeSet,
+  checkDefinition, checkBeforeSetValue,
   isSuperValue,
   prepareDefinitionItem,
   SUPER_VALUE_PROP, validateChildValue,
@@ -186,7 +186,7 @@ export class SuperStruct<T = Record<string, AllTypes>>
 
     if (!this.definition[key]) {
       throw new Error(
-        `SuperStruct "${this.pathToMe}" doesn't have definiton of child "${keyStr}"`
+        `SuperStruct "${this.pathToMe}" doesn't have definition of child "${keyStr}"`
       )
     }
 

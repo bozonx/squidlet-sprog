@@ -23,21 +23,13 @@ import {
   SUPER_VALUE_PROP,
   validateChildValue,
   isSuperValue,
-  checkValueBeforeSet,
+  checkBeforeSetValue,
   makeNewSuperValueByDefinition,
   isSuperKind
 } from './superValueHelpers.js';
 import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {SuperScope} from './scope.js';
 
-
-export interface SuperValuePublic extends SuperBasePublic {
-  isSuperValue: boolean
-  getValue(pathTo: string): AllTypes | undefined
-  setValue(pathTo: string, newValue: AllTypes): void
-  setNull(pathTo: string): void
-  subscribe(handler: SuperChangeHandler): number
-}
 
 export interface SuperLinkItem {
   // not proxyfied struct or array
@@ -52,6 +44,14 @@ export interface SuperLinkItem {
   myHandlerIndex: number
 }
 
+export interface SuperValuePublic extends SuperBasePublic {
+  isSuperValue: boolean
+  getValue(pathTo: string): AllTypes | undefined
+  setValue(pathTo: string, newValue: AllTypes): void
+  setNull(pathTo: string): void
+  subscribe(handler: SuperChangeHandler): number
+}
+
 export const SUPER_VALUE_PROXY_PUBLIC_MEMBERS = [
   ...SUPER_BASE_PROXY_PUBLIC_MEMBERS,
   'isSuperValue',
@@ -62,16 +62,20 @@ export const SUPER_VALUE_PROXY_PUBLIC_MEMBERS = [
 ]
 
 export enum SUPER_VALUE_EVENTS {
+  // at early initialization started
   initStart,
+  // initialization has just finished
   inited,
+  // destroy has just started
   destroy,
-  // any change including array events - added, removed, moved
+  // any change including array events: added, removed, moved
   change,
-  // changes (define or forget) of definitions after initialization
+  // define or forget of definitions after initialization
   definition,
   newLink,
   unlink,
-  changeParent,
+  // new parent was set
+  parentSet,
   // specific array events. for array and data only, not for struct
   // any of these events will be in SUPER_VALUE_EVENTS.change
   // handler of them will receive ([...changedItems], [...changedKeys])
@@ -111,7 +115,9 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * It strictly gets own values, without layers
+   * It strictly gets own values, without layers.
+   * By default it is the same as allValues,
+   * but in SuperData this method is overwritten
    */
   get ownValuesStrict(): T {
     return this._values
@@ -128,7 +134,7 @@ export abstract class SuperValueBase<T = any | any[]>
     // rise an event any way if any values was set or not
     this.events.emit(SUPER_VALUE_EVENTS.change, this, this.pathToMe)
     this.events.emit(SUPER_VALUE_EVENTS.inited)
-    // return setter for read only props
+    // return setter for readonly props
     return this.myRoSetter
   }
 
@@ -201,9 +207,10 @@ export abstract class SuperValueBase<T = any | any[]>
       }
     }
 
-    this.events.emit(SUPER_VALUE_EVENTS.changeParent)
+    this.events.emit(SUPER_VALUE_EVENTS.parentSet)
   }
 
+  // TODO: review
   $$detachChild(childKey: string | number, force: boolean = false) {
     if (!force) {
       const def = this.getDefinition(childKey)
@@ -240,7 +247,7 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * It checks does the last parent or myself has key
+   * It checks does it have key on given path
    * @param pathTo
    */
   hasKey = (pathTo: string): boolean => {
@@ -262,7 +269,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
   /**
    * Set value to own child, not deeper and not to bottom layer.
-   * And rise an event of it child
+   * And rise an event of this child
    * @param key
    * @param value
    * @param ignoreRo
@@ -272,7 +279,7 @@ export abstract class SuperValueBase<T = any | any[]>
     const def = this.getDefinition(key)
 
     // TODO: если это глубокий простой объект или массив то тоже будет проверка?
-    checkValueBeforeSet(this.isInitialized, def, key, value, ignoreRo)
+    checkBeforeSetValue(this.isInitialized, def, key, ignoreRo)
     // value will be validated inside resolveChildValue
     this._values[key as keyof T] = this.resolveChildValue(def!, key, value)
 
@@ -511,7 +518,7 @@ export abstract class SuperValueBase<T = any | any[]>
   validateItem(key: string | number, value?: AllTypes, ignoreRo?: boolean) {
     const definition = this.getDefinition(key)
 
-    checkValueBeforeSet(this.isInitialized, definition, key, value, ignoreRo)
+    checkBeforeSetValue(this.isInitialized, definition, key, value, ignoreRo)
     validateChildValue(definition, key, value)
   }
 
