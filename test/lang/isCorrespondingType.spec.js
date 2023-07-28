@@ -116,7 +116,7 @@ describe('isCorrespondingType', () => {
     assert.isFalse(isCorrespondingType({}, 'SuperStruct'))
     assert.isFalse(isCorrespondingType(sd, 'SuperStruct'))
     // SuperArray
-    const sa = new SuperArray({}).getProxy()
+    const sa = new SuperArray().getProxy()
     assert.isTrue(isCorrespondingType(sa, 'SuperArray'))
     assert.isTrue(isCorrespondingType(sa, ['SuperArray']))
     assert.isFalse(isCorrespondingType({}, 'SuperArray'))
@@ -128,7 +128,7 @@ describe('isCorrespondingType', () => {
     assert.isTrue(isCorrespondingType(sf, ['SuperFunc']))
     assert.isFalse(isCorrespondingType({}, 'SuperFunc'))
     assert.isFalse(isCorrespondingType(sd, 'SuperFunc'))
-    assert.isFalse(isCorrespondingType(sd, 'SuperFunc'))
+    assert.isFalse(isCorrespondingType(ss, 'SuperFunc'))
     assert.isFalse(isCorrespondingType(sa, 'SuperFunc'))
   })
 

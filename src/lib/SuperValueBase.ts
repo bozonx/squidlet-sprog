@@ -518,7 +518,7 @@ export abstract class SuperValueBase<T = any | any[]>
   validateItem(key: string | number, value?: AllTypes, ignoreRo?: boolean) {
     const definition = this.getDefinition(key)
 
-    checkBeforeSetValue(this.isInitialized, definition, key, value, ignoreRo)
+    checkBeforeSetValue(this.isInitialized, definition, key, ignoreRo)
     validateChildValue(definition, key, value)
   }
 
@@ -638,6 +638,7 @@ export abstract class SuperValueBase<T = any | any[]>
 
       return value
     }
+    // TODO: review resolveNotSuperChild
     // resolve other types
     return resolveNotSuperChild(definition, value)
   }
@@ -672,6 +673,7 @@ export abstract class SuperValueBase<T = any | any[]>
       return mySuperChild
     }
     else {
+      // TODO: review
       // no initial value - make a new Super Value
       return makeNewSuperValueByDefinition(definition, childKeyOrIndex)
     }

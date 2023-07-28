@@ -288,7 +288,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       ? (this.definition[key])
       : this.defaultDefinition
 
-    checkBeforeSetValue(this.isInitialized, definition, key, value, ignoreRo)
+    checkBeforeSetValue(this.isInitialized, definition, key, ignoreRo)
 
     this.ownValues[key] = this.resolveChildValue(definition!, key, value)
 
@@ -387,7 +387,7 @@ export class SuperData<T extends Record<string, AllTypes> = Record<string, AllTy
       ? (this.definition[key])
       : this.defaultDefinition
 
-    checkBeforeSetValue(this.isInitialized, definition, key, value, ignoreRo)
+    checkBeforeSetValue(this.isInitialized, definition, key, ignoreRo)
     validateChildValue(definition, key, value)
   }
 

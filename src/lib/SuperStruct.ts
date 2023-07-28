@@ -10,10 +10,10 @@ import {
   SuperItemInitDefinition
 } from '../types/SuperItemDefinition.js';
 import {
-  checkDefinition, checkBeforeSetValue,
+  checkDefinition,
   isSuperValue,
   prepareDefinitionItem,
-  SUPER_VALUE_PROP, validateChildValue,
+  SUPER_VALUE_PROP,
 } from './superValueHelpers.js';
 import {AllTypes} from '../types/valueTypes.js';
 import {SuperScope} from './scope.js';

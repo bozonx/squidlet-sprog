@@ -5,7 +5,6 @@ import {
 } from '../types/SuperItemDefinition.js';
 import {
   All_TYPES,
-  AllTypes,
   SIMPLE_TYPES,
   SimpleType,
   SUPER_VALUES,
@@ -53,10 +52,17 @@ export function checkDefinition(definition?: SuperItemInitDefinition) {
     default: defaultValue,
   } = definition
 
-  // don't check type because it can be custom'
-  // if (type && !Object.keys(All_TYPES).includes(type)) {
-  //   throw new Error(`Wrong type : ${type}`)
-  // }
+  if (!type) {
+    throw new Error(`Definition has to have type`)
+  }
+  else if (!type.match(/^\w/)) {
+    throw new Error(`Type "${type}" has to be started from letter`)
+  }
+  // custom type has to start with capital letter.
+  // so check built-in types which start from small letter
+  else if (type.match(/^[a-z]/) && !Object.keys(All_TYPES).includes(type)) {
+    throw new Error(`Wrong type : ${type}`)
+  }
   if (typeof required !== 'undefined' && typeof required !== 'boolean') {
     throw new Error(`required has to be boolean`)
   }
@@ -78,7 +84,6 @@ export function checkArrayDefinition(definition?: Partial<SuperArrayDefinition>)
 
   const {
     type,
-    default: defaultValue,
     defaultArray,
     nullable,
   } = definition
@@ -110,9 +115,6 @@ export function validateChildValue(
   }
   // nothing to check
   else if (typeof value === 'undefined' && !definition.required) return
-  else if (!Object.keys(All_TYPES).includes(definition.type)) {
-    throw new Error(`Unknown type: ${definition.type}`)
-  }
   else if (!isCorrespondingType(value, definition.type, definition.nullable)) {
     throw new Error(
       `The value of ${childKeyOrIndex} has type ${typeof value}, `
