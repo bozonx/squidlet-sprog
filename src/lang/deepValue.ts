@@ -10,7 +10,7 @@ import {SuperScope} from '../lib/scope.js';
  * Path can be an expression
  */
 export function getValue(scope: SuperScope) {
-  return async (p: {path: string, defaultValue?: any}): Promise<any | undefined> => {
+  return async (p: {path: string}): Promise<any | undefined> => {
     const path: string = await scope.$resolve(p.path)
 
     if (typeof path === 'undefined') throw new Error(`Path is undefined in getValue()`)
@@ -18,9 +18,7 @@ export function getValue(scope: SuperScope) {
       throw new Error(`Path has to be a string or a symbol`)
     }
 
-    const defaultValue: any | undefined = await scope.$resolve(p.defaultValue)
-
-    return scope.$super.getValue(path, defaultValue)
+    return scope.$super.getValue(path)
   }
 }
 

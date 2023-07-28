@@ -278,7 +278,6 @@ export abstract class SuperValueBase<T = any | any[]>
   setOwnValue(key: string | number, value: AllTypes, ignoreRo: boolean = false): boolean {
     const def = this.getDefinition(key)
 
-    // TODO: если это глубокий простой объект или массив то тоже будет проверка?
     checkBeforeSetValue(this.isInitialized, def, key, ignoreRo)
     // value will be validated inside resolveChildValue
     this._values[key as keyof T] = this.resolveChildValue(def!, key, value)
@@ -289,20 +288,17 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * You cat deeply get some primitive or other struct or super array.
+   * You can't deeply get some primitive of other struct or super array.
    * If it is a primitive you can't change its value.
    * To change its value get its parent and set value via parent like: parent.value = 5
    */
-  getValue = (pathTo: string, defaultValue?: any): AllTypes | undefined => {
-
-    // TODO: remove defaultValue
-
+  getValue = (pathTo: string): AllTypes | undefined => {
     if (!this.isInitialized) throw new Error(`Init it first`)
     else if (typeof pathTo !== 'string' && typeof pathTo !== "symbol") {
       throw new Error(`path has to be a string or symbol`)
     }
 
-    return deepGet(this.allValues as any, pathTo, defaultValue)
+    return deepGet(this.allValues as any, pathTo)
   }
 
   /**
@@ -346,8 +342,8 @@ export abstract class SuperValueBase<T = any | any[]>
   }
 
   /**
-   * Set default value or null if the key doesn't have a default value
-   * @param key
+   * Set default value if it has "default" in definition.
+   * @param key - direct child key where shoud be set a default value
    */
   toDefaultValue(key: string | number) {
     const definition = this.getDefinition(key)
@@ -362,7 +358,7 @@ export abstract class SuperValueBase<T = any | any[]>
       (this.allValues[key as keyof T] as {$super: SuperValueBase}).$super.toDefaults()
     }
     else {
-      // all other types including custom ones
+      // else all other types including custom ones
       let defaultValue = definition.default
 
       if (typeof defaultValue === 'undefined') {
@@ -378,7 +374,6 @@ export abstract class SuperValueBase<T = any | any[]>
     }
   }
 
-  // TODO: test batchSet
   batchSet(values?: T) {
     if (!values) return
 
