@@ -31,11 +31,6 @@ import {resolveInitialSimpleValue} from './resolveInitialSimpleValue.js';
 import {SuperScope} from './scope.js';
 
 
-// TODO: потомок - super func
-// TODO: потомок - simple func
-// TODO: потомок - custom type
-
-
 export interface SuperValuePublic extends SuperBasePublic {
   isSuperValue: boolean
   getValue(pathTo: string): AllTypes | undefined
@@ -396,7 +391,7 @@ export abstract class SuperValueBase<T = any | any[]>
     values?: Record<any, any> | any[],
     roSetter?: (name: string, value: any) => void
   ) {
-    const valuesToSet = await scope.$runAll(values)
+    const valuesToSet = await scope.$calculate(values, true)
 
     for (const key of Object.keys(valuesToSet)) {
       const fullValue = deepMerge(valuesToSet[key], this.allValues[key as keyof T])

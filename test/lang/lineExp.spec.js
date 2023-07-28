@@ -4,7 +4,7 @@ import {EXPR_SIGNS} from "../../src/lib/lineExpressions.js";
 
 
 describe('lineExp', () => {
-  it.only('simple values', async () => {
+  it('simple values', async () => {
     const scope = newScope()
 
     assert.equal(await scope.$run({
@@ -17,7 +17,7 @@ describe('lineExp', () => {
     }), 3)
   })
 
-  it.only('deep exp', async () => {
+  it('deep exp', async () => {
     const scope = newScope()
 
     assert.equal(await scope.$run({
@@ -30,7 +30,7 @@ describe('lineExp', () => {
     }), 6)
   })
 
-  it.only('return an array = error', async () => {
+  it('return an array = error', async () => {
     const scope = newScope()
 
     await assert.isPromiseRejected(scope.$run({
@@ -41,7 +41,7 @@ describe('lineExp', () => {
     }))
   })
 
-  it.only('return an object = error', async () => {
+  it('return an object = error', async () => {
     const scope = newScope()
 
     await assert.isPromiseRejected(scope.$run({
@@ -52,7 +52,7 @@ describe('lineExp', () => {
     }))
   })
 
-  it.only('return a function = error', async () => {
+  it('return a function = error', async () => {
     const scope = newScope()
 
     await assert.isPromiseRejected(scope.$run({
